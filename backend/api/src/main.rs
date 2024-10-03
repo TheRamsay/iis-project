@@ -1,4 +1,7 @@
 use axum::{routing::get, Router};
+use entity;
+
+mod schema;
 
 async fn hello_world() -> &'static str {
     "Hello, world!"

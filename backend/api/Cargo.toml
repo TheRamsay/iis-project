@@ -1,5 +1,5 @@
 [package]
-name = "fitstagram-api"
+name = "api"
 version = "0.1.0"
 edition = "2021"
 
@@ -10,3 +10,4 @@ shuttle-axum = "0.47.0"
 shuttle-runtime = "0.47.0"
 tokio = "1.28.2"
 uuid = "1.10.0"
+entity = { path = "../entity" }
