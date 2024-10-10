@@ -57,7 +57,7 @@ struct UserDetail {
     display_name: String,
     username: String,
     email: String,
-    avatar_url: String,
+    avatar_url: Option<String>,
     user_type: String,
 }
 
@@ -92,7 +92,11 @@ async fn create_user(state: State<AppState>, Json(payload): Json<CreateUser>) ->
             display_name: Set(payload.display_name),
             username: Set(payload.username),
             email: Set(payload.email),
-            avatar_url: Set(payload.avatar_url),
+            avatar_url: if payload.avatar_url.is_empty() {
+                Set(None)
+            } else {
+                Set(Some(payload.avatar_url))
+            },
             user_type: Set(model::sea_orm_active_enums::UserType::Regular),
             ..Default::default()
         }
