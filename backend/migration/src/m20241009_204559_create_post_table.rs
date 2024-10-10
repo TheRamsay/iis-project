@@ -21,6 +21,15 @@ impl MigrationTrait for Migration {
             .await?;
 
         manager
+            .create_type(
+                Type::create()
+                    .as_enum(Alias::new("post_visibility_type"))
+                    .values(PostVisibilityType::iter())
+                    .to_owned(),
+            )
+            .await?;
+
+        manager
             .create_table(
                 Table::create()
                     .table(Post::Table)
@@ -28,10 +37,11 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Post::Id).uuid().not_null().primary_key())
                     .col(string(Post::Title))
                     .col(string(Post::Description))
-                    .col(uuid(Post::LocationId))
+                    .col(ColumnDef::new(Post::LocationId).uuid().null())
                     .col(uuid(Post::AuthorId))
                     .col(date_time(Post::CreatedAt))
                     .col(string(Post::ContentType))
+                    .col(string(Post::Visibility))
                     .col(string(Post::ContentUrl))
                     .foreign_key(
                         ForeignKey::create()
@@ -55,14 +65,6 @@ impl MigrationTrait for Migration {
             .drop_table(Table::drop().table(Post::Table).to_owned())
             .await?;
 
-        // manager
-        //     .drop_foreign_key(ForeignKey::drop().name("fk_post_location").to_owned())
-        //     .await?;
-
-        // manager
-        //     .drop_foreign_key(ForeignKey::drop().name("fk_post_author").to_owned())
-        //     .await?;
-
         manager
             .drop_type(Type::drop().name(Alias::new("post_type")).to_owned())
             .await
@@ -70,7 +72,7 @@ impl MigrationTrait for Migration {
 }
 
 #[derive(DeriveIden)]
-enum Post {
+pub enum Post {
     Table,
     Id,
     Title,
@@ -79,6 +81,7 @@ enum Post {
     AuthorId,
     CreatedAt,
     ContentType,
+    Visibility,
     ContentUrl,
 }
 
@@ -86,4 +89,10 @@ enum Post {
 pub enum PostType {
     #[iden = "image"]
     Image,
+}
+
+#[derive(Iden, EnumIter)]
+pub enum PostVisibilityType {
+    Public,
+    Private,
 }

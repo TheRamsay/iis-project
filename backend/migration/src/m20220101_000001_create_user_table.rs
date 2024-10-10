@@ -1,5 +1,5 @@
 use extension::postgres::Type;
-use sea_orm::{EnumIter, Iterable};
+use sea_orm::{sqlx::Column, EnumIter, Iterable};
 use sea_orm_migration::{prelude::*, schema::*};
 
 #[derive(DeriveMigrationName)]
@@ -26,7 +26,7 @@ impl MigrationTrait for Migration {
                     .col(string(User::DisplayName))
                     .col(string(User::Username))
                     .col(string(User::Email))
-                    .col(string(User::AvatarUrl))
+                    .col(ColumnDef::new(User::AvatarUrl).string().null())
                     .col(
                         ColumnDef::new(User::UserType)
                             .enumeration(Alias::new("user_type"), UserType::iter())
@@ -61,6 +61,7 @@ pub enum User {
     Email,
     AvatarUrl,
     UserType,
+    WallId,
 }
 
 #[derive(Iden, EnumIter)]

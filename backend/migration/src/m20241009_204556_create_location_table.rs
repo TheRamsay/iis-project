@@ -15,7 +15,7 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(ColumnDef::new(Location::Id).uuid().not_null().primary_key())
                     .col(string(Location::Name))
-                    .col(string(Location::PictureUrl))
+                    .col(ColumnDef::new(Location::PictureUrl).string().null())
                     .to_owned(),
             )
             .await
