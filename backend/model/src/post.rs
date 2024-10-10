@@ -10,15 +10,18 @@ pub struct Model {
     pub id: Uuid,
     pub title: String,
     pub description: String,
-    pub location_id: Uuid,
+    pub location_id: Option<Uuid>,
     pub author_id: Uuid,
     pub created_at: DateTime,
     pub content_type: String,
+    pub visibility: String,
     pub content_url: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
+    #[sea_orm(has_many = "super::group::Entity")]
+    Group,
     #[sea_orm(
         belongs_to = "super::location::Entity",
         from = "Column::LocationId",
@@ -27,6 +30,14 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     Location,
+    #[sea_orm(has_many = "super::post_comment::Entity")]
+    PostComment,
+    #[sea_orm(has_many = "super::post_like::Entity")]
+    PostLike,
+    #[sea_orm(has_many = "super::post_tag::Entity")]
+    PostTag,
+    #[sea_orm(has_many = "super::post_visibility::Entity")]
+    PostVisibility,
     #[sea_orm(
         belongs_to = "super::user::Entity",
         from = "Column::AuthorId",
@@ -35,6 +46,14 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     User,
+    #[sea_orm(has_many = "super::wall_post::Entity")]
+    WallPost,
+}
+
+impl Related<super::group::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Group.def()
+    }
 }
 
 impl Related<super::location::Entity> for Entity {
@@ -43,9 +62,48 @@ impl Related<super::location::Entity> for Entity {
     }
 }
 
+impl Related<super::post_comment::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::PostComment.def()
+    }
+}
+
+impl Related<super::post_like::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::PostLike.def()
+    }
+}
+
+impl Related<super::post_tag::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::PostTag.def()
+    }
+}
+
+impl Related<super::post_visibility::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::PostVisibility.def()
+    }
+}
+
 impl Related<super::user::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::User.def()
+    }
+}
+
+impl Related<super::wall_post::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::WallPost.def()
+    }
+}
+
+impl Related<super::wall::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::wall_post::Relation::Wall.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::wall_post::Relation::Post.def().rev())
     }
 }
 

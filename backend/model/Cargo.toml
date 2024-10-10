@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 sea-orm = "1.0.1"
+serde = "1.0.210"
 
 [lib]
 name = "model"

@@ -2,8 +2,15 @@
 
 pub mod prelude;
 
+pub mod group;
+pub mod group_member;
 pub mod location;
 pub mod post;
+pub mod post_comment;
+pub mod post_like;
+pub mod post_tag;
+pub mod post_visibility;
 pub mod sea_orm_active_enums;
 pub mod user;
-pub mod extensions;
+pub mod wall;
+pub mod wall_post;

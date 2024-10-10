@@ -12,19 +12,77 @@ pub struct Model {
     pub display_name: String,
     pub username: String,
     pub email: String,
-    pub avatar_url: String,
+    pub avatar_url: Option<String>,
     pub user_type: UserType,
+    pub wall_id: Option<Uuid>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
+    #[sea_orm(has_many = "super::group::Entity")]
+    Group,
+    #[sea_orm(has_many = "super::group_member::Entity")]
+    GroupMember,
     #[sea_orm(has_many = "super::post::Entity")]
     Post,
+    #[sea_orm(has_many = "super::post_comment::Entity")]
+    PostComment,
+    #[sea_orm(has_many = "super::post_like::Entity")]
+    PostLike,
+    #[sea_orm(has_many = "super::post_visibility::Entity")]
+    PostVisibility,
+    #[sea_orm(
+        belongs_to = "super::wall::Entity",
+        from = "Column::WallId",
+        to = "super::wall::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    Wall,
+}
+
+impl Related<super::group_member::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::GroupMember.def()
+    }
 }
 
 impl Related<super::post::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Post.def()
+    }
+}
+
+impl Related<super::post_comment::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::PostComment.def()
+    }
+}
+
+impl Related<super::post_like::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::PostLike.def()
+    }
+}
+
+impl Related<super::post_visibility::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::PostVisibility.def()
+    }
+}
+
+impl Related<super::wall::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Wall.def()
+    }
+}
+
+impl Related<super::group::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::group_member::Relation::Group.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::group_member::Relation::User.def().rev())
     }
 }
 
