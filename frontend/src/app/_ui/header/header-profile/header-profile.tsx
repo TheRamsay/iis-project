@@ -9,6 +9,7 @@ import Image from "next/image";
 import { Suspense, useCallback } from "react";
 import { LogOut, Settings, SunMoon } from "lucide-react";
 import Link from "next/link";
+import { HeaderProfileTheme } from "./header-profile-theme";
 
 export function HeaderProfile() {
 	return (
@@ -72,9 +73,7 @@ function _HeaderProfile() {
 							</span>
 						</div>
 						<div className="flex flex-row justify-between space-x-3">
-							<div className="rounded-full border p-2 border-accent hover:border-accent-foreground">
-								<SunMoon width={20} height={20} />
-							</div>
+							<HeaderProfileTheme />
 							<div className="rounded-full border p-2 border-accent hover:border-accent-foreground">
 								<Link href="/settings">
 									<Settings width={20} height={20} />

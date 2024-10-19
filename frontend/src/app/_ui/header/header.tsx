@@ -1,7 +1,7 @@
-import { NavigationContainer } from "@/components/components/navigation-container";
-import { HeaderProfile } from "./header-profile";
-import { HeaderSearch } from "./header-search";
-import { HeaderNavigation } from "./header-navigation";
+import { NavigationContainer } from '@/components/components/navigation-container'
+import { HeaderProfile } from './header-profile/header-profile'
+import { HeaderSearch } from './header-search'
+import { HeaderNavigation } from './header-navigation'
 
 export function Header() {
 	return (
@@ -18,5 +18,5 @@ export function Header() {
 				</div>
 			</div>
 		</NavigationContainer>
-	);
+	)
 }

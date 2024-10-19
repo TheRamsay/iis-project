@@ -4,7 +4,7 @@ import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import * as SelectPrimitive from '@radix-ui/react-select'
 import classNames from 'classnames'
 import * as React from 'react'
-import { FC } from 'react'
+import type { FC } from 'react'
 
 import { textFieldVariants } from './text-field'
 
@@ -79,7 +79,7 @@ const SelectContent = React.forwardRef<
 				collisionPadding={collisionPadding}
 				sideOffset={sideOffset}
 				className={classNames(
-					'max-h-[--radix-select-content-available-height] p-0.5 relative z-50 min-w-[8rem] rounded-xl overflow-hidden bg-white/50 paper dark:bg-slate-800/50 shadow-md animate-in fade-in-80',
+					'max-h-[--radix-select-content-available-height] p-0.5 relative z-50 min-w-[8rem] rounded-xl overflow-hidden paper bg-background border border-accent shadow-md animate-in fade-in-80',
 					position === 'popper' && 'translate-y-1 ',
 					className,
 				)}

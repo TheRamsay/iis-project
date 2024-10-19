@@ -29,11 +29,11 @@ export default function RootLayout({
 	return (
 		<html lang="en" className="[color-scheme:dark] dark">
 			<body
-				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+				className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen w-full flex flex-col`}
 			>
 				<Providers>
 					<Header />
-					{children}
+					<div className="h-full">{children}</div>
 				</Providers>
 			</body>
 		</html>
