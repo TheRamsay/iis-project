@@ -1,8 +1,9 @@
+'use client'
+
 import { FormControl, FormField, FormItem } from '@/components/components/form'
 import { useFormContext } from 'react-hook-form'
 import type { UserForm } from './user-modal'
 import { TextField } from '@/components/components/text-field'
-import classNames from 'classnames'
 import { Checkbox } from '@/components/components/checkbox'
 import {
 	Select,
@@ -12,20 +13,10 @@ import {
 	SelectValue,
 } from '@/components/components/select'
 import { userType } from '../../../../../../drizzle/schema'
-import { Button } from '@/components/components/button'
-
-function dirtyClassnames(isDirty: boolean, ...rest: classNames.ArgumentArray) {
-	return classNames(
-		...rest,
-		'!border border-transparent',
-		isDirty && '!border-blue-500 border-opacity-40',
-	)
-}
+import { formClassnames } from '@/app/_lib/form-classnames'
 
 export function UserModalForm() {
-	const { control, formState } = useFormContext<UserForm>()
-
-	console.log(userType.enumValues)
+	const { control } = useFormContext<UserForm>()
 
 	return (
 		<>
@@ -66,7 +57,7 @@ export function UserModalForm() {
 										value={value || ''}
 										onChange={onChange}
 										onBlur={onBlur}
-										className={dirtyClassnames(isDirty)}
+										className={formClassnames({ isDirty })}
 										disabled={disabled}
 									/>
 								</>
@@ -91,7 +82,7 @@ export function UserModalForm() {
 										value={value || ''}
 										onChange={onChange}
 										onBlur={onBlur}
-										className={dirtyClassnames(isDirty)}
+										className={formClassnames({ isDirty })}
 										disabled={disabled}
 									/>
 								</>
@@ -117,7 +108,7 @@ export function UserModalForm() {
 									value={value || ''}
 									onChange={onChange}
 									onBlur={onBlur}
-									className={dirtyClassnames(isDirty)}
+									className={formClassnames({ isDirty })}
 									disabled={disabled}
 								/>
 							</>
@@ -142,7 +133,7 @@ export function UserModalForm() {
 									value={value || ''}
 									onChange={onChange}
 									onBlur={onBlur}
-									className={dirtyClassnames(isDirty)}
+									className={formClassnames({ isDirty })}
 									disabled={disabled}
 								/>
 							</>
@@ -167,8 +158,8 @@ export function UserModalForm() {
 										checked={value}
 										onBlur={onBlur}
 										onCheckedChange={onChange}
-										className={dirtyClassnames(
-											isDirty,
+										className={formClassnames(
+											{ isDirty },
 											!isDirty && '!border-accent',
 											' text-black text-opacity-50',
 										)}
@@ -197,8 +188,8 @@ export function UserModalForm() {
 										disabled={disabled}
 									>
 										<SelectTrigger
-											className={dirtyClassnames(
-												isDirty,
+											className={formClassnames(
+												{ isDirty },
 												'flex justify-between w-full',
 											)}
 										>

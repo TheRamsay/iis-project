@@ -1,19 +1,23 @@
-import { Container } from "@/components/components/container";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { Sidebar } from "./_ui/sidebar";
-import { Separator } from "@/components/components/separator";
+import { Container } from '@/components/components/container'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
+import { Sidebar } from '../_ui/sidebar'
+
+const sidebarItems = [
+	{ name: 'Dashboard', path: '/admin' },
+	{ name: 'Users', path: '/admin/users' },
+]
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-	const cookiez = cookies();
+	const cookiez = cookies()
 
-	const user_id = 1231;
+	const userId = 1231
 	const user = {
-		is_admin: true,
-	};
+		isAdmin: true,
+	}
 
-	if (!user.is_admin) {
-		return redirect("/");
+	if (!user.isAdmin) {
+		return redirect('/')
 	}
 
 	return (
@@ -21,9 +25,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 			maxWidth="3xl"
 			className="flex flex-row justify-between space-x-16 py-8 h-full"
 		>
-			<Sidebar />
+			<Sidebar items={sidebarItems} />
 			<div className="min-h-full bg-accent w-px" />
 			<div className="w-full">{children}</div>
 		</Container>
-	);
+	)
 }

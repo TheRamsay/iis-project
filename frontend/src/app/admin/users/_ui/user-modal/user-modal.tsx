@@ -72,7 +72,6 @@ export function UserModal({ children, id }: UserModal) {
 
 	useEffect(() => {
 		if (data) {
-			console.log('resetting')
 			form.reset(data, { keepDirty: false })
 		}
 	}, [data, form.reset])

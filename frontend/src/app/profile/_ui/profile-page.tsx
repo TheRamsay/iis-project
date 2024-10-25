@@ -1,26 +1,26 @@
-import { Suspense } from "react";
-import { ProfileHeader } from "./profile-header/profile-header";
-import { ProfileFeed } from "./profile-feed";
-import { Separator } from "@/components/components/separator";
+import { Suspense } from 'react'
+import { ProfileHeader } from './profile-header/profile-header'
+import { ProfileFeed } from './profile-feed'
+import { Separator } from '@/components/components/separator'
 
 interface ProfilePage {
-	profile_id: string;
+	profileId: string
 }
 
-export function ProfilePage({ profile_id }: ProfilePage) {
+export function ProfilePage({ profileId }: ProfilePage) {
 	return (
 		<Suspense fallback={null}>
-			<_ProfilePage profile_id={profile_id} />
+			<_ProfilePage profileId={profileId} />
 		</Suspense>
-	);
+	)
 }
 
-function _ProfilePage({ profile_id }: ProfilePage) {
+function _ProfilePage({ profileId }: ProfilePage) {
 	return (
 		<div className="space-y-4">
-			<ProfileHeader profile_id={profile_id} />
+			<ProfileHeader profileId={profileId} />
 			<Separator orientation="horizontal" className="!bg-accent" />
-			<ProfileFeed profile_id={profile_id} />
+			<ProfileFeed profileId={profileId} />
 		</div>
-	);
+	)
 }
