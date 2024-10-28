@@ -1,0 +1,15 @@
+[package]
+name = "usecase"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+uuid = "1.11.0"
+
+repository = { path = "../repository" }
+models = { path = "../models" }
+anyhow = "1.0.89"
+serde_json = "1.0.129"
+sea-orm = "1.1.0"
+thiserror = "1.0.64"
+validator = "0.18.1"
