@@ -18,14 +18,6 @@ pub enum Relation {
     #[sea_orm(has_many = "super::group_member::Entity")]
     GroupMember,
     #[sea_orm(
-        belongs_to = "super::post::Entity",
-        from = "Column::WallId",
-        to = "super::post::Column::Id",
-        on_update = "NoAction",
-        on_delete = "NoAction"
-    )]
-    Post,
-    #[sea_orm(
         belongs_to = "super::user::Entity",
         from = "Column::AdminId",
         to = "super::user::Column::Id",
@@ -33,6 +25,14 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     User,
+    #[sea_orm(
+        belongs_to = "super::wall::Entity",
+        from = "Column::WallId",
+        to = "super::wall::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    Wall,
 }
 
 impl Related<super::group_member::Entity> for Entity {
@@ -41,19 +41,25 @@ impl Related<super::group_member::Entity> for Entity {
     }
 }
 
-impl Related<super::post::Entity> for Entity {
+impl Related<super::wall::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::Post.def()
+        Relation::Wall.def()
     }
 }
 
 impl Related<super::user::Entity> for Entity {
     fn to() -> RelationDef {
-        super::group_member::Relation::User.def()
-    }
-    fn via() -> Option<RelationDef> {
-        Some(super::group_member::Relation::Group.def().rev())
+        Relation::User.def()
     }
 }
+
+// impl Related<super::user::Entity> for Entity {
+//     fn to() -> RelationDef {
+//         super::group_member::Relation::User.def()
+//     }
+//     fn via() -> Option<RelationDef> {
+//         Some(super::group_member::Relation::Group.def().rev())
+//     }
+// }
 
 impl ActiveModelBehavior for ActiveModel {}

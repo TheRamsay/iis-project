@@ -14,7 +14,8 @@ pub struct Model {
     pub email: String,
     pub avatar_url: Option<String>,
     pub user_type: UserType,
-    pub wall_id: Option<Uuid>,
+    pub wall_id: Uuid,
+    pub is_blocked: bool,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
