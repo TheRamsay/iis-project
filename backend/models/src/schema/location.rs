@@ -3,13 +3,17 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
 #[sea_orm(table_name = "location")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
     pub name: String,
     pub picture_url: Option<String>,
+    #[sea_orm(column_type = "Double")]
+    pub latitude: f64,
+    #[sea_orm(column_type = "Double")]
+    pub longitude: f64,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
