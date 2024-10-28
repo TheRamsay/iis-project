@@ -4,7 +4,7 @@ use axum::{
     routing::{get, post},
 };
 use models::{
-    domain::users::{User, UserType},
+    domain::user::{User, UserType},
     errors::{AppError, AppResult},
     schema::user,
 };

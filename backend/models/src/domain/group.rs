@@ -2,7 +2,7 @@ use validator::{Validate, ValidationErrors};
 
 use crate::schema;
 
-use super::{users::User, wall::Wall, Id};
+use super::{user::User, wall::Wall, Id};
 
 #[derive(Clone, Debug, PartialEq, Validate)]
 pub struct Group {

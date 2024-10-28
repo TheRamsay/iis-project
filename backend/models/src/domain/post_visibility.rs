@@ -1,6 +1,6 @@
 use crate::schema;
 
-use super::{post::Post, users::User, Id};
+use super::{post::Post, user::User, Id};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct PostVisibility {

@@ -1,7 +1,7 @@
 use std::{future::Future, sync::Arc};
 
 use models::{
-    domain::{group::Group, users::User, Id},
+    domain::{group::Group, user::User, Id},
     schema,
 };
 use sea_orm::{DbConn, DbErr, EntityTrait};

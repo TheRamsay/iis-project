@@ -4,7 +4,7 @@ use validator::{Validate, ValidationErrors};
 
 use crate::schema;
 
-use super::{email::Email, users::User, wall::Wall, Id};
+use super::{email::Email, user::User, wall::Wall, Id};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum PostType {

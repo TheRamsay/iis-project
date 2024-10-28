@@ -1,6 +1,6 @@
 use models::{
     domain::{
-        users::{User, UserType},
+        user::{User, UserType},
         wall::Wall,
         Id,
     },

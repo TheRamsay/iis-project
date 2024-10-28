@@ -2,7 +2,7 @@ use validator::{Validate, ValidationErrors};
 
 use crate::schema::{self, post_comment};
 
-use super::{post::Post, users::User, Id};
+use super::{post::Post, user::User, Id};
 
 #[derive(Clone, Debug, PartialEq, Validate)]
 pub struct PostComment {

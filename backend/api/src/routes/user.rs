@@ -4,7 +4,7 @@ use axum::{
     routing::{get, post},
 };
 use models::{
-    domain::users::UserType,
+    domain::user::UserType,
     errors::{AppError, AppResult},
     schema::user,
 };
@@ -42,7 +42,7 @@ async fn create_user(
         username: payload.username,
         email: payload.email,
         avatar_url: payload.avatar_url,
-        user_type: models::domain::users::UserType::Regular,
+        user_type: models::domain::user::UserType::Regular,
     };
 
     let output = user_usercase.execute(input).await?;
@@ -76,9 +76,9 @@ async fn get_user(
             email: user.email.value,
             avatar_url: user.avatar_url,
             user_type: match user.user_type {
-                models::domain::users::UserType::Regular => "Regular".to_string(),
-                models::domain::users::UserType::Administrator => "Admin".to_string(),
-                models::domain::users::UserType::Moderator => "Moderator".to_string(),
+                models::domain::user::UserType::Regular => "Regular".to_string(),
+                models::domain::user::UserType::Administrator => "Admin".to_string(),
+                models::domain::user::UserType::Moderator => "Moderator".to_string(),
             },
         }))
     } else {

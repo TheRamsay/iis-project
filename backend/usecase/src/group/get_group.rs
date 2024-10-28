@@ -1,7 +1,7 @@
 use models::{
     domain::{
         group::Group,
-        users::{User, UserType},
+        user::{User, UserType},
         Id,
     },
     errors::AppResult,

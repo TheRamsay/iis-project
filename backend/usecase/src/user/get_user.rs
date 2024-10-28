@@ -1,5 +1,5 @@
 use models::{
-    domain::users::{User, UserType},
+    domain::user::{User, UserType},
     errors::AppResult,
 };
 use repository::user_repository::UserRepository;

@@ -3,7 +3,7 @@ use validator::{Validate, ValidationErrors};
 
 use crate::schema;
 
-use super::{group::Group, users::User, Id};
+use super::{group::Group, user::User, Id};
 
 #[derive(Clone, Debug, PartialEq, Validate)]
 pub struct GroupMember {

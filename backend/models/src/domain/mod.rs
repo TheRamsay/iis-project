@@ -13,7 +13,7 @@ pub mod post_comment;
 pub mod post_like;
 pub mod post_tag;
 pub mod post_visibility;
-pub mod users;
+pub mod user;
 pub mod wall;
 pub mod wall_post;
 

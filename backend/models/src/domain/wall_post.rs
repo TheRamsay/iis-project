@@ -1,6 +1,6 @@
 use crate::schema;
 
-use super::{post::Post, users::User, wall::Wall, Id};
+use super::{post::Post, user::User, wall::Wall, Id};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct WallPost {

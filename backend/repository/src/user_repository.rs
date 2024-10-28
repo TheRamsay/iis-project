@@ -1,6 +1,6 @@
 use std::{future::Future, sync::Arc};
 
-use models::domain::{users::User, Id};
+use models::domain::{user::User, Id};
 use sea_orm::{DbConn, DbErr, EntityTrait};
 
 #[derive(Debug, Clone)]
