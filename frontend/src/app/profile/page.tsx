@@ -1,15 +1,13 @@
-import { notFound, redirect } from 'next/navigation'
+import { redirect } from 'next/navigation'
 import { ProfilePage } from './_ui/profile-page'
-import { cookies } from 'next/headers'
+import { getSession } from '../_lib/auth/get-session'
 
-export default function Page() {
-	const cookiez = cookies()
+export default async function Page() {
+	const session = await getSession()
 
-	const userId = 'my_user'
-
-	if (!userId) {
+	if (!session) {
 		return redirect('/login')
 	}
 
-	return <ProfilePage profileId={userId} />
+	return <ProfilePage username={session.username} />
 }

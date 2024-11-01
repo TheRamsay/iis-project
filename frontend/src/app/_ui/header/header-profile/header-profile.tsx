@@ -2,53 +2,44 @@ import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
-} from "@/components/components/popover";
-import { Button } from "@/components/components/button";
-import { cookies } from "next/headers";
-import Image from "next/image";
-import { Suspense, useCallback } from "react";
-import { LogOut, Settings, SunMoon } from "lucide-react";
-import Link from "next/link";
-import { HeaderProfileTheme } from "./header-profile-theme";
+} from '@/components/components/popover'
+import { Button } from '@/components/components/button'
+import Image from 'next/image'
+import { Suspense } from 'react'
+import { LogOut, Settings } from 'lucide-react'
+import Link from 'next/link'
+import { HeaderProfileTheme } from './header-profile-theme'
+import { getSession } from '@/app/_lib/auth/get-session'
 
 export function HeaderProfile() {
 	return (
 		<Suspense fallback={null}>
 			<_HeaderProfile />
 		</Suspense>
-	);
+	)
 }
 
-function _HeaderProfile() {
-	const cookiez = cookies();
+async function _HeaderProfile() {
+	const session = await getSession()
 
-	cookiez.toString();
-
-	const loggedIn = true;
-
-	if (!loggedIn) {
+	if (!session) {
 		return (
 			<div>
 				<Button variant="outline">Log In</Button>
 			</div>
-		);
+		)
 	}
-
-	const user = {
-		username: "fitstagram",
-		avatar: "https://avatars.githubusercontent.com/u/7655549?v=4",
-	};
 
 	return (
 		<div>
 			<Popover>
 				<PopoverTrigger>
 					<Button asChild variant="outline" className="space-x-2">
-						<span>{user.username}</span>
+						<span>{session.username}</span>
 						<Image
 							unoptimized={true}
-							src={user.avatar}
-							alt={user.username}
+							src={session.avatar.src}
+							alt={session.username}
 							width={24}
 							height={24}
 						/>
@@ -62,14 +53,14 @@ function _HeaderProfile() {
 						<div className="space-y-2 flex flex-col items-center">
 							<Image
 								unoptimized={true}
-								src={user.avatar}
-								alt={user.username}
+								src={session.avatar.src}
+								alt={session.username}
 								width={96}
 								height={96}
 								className="rounded-full"
 							/>
 							<span>
-								<Link href="/profile">{user.username}</Link>
+								<Link href="/profile">{session.username}</Link>
 							</span>
 						</div>
 						<div className="flex flex-row justify-between space-x-3">
@@ -87,5 +78,5 @@ function _HeaderProfile() {
 				</PopoverContent>
 			</Popover>
 		</div>
-	);
+	)
 }

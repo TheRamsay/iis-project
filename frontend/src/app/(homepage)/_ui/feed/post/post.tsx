@@ -1,39 +1,38 @@
-import { Heart, MessageCircle } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { PostLikeButton } from "./post-like-button";
-import { PostCommentButton } from "./post-comment-button";
-import { PostDialog } from "@/app/_ui/post-dialog/post-dialog";
-import { PostComments } from "@/app/_ui/post-comments/post-comments";
+import Image from 'next/image'
+import Link from 'next/link'
+import { PostLikeButton } from '@/app/_ui/post/post-like-button'
+import { PostCommentButton } from '@/app/_ui/post/post-comment/post-comment-button'
+import { PostDialog } from '@/app/_ui/post/post-dialog'
+import { PostComments } from '@/app/_ui/post/post-comment/post-comments'
 
 interface Post {
-	id: number;
+	id: number
 	image: {
-		src: string;
-		width: number;
-		height: number;
-	};
-	caption: string;
+		src: string
+		width: number
+		height: number
+	}
+	caption: string
 	user: {
-		username: string;
-		avatar: string;
-	};
-	like_count: number;
+		username: string
+		avatar: string
+	}
+	like_count: number
 	comments: {
-		id: number;
+		id: number
 		user: {
-			username: string;
-			avatar: string;
-		};
-		content: string;
-	}[];
+			username: string
+			avatar: string
+		}
+		content: string
+	}[]
 }
 
 export function Post(post: Post) {
 	return (
 		<div key={post.id} className="w-full flex flex-col space-y-3">
 			<div>
-				<div className="flex flex-row space-x-3 p-2 items-center">
+				<div className="flex flex-row space-x-3 p-2 items-center w-full">
 					<Image
 						unoptimized={true}
 						src={post.user.avatar}
@@ -60,13 +59,13 @@ export function Post(post: Post) {
 				</PostDialog>
 			</div>
 			<div className="space-x-5 flex">
-				<PostLikeButton post_id={post.id} like_count={post.like_count} />
+				<PostLikeButton postId={post.id} likeCount={post.like_count} />
 				<PostCommentButton
-					post_id={post.id}
-					comment_count={post.comments.length}
+					postId={post.id}
+					commentCount={post.comments.length}
 				/>
 			</div>
-			<PostComments post={post} />
+			<PostComments post={post} size="small" />
 		</div>
-	);
+	)
 }

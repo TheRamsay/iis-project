@@ -1,22 +1,21 @@
 'use client'
 
+import { useSession } from '@/app/_lib/auth/auth-provider'
 import { SkeletonText } from '@/components'
 import { Button } from '@/components/components/button'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 interface ProfileHeaderFollow {
-	profileId: string
+	username: string
 }
 
-export function ProfileHeaderFollow({ profileId }: ProfileHeaderFollow) {
-	const loggedInUser = {
-		id: 'user_ida',
-	}
+export function ProfileHeaderFollow({ username }: ProfileHeaderFollow) {
+	const session = useSession()
 
 	const queryClient = useQueryClient()
 
 	const { data, isLoading, refetch } = useQuery({
-		queryKey: ['profile-follow', profileId, loggedInUser.id],
+		queryKey: ['profile-follow', username, session?.userId],
 		queryFn: async () => {
 			await new Promise((resolve) => setTimeout(resolve, 1000))
 			return {
@@ -26,17 +25,17 @@ export function ProfileHeaderFollow({ profileId }: ProfileHeaderFollow) {
 	})
 
 	const { mutate } = useMutation<void, void, boolean>({
-		mutationKey: ['profile-follow', profileId, loggedInUser.id],
+		mutationKey: ['profile-follow', username, session?.userId],
 		mutationFn: async (follow) => {
 			await new Promise((resolve) => setTimeout(resolve, 1000))
 		},
 		onMutate: async () => {
 			await queryClient.cancelQueries({
-				queryKey: ['profile-follow', profileId, loggedInUser.id],
+				queryKey: ['profile-follow', username, session?.userId],
 			})
 
 			queryClient.setQueryData(
-				['profile-follow', profileId, loggedInUser.id],
+				['profile-follow', username, session?.userId],
 				(old: { isFollowing: boolean }) => {
 					return {
 						isFollowing: !old?.isFollowing,

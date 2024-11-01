@@ -4,23 +4,23 @@ import { ProfileFeed } from './profile-feed'
 import { Separator } from '@/components/components/separator'
 
 interface ProfilePage {
-	profileId: string
+	username: string
 }
 
-export function ProfilePage({ profileId }: ProfilePage) {
+export function ProfilePage({ username }: ProfilePage) {
 	return (
 		<Suspense fallback={null}>
-			<_ProfilePage profileId={profileId} />
+			<_ProfilePage username={username} />
 		</Suspense>
 	)
 }
 
-function _ProfilePage({ profileId }: ProfilePage) {
+function _ProfilePage({ username }: ProfilePage) {
 	return (
 		<div className="space-y-4">
-			<ProfileHeader profileId={profileId} />
+			<ProfileHeader username={username} />
 			<Separator orientation="horizontal" className="!bg-accent" />
-			<ProfileFeed profileId={profileId} />
+			<ProfileFeed username={username} />
 		</div>
 	)
 }

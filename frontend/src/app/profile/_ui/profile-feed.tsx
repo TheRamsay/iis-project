@@ -1,11 +1,11 @@
-import { PostDialog } from '@/app/_ui/post-dialog/post-dialog'
+import { PostDialog } from '@/app/_ui/post/post-dialog'
 import Image from 'next/image'
 
 interface ProfileFeed {
-	profileId: string
+	username: string
 }
 
-export function ProfileFeed({ profileId }: ProfileFeed) {
+export async function ProfileFeed({ username }: ProfileFeed) {
 	const posts = Array(10)
 		.fill(0)
 		.map((_, i) => ({

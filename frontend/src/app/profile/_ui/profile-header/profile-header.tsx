@@ -3,12 +3,13 @@ import { Button } from '@/components/components/button'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ProfileHeaderFollow } from './profile-header-follow'
+import { getSession } from '@/app/_lib/auth/get-session'
 
 interface ProfileHeader {
-	profileId: string
+	username: string
 }
 
-export function ProfileHeader({ profileId }: ProfileHeader) {
+export async function ProfileHeader({ username }: ProfileHeader) {
 	const profile = {
 		id: 'user_id',
 		username: 'johndoe',
@@ -20,21 +21,18 @@ export function ProfileHeader({ profileId }: ProfileHeader) {
 		},
 	}
 
-	const loggedInUser = {
-		id: 'user_ida',
-		role: 'moderator',
-	} as const
+	const session = await getSession()
 
 	let role:
 		| 'unregistered'
 		| 'owner'
 		| (typeof schema.userType.enumValues)[number]
-	if (!loggedInUser) {
+	if (!session) {
 		role = 'unregistered'
-	} else if (profile.id === loggedInUser.id) {
+	} else if (profile.id === session.userId) {
 		role = 'owner'
 	} else {
-		role = loggedInUser.role
+		role = session.role
 	}
 
 	return (
@@ -55,22 +53,22 @@ export function ProfileHeader({ profileId }: ProfileHeader) {
 					</div>
 				</div>
 			</div>
-			<ProfileActions profileId={profileId} role={role} />
+			<ProfileActions username={username} role={role} />
 		</div>
 	)
 }
 
 interface ProfileActions {
-	profileId: string
+	username: string
 	role: 'unregistered' | 'owner' | (typeof schema.userType.enumValues)[number]
 }
 
-function ProfileActions({ profileId, role }: ProfileActions) {
+function ProfileActions({ username, role }: ProfileActions) {
 	const actions: React.ReactNode[] = []
 
 	switch (role) {
 		case 'regular': {
-			actions.push(<ProfileHeaderFollow key="follow" profileId={profileId} />)
+			actions.push(<ProfileHeaderFollow key="follow" username={username} />)
 			break
 		}
 		case 'owner': {
@@ -85,7 +83,7 @@ function ProfileActions({ profileId, role }: ProfileActions) {
 		}
 		case 'moderator':
 		case 'administrator':
-			actions.push(<ProfileHeaderFollow key="follow" profileId={profileId} />)
+			actions.push(<ProfileHeaderFollow key="follow" username={username} />)
 			actions.push(
 				<Link href="/admin/users">
 					<Button key="edit" variant="outline">
