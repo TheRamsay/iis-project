@@ -16,6 +16,7 @@ pub struct Model {
     pub user_type: UserType,
     pub wall_id: Uuid,
     pub is_blocked: bool,
+    pub password_hash: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

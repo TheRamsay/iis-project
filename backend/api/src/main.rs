@@ -8,6 +8,7 @@ use migration::{Migrator, MigratorTrait};
 use repository::group_repository::DbGroupRepository;
 use repository::user_repository::{DbUserRepository, UserRepository};
 use repository::wall_repository::DbWallRepository;
+use routes::auth::auth_routes;
 use routes::group::group_routes;
 use routes::user::user_routes;
 use sea_orm::*;
@@ -53,6 +54,7 @@ async fn main() -> shuttle_axum::ShuttleAxum {
     let router = Router::new()
         .nest("/api/users", user_routes())
         .nest("/api/groups", group_routes())
+        .nest("/api/auth", auth_routes())
         .with_state(app_state);
 
     Ok(router.into())

@@ -15,8 +15,8 @@ use usecase::{
         get_group::{GetGroupInput, GetGroupUseCase},
     },
     user::{
-        create_user::{CreateUserInput, CreateUserUseCase},
         get_user::{GetUserInput, GetUserUseCase},
+        register_user::{RegisterUserInput, RegisterUserUseCase},
     },
 };
 use uuid::Uuid;

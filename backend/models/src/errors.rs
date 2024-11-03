@@ -17,6 +17,10 @@ pub enum AppError {
     Anyhow(#[from] anyhow::Error),
     #[error("Entity {} not found", .0)]
     NotFound(String),
+    #[error("Unauthorized: {0}")]
+    Unauthorized(String),
+    #[error("Conflict: {0}")]
+    Conflict(String),
 }
 
 impl IntoResponse for AppError {
@@ -36,6 +40,8 @@ impl IntoResponse for AppError {
                 StatusCode::NOT_FOUND,
                 Json(json!({ "error": format!("Entity {} not found", entity) })),
             ),
+            Self::Unauthorized(err) => (StatusCode::UNAUTHORIZED, Json(json!({ "error": err }))),
+            Self::Conflict(err) => (StatusCode::CONFLICT, Json(json!({ "error": err }))),
         }
         .into_response()
     }

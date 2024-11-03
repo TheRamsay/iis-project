@@ -29,11 +29,8 @@ impl From<schema::location::Model> for Location {
             id: Id::new(model.id),
             picture_url: model.picture_url,
             name: model.name,
-            latitude: 0.0,
-            longitude: 0.0,
-            //TODO: Fix this
-            // latitude: model.latitude,
-            // longitude: model.longitude,
+            latitude: model.latitude,
+            longitude: model.longitude,
         }
     }
 }
@@ -44,6 +41,8 @@ impl From<Location> for schema::location::Model {
             id: location.id.id,
             picture_url: location.picture_url,
             name: location.name,
+            latitude: location.latitude,
+            longitude: location.longitude,
         }
     }
 }

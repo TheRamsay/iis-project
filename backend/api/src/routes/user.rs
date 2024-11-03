@@ -10,12 +10,15 @@ use models::{
 };
 use serde::{Deserialize, Serialize};
 use usecase::user::{
-    create_user::{CreateUserInput, CreateUserUseCase},
     get_user::{GetUserInput, GetUserUseCase},
+    register_user::{RegisterUserInput, RegisterUserUseCase},
 };
 use uuid::Uuid;
 
-use crate::{extractors::json_extractor::Json, AppState};
+use crate::{
+    extractors::{auth_extractor::AuthUser, json_extractor::Json},
+    AppState,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct CreateUserRequest {
@@ -23,6 +26,7 @@ struct CreateUserRequest {
     username: String,
     email: String,
     avatar_url: Option<String>,
+    password: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -35,14 +39,15 @@ async fn create_user(
     Json(payload): Json<CreateUserRequest>,
 ) -> AppResult<Json<CreateUserResponse>> {
     let user_usercase =
-        CreateUserUseCase::new(state.user_repository.clone(), state.wall_repository.clone());
+        RegisterUserUseCase::new(state.user_repository.clone(), state.wall_repository.clone());
 
-    let input = CreateUserInput {
+    let input = RegisterUserInput {
         display_name: payload.display_name,
         username: payload.username,
         email: payload.email,
         avatar_url: payload.avatar_url,
         user_type: models::domain::user::UserType::Regular,
+        password: payload.password,
     };
 
     let output = user_usercase.execute(input).await?;
@@ -86,8 +91,22 @@ async fn get_user(
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct MeResponse {
+    username: String,
+    id: Uuid,
+}
+
+async fn me(user: AuthUser) -> AppResult<Json<MeResponse>> {
+    Ok(Json(MeResponse {
+        username: user.username,
+        id: user.id,
+    }))
+}
+
 pub fn user_routes() -> axum::Router<crate::AppState> {
     axum::Router::new()
         .route("/", post(create_user))
         .route("/:id", get(get_user))
+        .route("/me", get(me))
 }

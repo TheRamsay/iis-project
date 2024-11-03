@@ -26,6 +26,7 @@ pub struct User {
     pub user_type: UserType,
     pub wall_id: Id<Wall>,
     pub is_blocked: bool,
+    pub password_hash: String,
 }
 
 impl User {
@@ -36,6 +37,7 @@ impl User {
         avatar_url: Option<String>,
         user_type: UserType,
         wall_id: Id<Wall>,
+        password_hash: String,
     ) -> Result<Self, ValidationErrors> {
         let model = Self {
             id: Id::gen(),
@@ -46,6 +48,7 @@ impl User {
             user_type,
             wall_id,
             is_blocked: false,
+            password_hash,
         };
 
         model.validate()?;
@@ -69,6 +72,7 @@ impl From<schema::user::Model> for User {
             },
             wall_id: Id::new(model.wall_id),
             is_blocked: model.is_blocked,
+            password_hash: model.password_hash,
         }
     }
 }
@@ -88,6 +92,7 @@ impl From<User> for schema::user::Model {
             },
             wall_id: user.wall_id.id,
             is_blocked: user.is_blocked,
+            password_hash: user.password_hash,
         }
     }
 }
