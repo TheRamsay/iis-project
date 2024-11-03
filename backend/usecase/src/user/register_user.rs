@@ -15,6 +15,8 @@ use models::{
 use repository::{user_repository::UserRepository, wall_repository::WallRepository};
 use uuid::Uuid;
 
+use super::auth_utils::hash_password;
+
 #[derive(Debug)]
 pub struct RegisterUserInput {
     pub email: String,
@@ -89,14 +91,4 @@ where
             id: self.user_repository.create(user).await?.id,
         })
     }
-}
-
-pub fn hash_password(password: &str) -> AppResult<String> {
-    let salt = SaltString::generate(&mut OsRng);
-    let argon2 = Argon2::default();
-
-    Ok(argon2
-        .hash_password(password.as_bytes(), &salt)
-        .map_err(|e| AppError::Anyhow(anyhow!(e)))?
-        .to_string())
 }

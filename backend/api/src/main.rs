@@ -24,19 +24,14 @@ pub struct AppState {
     pub user_repository: DbUserRepository,
     pub group_repository: DbGroupRepository,
     pub wall_repository: DbWallRepository,
+    pub jwt_secret: String,
 }
 
 #[shuttle_runtime::main]
 async fn main() -> shuttle_axum::ShuttleAxum {
     dotenv().ok();
-
-    println!("Starting server...");
-    println!("Starting server...");
-    println!("Starting server...");
-    println!("Starting server...");
-    println!("Starting server...");
-
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL is not set");
+    let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET is not set");
 
     let conn = Database::connect(db_url)
         .await
@@ -49,6 +44,7 @@ async fn main() -> shuttle_axum::ShuttleAxum {
         group_repository: DbGroupRepository::new(Arc::new(conn.clone())),
         wall_repository: DbWallRepository::new(Arc::new(conn.clone())),
         conn: conn.clone(),
+        jwt_secret,
     };
 
     let router = Router::new()

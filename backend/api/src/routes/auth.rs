@@ -5,7 +5,10 @@ use axum_extra::extract::{cookie::Cookie, CookieJar};
 use models::errors::{AppError, AppResult};
 use repository::user_repository::{self, DbUserRepository, UserRepository};
 use serde::{Deserialize, Serialize};
-use usecase::user::register_user::{RegisterUserInput, RegisterUserUseCase};
+use usecase::user::{
+    auth_utils::verify_password,
+    register_user::{RegisterUserInput, RegisterUserUseCase},
+};
 
 use crate::{
     extractors::{auth_extractor::AuthUser, json_extractor::Json},
@@ -93,26 +96,6 @@ async fn register(state: State<AppState>, Json(payload): Json<RegisterRequest>) 
 
     Ok(())
 }
-
-async fn verify_password(password: String, hash: String) -> AppResult<()> {
-    tokio::task::spawn_blocking(move || {
-        let password_hash = PasswordHash::new(&hash).map_err(|e| AppError::Anyhow(anyhow!(e)))?;
-
-        password_hash
-            .verify_password(&[&Argon2::default()], password.as_bytes())
-            .map_err(|e| match e {
-                argon2::password_hash::Error::Password => {
-                    AppError::Unauthorized("Invalid password".to_string())
-                }
-                _ => AppError::Anyhow(anyhow!(e)),
-            })
-    })
-    .await
-    .map_err(|e| AppError::Anyhow(anyhow!(e)))??;
-
-    Ok(())
-}
-
 pub fn auth_routes() -> axum::Router<crate::AppState> {
     axum::Router::new()
         .route("/login", post(login))
