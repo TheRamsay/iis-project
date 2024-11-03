@@ -9,6 +9,7 @@ mod m20241010_142037_create_group_tables;
 mod m20241010_142838_add_wall_to_user;
 mod m20241028_210624_user_is_bloced;
 mod m20241028_230949_location_lat_long;
+mod m20241102_185447_pwd_hash_for_user;
 
 pub struct Migrator;
 
@@ -25,6 +26,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20241010_142838_add_wall_to_user::Migration),
             Box::new(m20241028_210624_user_is_bloced::Migration),
             Box::new(m20241028_230949_location_lat_long::Migration),
+            Box::new(m20241102_185447_pwd_hash_for_user::Migration),
         ]
     }
 }
