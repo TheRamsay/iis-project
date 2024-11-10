@@ -26,6 +26,7 @@ pub struct Post {
     pub description: String,
     pub author_id: Id<User>,
     pub post_type: PostType,
+    #[validate(url)]
     pub content_url: String,
     pub visibility: PostVisibilityType,
     pub location_id: Option<Id<Wall>>,
