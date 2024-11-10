@@ -1,4 +1,4 @@
-use sea_orm::sqlx::types::chrono;
+use ::chrono::{DateTime, Utc};
 
 use crate::schema;
 
@@ -8,7 +8,7 @@ use super::{post::Post, user::User, Id};
 pub struct PostLike {
     pub post_id: Id<Post>,
     pub user_id: Id<User>,
-    pub created_at: chrono::NaiveDateTime,
+    pub created_at: DateTime<Utc>,
 }
 
 impl PostLike {
@@ -16,7 +16,7 @@ impl PostLike {
         Self {
             post_id,
             user_id,
-            created_at: chrono::Utc::now().naive_utc(),
+            created_at: Utc::now(),
         }
     }
 }
@@ -26,7 +26,7 @@ impl From<schema::post_like::Model> for PostLike {
         Self {
             post_id: Id::new(model.post_id),
             user_id: Id::new(model.user_id),
-            created_at: model.created_at,
+            created_at: model.created_at.and_utc(),
         }
     }
 }

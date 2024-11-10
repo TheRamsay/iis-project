@@ -1,4 +1,4 @@
-use sea_orm::sqlx::types::chrono;
+use chrono::{DateTime, Utc};
 use uuid::Uuid;
 use validator::{Validate, ValidationErrors};
 
@@ -30,7 +30,7 @@ pub struct Post {
     pub content_url: String,
     pub visibility: PostVisibilityType,
     pub location_id: Option<Id<Wall>>,
-    pub created_at: chrono::NaiveDateTime,
+    pub created_at: DateTime<Utc>,
 }
 
 impl Post {
@@ -52,7 +52,7 @@ impl Post {
             content_url,
             visibility,
             location_id,
-            created_at: chrono::Utc::now().naive_utc(),
+            created_at: Utc::now(),
         };
 
         model.validate()?;
@@ -79,7 +79,7 @@ impl From<schema::post::Model> for Post {
                 _ => unreachable!("Invalid post type received from database"),
             },
             location_id: model.location_id.map(|id| Id::new(id)),
-            created_at: model.created_at,
+            created_at: model.created_at.and_utc(),
         }
     }
 }
@@ -100,7 +100,7 @@ impl From<Post> for schema::post::Model {
                 PostType::Photo => "photo".to_string(),
             },
             location_id: value.location_id.map(|id| id.id),
-            created_at: value.created_at,
+            created_at: value.created_at.naive_utc(),
         }
     }
 }
