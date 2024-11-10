@@ -49,11 +49,12 @@ impl Related<super::wall::Entity> for Entity {
 
 impl Related<super::user::Entity> for Entity {
     fn to() -> RelationDef {
-        super::group_member::Relation::User.def()
+        // super::group_member::Relation::User.def()
+        Relation::User.def()
     }
-    fn via() -> Option<RelationDef> {
-        Some(super::group_member::Relation::Group.def().rev())
-    }
+    // fn via() -> Option<RelationDef> {
+    //     Some(super::group_member::Relation::Group.def().rev())
+    // }
 }
 
 impl ActiveModelBehavior for ActiveModel {}

@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     response::IntoResponse,
     routing::{get, post},
 };
@@ -8,11 +8,11 @@ use models::{
     errors::{AppError, AppResult},
     schema::user,
 };
+use repository::{group_repository::GroupRepository, user_repository::UserRepository};
 use serde::{Deserialize, Serialize};
 use usecase::{
     group::{
-        create_group::{CreateGroupInput, CreateGroupUseCase},
-        get_group::{GetGroupInput, GetGroupUseCase},
+        create_group::{CreateGroupInput, CreateGroupUseCase}, get_group::{GetGroupInput, GetGroupUseCase}, join_group::{JoinGroupInput, JoinGroupUseCase}, leave_group::LeaveGroupUseCase, search_group::{SearchGroupInput, SearchGroupOutput, SearchGroupUseCase}
     },
     user::{
         get_user::{GetUserInput, GetUserUseCase},
@@ -98,8 +98,88 @@ async fn get_group(
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct SearchGroupRequest {
+    query: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct SearchGroupResponse {
+    groups: Vec<GetGroupResponse>,
+}
+
+async fn search_group(
+    state: State<AppState>,
+    Query(params): Query<SearchGroupRequest>,
+) -> AppResult<Json<SearchGroupResponse>> {
+    let group_usecace = SearchGroupUseCase::new(state.group_repository.clone());
+
+    let input = SearchGroupInput {
+        query: params.query,
+    };
+
+    println!("Searching for groups with query: {}", input.query);
+
+    let output = group_usecace.execute(input).await?;
+
+    anyhow::Result::Ok(Json(SearchGroupResponse {
+        groups: output
+            .groups
+            .into_iter()
+            .map(|(group, admin)| GetGroupResponse {
+                id: group.id.into(),
+                name: group.name,
+                admin: Admin {
+                    id: admin.id.into(),
+                    display_name: admin.display_name,
+                    username: admin.username,
+                    email: admin.email.value,
+                    avatar_url: admin.avatar_url,
+                    user_type: admin.user_type,
+                },
+                wall_id: group.wall_id.into(),
+            })
+            .collect(),
+    }))
+}
+
+async fn join_group(
+    state: State<AppState>,
+    Path((group_id, user_id)): Path<(Uuid, Uuid)>,
+) -> AppResult<impl IntoResponse> {
+    let group_member_repository = state.group_member_repository.clone();
+    let group_repository = state.group_repository.clone();
+
+    let use_case = JoinGroupUseCase::new(group_repository, group_member_repository);
+
+    let input = JoinGroupInput { user_id, group_id };
+
+    use_case.execute(input).await?;
+
+    Ok(())
+}
+
+async fn leave_group(
+    state: State<AppState>,
+    Path((group_id, user_id)): Path<(Uuid, Uuid)>,
+) -> AppResult<impl IntoResponse> {
+    let group_member_repository = state.group_member_repository.clone();
+    let group_repository = state.group_repository.clone();
+
+    let use_case = LeaveGroupUseCase::new(group_repository, group_member_repository);
+
+    let input = JoinGroupInput { user_id, group_id };
+
+    use_case.execute(input).await?;
+
+    Ok(())
+}
+
 pub fn group_routes() -> axum::Router<crate::AppState> {
     axum::Router::new()
         .route("/", post(create_group))
         .route("/:id", get(get_group))
+        .route("/search", get(search_group))
+        .route("/:id/join/:user_id", get(join_group))
+        .route("/:id/leave/:user_id", get(leave_group))
 }

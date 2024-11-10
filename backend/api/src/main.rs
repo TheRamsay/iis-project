@@ -5,6 +5,7 @@ use axum::routing::post;
 use axum::{extract::State, routing::get, Json, Router};
 use dotenv::dotenv;
 use migration::{Migrator, MigratorTrait};
+use repository::group_member_repository::DbGroupMemberRepository;
 use repository::group_repository::DbGroupRepository;
 use repository::user_repository::{DbUserRepository, UserRepository};
 use repository::wall_repository::DbWallRepository;
@@ -24,6 +25,7 @@ pub struct AppState {
     pub user_repository: DbUserRepository,
     pub group_repository: DbGroupRepository,
     pub wall_repository: DbWallRepository,
+    pub group_member_repository: DbGroupMemberRepository,
     pub jwt_secret: String,
 }
 
@@ -43,6 +45,7 @@ async fn main() -> shuttle_axum::ShuttleAxum {
         user_repository: DbUserRepository::new(Arc::new(conn.clone())),
         group_repository: DbGroupRepository::new(Arc::new(conn.clone())),
         wall_repository: DbWallRepository::new(Arc::new(conn.clone())),
+        group_member_repository: DbGroupMemberRepository::new(Arc::new(conn.clone())),
         conn: conn.clone(),
         jwt_secret,
     };
