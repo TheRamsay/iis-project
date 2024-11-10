@@ -1,13 +1,8 @@
 use axum::{
     extract::{Path, State},
-    response::IntoResponse,
     routing::{get, post},
 };
-use models::{
-    domain::user::UserType,
-    errors::{AppError, AppResult},
-    schema::user,
-};
+use models::errors::{AppError, AppResult};
 use serde::{Deserialize, Serialize};
 use usecase::user::{
     get_user::{GetUserInput, GetUserUseCase},
