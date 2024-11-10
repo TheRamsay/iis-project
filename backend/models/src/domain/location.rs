@@ -1,10 +1,13 @@
-use crate::schema;
+use validator::Validate;
+
+use crate::{errors::AppResult, schema};
 
 use super::{post::Post, Id};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Validate)]
 pub struct Location {
     pub id: Id<Location>,
+    #[validate(url)]
     pub picture_url: Option<String>,
     pub name: String,
     pub latitude: f64,
@@ -12,14 +15,23 @@ pub struct Location {
 }
 
 impl Location {
-    pub fn new(picture_url: Option<String>, name: String, latitude: f64, longitude: f64) -> Self {
-        Self {
+    pub fn new(
+        picture_url: Option<String>,
+        name: String,
+        latitude: f64,
+        longitude: f64,
+    ) -> AppResult<Self> {
+        let location = Self {
             id: Id::gen(),
             picture_url,
             name,
             latitude,
             longitude,
-        }
+        };
+
+        location.validate()?;
+
+        Ok(location)
     }
 }
 
