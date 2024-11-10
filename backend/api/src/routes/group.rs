@@ -12,7 +12,11 @@ use repository::{group_repository::GroupRepository, user_repository::UserReposit
 use serde::{Deserialize, Serialize};
 use usecase::{
     group::{
-        create_group::{CreateGroupInput, CreateGroupUseCase}, get_group::{GetGroupInput, GetGroupUseCase}, join_group::{JoinGroupInput, JoinGroupUseCase}, leave_group::LeaveGroupUseCase, search_group::{SearchGroupInput, SearchGroupOutput, SearchGroupUseCase}
+        create_group::{CreateGroupInput, CreateGroupUseCase},
+        get_group::{GetGroupInput, GetGroupUseCase},
+        join_group::{JoinGroupInput, JoinGroupUseCase},
+        leave_group::{LeaveGroupInput, LeaveGroupUseCase},
+        search_group::{SearchGroupInput, SearchGroupOutput, SearchGroupUseCase},
     },
     user::{
         get_user::{GetUserInput, GetUserUseCase},
@@ -100,7 +104,7 @@ async fn get_group(
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct SearchGroupRequest {
-    query: String,
+    query: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -115,10 +119,8 @@ async fn search_group(
     let group_usecace = SearchGroupUseCase::new(state.group_repository.clone());
 
     let input = SearchGroupInput {
-        query: params.query,
+        query: params.query.unwrap_or(String::new()),
     };
-
-    println!("Searching for groups with query: {}", input.query);
 
     let output = group_usecace.execute(input).await?;
 
@@ -168,7 +170,7 @@ async fn leave_group(
 
     let use_case = LeaveGroupUseCase::new(group_repository, group_member_repository);
 
-    let input = JoinGroupInput { user_id, group_id };
+    let input = LeaveGroupInput { user_id, group_id };
 
     use_case.execute(input).await?;
 
@@ -177,9 +179,9 @@ async fn leave_group(
 
 pub fn group_routes() -> axum::Router<crate::AppState> {
     axum::Router::new()
+        .route("/", get(search_group))
         .route("/", post(create_group))
         .route("/:id", get(get_group))
-        .route("/search", get(search_group))
         .route("/:id/join/:user_id", get(join_group))
         .route("/:id/leave/:user_id", get(leave_group))
 }
