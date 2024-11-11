@@ -1,4 +1,4 @@
-use validator::Validate;
+use validator::{Validate, ValidationErrors};
 
 use crate::{errors::AppResult, schema};
 
@@ -20,7 +20,7 @@ impl Location {
         name: String,
         latitude: f64,
         longitude: f64,
-    ) -> AppResult<Self> {
+    ) -> Result<Self, ValidationErrors> {
         let location = Self {
             id: Id::gen(),
             picture_url,

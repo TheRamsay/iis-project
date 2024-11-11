@@ -23,6 +23,8 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(has_many = "super::group::Entity")]
     Group,
+    #[sea_orm(has_many = "super::group_join_request::Entity")]
+    GroupJoinRequest,
     #[sea_orm(has_many = "super::group_member::Entity")]
     GroupMember,
     #[sea_orm(has_many = "super::post::Entity")]
@@ -41,6 +43,12 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     Wall,
+}
+
+impl Related<super::group_join_request::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::GroupJoinRequest.def()
+    }
 }
 
 impl Related<super::group_member::Entity> for Entity {

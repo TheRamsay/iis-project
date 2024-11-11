@@ -15,6 +15,8 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
+    #[sea_orm(has_many = "super::group_join_request::Entity")]
+    GroupJoinRequest,
     #[sea_orm(has_many = "super::group_member::Entity")]
     GroupMember,
     #[sea_orm(
@@ -35,6 +37,12 @@ pub enum Relation {
     Wall,
 }
 
+impl Related<super::group_join_request::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::GroupJoinRequest.def()
+    }
+}
+
 impl Related<super::group_member::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::GroupMember.def()
@@ -49,8 +57,8 @@ impl Related<super::wall::Entity> for Entity {
 
 impl Related<super::user::Entity> for Entity {
     fn to() -> RelationDef {
-        // super::group_member::Relation::User.def()
         Relation::User.def()
+        // super::group_member::Relation::User.def()
     }
     // fn via() -> Option<RelationDef> {
     //     Some(super::group_member::Relation::Group.def().rev())

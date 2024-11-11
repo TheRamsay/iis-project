@@ -3,6 +3,7 @@
 pub mod prelude;
 
 pub mod group;
+pub mod group_join_request;
 pub mod group_member;
 pub mod location;
 pub mod post;
