@@ -21,6 +21,8 @@ pub enum AppError {
     Unauthorized(String),
     #[error("Conflict: {0}")]
     Conflict(String),
+    #[error("Bad request: {0}")]
+    BadRequest(String),
 }
 
 impl IntoResponse for AppError {
@@ -42,6 +44,7 @@ impl IntoResponse for AppError {
             ),
             Self::Unauthorized(err) => (StatusCode::UNAUTHORIZED, Json(json!({ "error": err }))),
             Self::Conflict(err) => (StatusCode::CONFLICT, Json(json!({ "error": err }))),
+            Self::BadRequest(err) => (StatusCode::BAD_REQUEST, Json(json!({ "error": err }))),
         }
         .into_response()
     }

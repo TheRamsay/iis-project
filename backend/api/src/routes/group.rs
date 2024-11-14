@@ -4,7 +4,10 @@ use axum::{
     routing::{get, post},
 };
 use models::{
-    domain::user::{User, UserType},
+    domain::{
+        group_join_request,
+        user::{User, UserType},
+    },
     errors::{AppError, AppResult},
     schema::user,
 };
@@ -12,10 +15,12 @@ use repository::{group_repository::GroupRepository, user_repository::UserReposit
 use serde::{Deserialize, Serialize};
 use usecase::{
     group::{
+        add_user_to_group,
         create_group::{CreateGroupInput, CreateGroupUseCase},
         get_group::{GetGroupInput, GetGroupUseCase},
         join_group::{JoinGroupInput, JoinGroupUseCase},
         leave_group::{LeaveGroupInput, LeaveGroupUseCase},
+        remove_user_from_group,
         search_group::{SearchGroupInput, SearchGroupOutput, SearchGroupUseCase},
     },
     user::{
@@ -25,12 +30,14 @@ use usecase::{
 };
 use uuid::Uuid;
 
-use crate::{extractors::json_extractor::Json, AppState};
+use crate::{
+    extractors::{auth_extractor::AuthUser, json_extractor::Json},
+    AppState,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct CreateGroupRequest {
     name: String,
-    admin_id: Uuid,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -40,16 +47,18 @@ struct CreateGroupResponse {
 
 async fn create_group(
     state: State<AppState>,
+    user: AuthUser,
     Json(payload): Json<CreateGroupRequest>,
 ) -> AppResult<Json<CreateGroupResponse>> {
     let group_usecace = CreateGroupUseCase::new(
         state.group_repository.clone(),
         state.wall_repository.clone(),
+        state.group_member_repository.clone(),
     );
 
     let input = CreateGroupInput {
         name: payload.name,
-        admin_id: payload.admin_id,
+        admin_id: user.id,
     };
 
     let output = group_usecace.execute(input).await?;
@@ -147,14 +156,23 @@ async fn search_group(
 
 async fn join_group(
     state: State<AppState>,
-    Path((group_id, user_id)): Path<(Uuid, Uuid)>,
+    user: AuthUser,
+    Path(group_id): Path<Uuid>,
 ) -> AppResult<impl IntoResponse> {
     let group_member_repository = state.group_member_repository.clone();
     let group_repository = state.group_repository.clone();
+    let group_join_request_repository = state.group_join_request_repository.clone();
 
-    let use_case = JoinGroupUseCase::new(group_repository, group_member_repository);
+    let use_case = JoinGroupUseCase::new(
+        group_repository,
+        group_join_request_repository,
+        group_member_repository,
+    );
 
-    let input = JoinGroupInput { user_id, group_id };
+    let input = JoinGroupInput {
+        user_id: user.id,
+        group_id,
+    };
 
     use_case.execute(input).await?;
 
@@ -163,16 +181,74 @@ async fn join_group(
 
 async fn leave_group(
     state: State<AppState>,
-    Path((group_id, user_id)): Path<(Uuid, Uuid)>,
+    user: AuthUser,
+    Path(group_id): Path<Uuid>,
 ) -> AppResult<impl IntoResponse> {
     let group_member_repository = state.group_member_repository.clone();
     let group_repository = state.group_repository.clone();
 
     let use_case = LeaveGroupUseCase::new(group_repository, group_member_repository);
 
-    let input = LeaveGroupInput { user_id, group_id };
+    let input = LeaveGroupInput {
+        user_id: user.id,
+        group_id,
+    };
 
     use_case.execute(input).await?;
+
+    Ok(())
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct AddUserToGroupRequest {
+    user_id: Uuid,
+}
+
+async fn add_user(
+    state: State<AppState>,
+    user: AuthUser,
+    Path(group_id): Path<Uuid>,
+    Json(payload): Json<AddUserToGroupRequest>,
+) -> AppResult<()> {
+    let add_user_to_group_usecase = add_user_to_group::AddUserToGroupUseCase::new(
+        state.group_repository.clone(),
+        state.group_member_repository.clone(),
+    );
+
+    let input = add_user_to_group::AddUserToGroupInput {
+        user_id: payload.user_id,
+        group_id,
+        admin_id: user.id,
+    };
+
+    add_user_to_group_usecase.execute(input).await?;
+
+    Ok(())
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct RemoveUserFromGroupRequest {
+    user_id: Uuid,
+}
+
+async fn remove_user(
+    state: State<AppState>,
+    user: AuthUser,
+    Path(group_id): Path<Uuid>,
+    Json(payload): Json<RemoveUserFromGroupRequest>,
+) -> AppResult<()> {
+    let remove_user_to_group_usecase = remove_user_from_group::RemoveUserToGroupUseCase::new(
+        state.group_repository.clone(),
+        state.group_member_repository.clone(),
+    );
+
+    let input = remove_user_from_group::RemoveUserToGroupInput {
+        user_id: payload.user_id,
+        group_id,
+        admin_id: user.id,
+    };
+
+    remove_user_to_group_usecase.execute(input).await?;
 
     Ok(())
 }
@@ -182,6 +258,8 @@ pub fn group_routes() -> axum::Router<crate::AppState> {
         .route("/", get(search_group))
         .route("/", post(create_group))
         .route("/:id", get(get_group))
-        .route("/:id/join/:user_id", get(join_group))
-        .route("/:id/leave/:user_id", get(leave_group))
+        .route("/:id/join", get(join_group))
+        .route("/:id/leave", get(leave_group))
+        .route("/:id/remove_user", post(remove_user))
+        .route("/:id/add_user", post(add_user))
 }

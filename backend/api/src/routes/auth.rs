@@ -96,6 +96,7 @@ async fn register(state: State<AppState>, Json(payload): Json<RegisterRequest>) 
 
     Ok(())
 }
+
 pub fn auth_routes() -> axum::Router<crate::AppState> {
     axum::Router::new()
         .route("/login", post(login))

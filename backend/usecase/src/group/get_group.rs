@@ -35,7 +35,7 @@ where
     }
 
     pub async fn execute(&self, input: GetGroupInput) -> AppResult<Option<GetGroupOutput>> {
-        match self.group_repository.get_by_id(Id::new(input.id)).await? {
+        match self.group_repository.get_by_id(&Id::new(input.id)).await? {
             Some((group, admin)) => Ok(Some(GetGroupOutput { group, admin })),
             None => Ok(None),
         }

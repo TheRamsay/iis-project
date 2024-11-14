@@ -6,7 +6,7 @@ use super::{user::User, wall::Wall, Id};
 
 #[derive(Clone, Debug, PartialEq, Validate)]
 pub struct Group {
-    pub id: Id<User>,
+    pub id: Id<Group>,
     #[validate(length(min = 3, max = 255))]
     pub name: String,
     pub admin_id: Id<User>,

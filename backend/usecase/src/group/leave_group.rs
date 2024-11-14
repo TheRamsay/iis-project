@@ -1,16 +1,9 @@
-use anyhow::anyhow;
 use models::{
-    domain::{
-        group::Group,
-        group_member::GroupMember,
-        user::{User, UserType},
-        Id,
-    },
+    domain::{group_member::GroupMember, Id},
     errors::AppResult,
 };
 use repository::{
     group_member_repository::GroupMemberRepository, group_repository::GroupRepository,
-    user_repository::UserRepository,
 };
 use sea_orm::{sqlx, ColIdx, DbErr};
 use uuid::Uuid;
@@ -43,14 +36,28 @@ where
     }
 
     pub async fn execute(&self, input: LeaveGroupInput) -> AppResult<()> {
-        let group = self
+        let (group, _) = self
             .group_repository
-            .get_by_id(Id::new(input.group_id))
+            .get_by_id(&Id::new(input.group_id))
+            .await?
+            .ok_or(models::errors::AppError::NotFound(
+                "Group not found".to_string(),
+            ))?;
+
+        if group.admin_id.id == input.user_id {
+            return Err(models::errors::AppError::BadRequest(
+                "Admin cannot leave group".to_string(),
+            ));
+        }
+
+        let group_member = self
+            .group_member_repository
+            .get_by_id(Id::new(input.user_id), Id::new(input.group_id))
             .await?;
 
-        if None == group {
+        if group_member.is_none() {
             return Err(models::errors::AppError::NotFound(
-                "Group not found".to_string(),
+                "User is not a member of the group".to_string(),
             ));
         }
 

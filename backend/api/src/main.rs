@@ -5,12 +5,14 @@ use axum::routing::post;
 use axum::{extract::State, routing::get, Json, Router};
 use dotenv::dotenv;
 use migration::{Migrator, MigratorTrait};
+use repository::group_join_request_repository::DbGroupJoinRequestRepository;
 use repository::group_member_repository::DbGroupMemberRepository;
 use repository::group_repository::DbGroupRepository;
 use repository::user_repository::{DbUserRepository, UserRepository};
 use repository::wall_repository::DbWallRepository;
 use routes::auth::auth_routes;
 use routes::group::group_routes;
+use routes::group_join_request::group_join_request_router;
 use routes::user::user_routes;
 use sea_orm::*;
 use sea_orm::{Database, DatabaseConnection};
@@ -26,6 +28,7 @@ pub struct AppState {
     pub group_repository: DbGroupRepository,
     pub wall_repository: DbWallRepository,
     pub group_member_repository: DbGroupMemberRepository,
+    pub group_join_request_repository: DbGroupJoinRequestRepository,
     pub jwt_secret: String,
 }
 
@@ -46,6 +49,7 @@ async fn main() -> shuttle_axum::ShuttleAxum {
         group_repository: DbGroupRepository::new(Arc::new(conn.clone())),
         wall_repository: DbWallRepository::new(Arc::new(conn.clone())),
         group_member_repository: DbGroupMemberRepository::new(Arc::new(conn.clone())),
+        group_join_request_repository: DbGroupJoinRequestRepository::new(Arc::new(conn.clone())),
         conn: conn.clone(),
         jwt_secret,
     };
@@ -54,6 +58,7 @@ async fn main() -> shuttle_axum::ShuttleAxum {
         .nest("/api/users", user_routes())
         .nest("/api/groups", group_routes())
         .nest("/api/auth", auth_routes())
+        .nest("/api/group-join-requests", group_join_request_router())
         .with_state(app_state);
 
     Ok(router.into())

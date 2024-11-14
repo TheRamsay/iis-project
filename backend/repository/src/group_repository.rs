@@ -20,13 +20,13 @@ impl DbGroupRepository {
 }
 
 pub trait GroupRepository {
-    async fn get_by_id(&self, id: Id<Group>) -> Result<Option<(Group, User)>, DbErr>;
+    async fn get_by_id(&self, id: &Id<Group>) -> Result<Option<(Group, User)>, DbErr>;
     async fn create(&self, group: Group) -> Result<Id<Group>, DbErr>;
     async fn search(&self, query: String) -> Result<Vec<(Group, User)>, DbErr>;
 }
 
 impl GroupRepository for DbGroupRepository {
-    async fn get_by_id(&self, id: Id<Group>) -> Result<Option<(Group, User)>, DbErr> {
+    async fn get_by_id(&self, id: &Id<Group>) -> Result<Option<(Group, User)>, DbErr> {
         println!("Getting group by id: {:?}", id);
         let result = models::schema::group::Entity::find_by_id(id.id)
             .find_also_related(models::schema::user::Entity)
