@@ -1,10 +1,12 @@
 'use client'
 
-import { classNames, SkeletonCircle, SkeletonText } from '@/components'
+import { SkeletonCircle, SkeletonText } from '@/components/components'
 import { useQuery } from '@tanstack/react-query'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCallback } from 'react'
+import { PostDeleteButton } from '../post-delete-button'
+import classNames from 'classnames'
 
 interface PostComments {
 	post: {
@@ -13,8 +15,13 @@ interface PostComments {
 			| {
 					id: number
 					user: {
+						id: string
 						username: string
-						avatar: string
+						avatar: {
+							src: string
+							width: number
+							height: number
+						}
 					}
 					content: string
 			  }[]
@@ -35,8 +42,13 @@ export function PostComments({ post, size }: PostComments) {
 				{
 					id: 1,
 					user: {
+						id: '1',
 						username: 'user1',
-						avatar: 'https://avatars.githubusercontent.com/u/7655549?v=4',
+						avatar: {
+							src: 'https://avatars.githubusercontent.com/u/7655549?v=4',
+							width: 128,
+							height: 128,
+						},
 					},
 					content:
 						'comment1co mment1comme nt1comment1comment1comment1comment1comment1comment1comment1comment1comment1comment1comment1comment1comment1',
@@ -44,8 +56,13 @@ export function PostComments({ post, size }: PostComments) {
 				{
 					id: 2,
 					user: {
+						id: '2',
 						username: 'user1',
-						avatar: 'https://avatars.githubusercontent.com/u/7655549?v=4',
+						avatar: {
+							src: 'https://avatars.githubusercontent.com/u/7655549?v=4',
+							width: 128,
+							height: 128,
+						},
 					},
 					content:
 						'comment1co mment1comme nt1comment1comment1comment1comment1comment1comment1comment1comment1comment1comment1comment1comment1comment1',
@@ -101,7 +118,7 @@ function Comment({ comment, isLoading, size }: CommentProps) {
 		({ children }: { children: React.ReactNode }) => (
 			<div
 				className={classNames(
-					'flex flex-row items-start',
+					'flex flex-row items-center',
 					size === 'small' && 'space-x-2',
 					size === 'full' && 'space-x-4',
 				)}
@@ -127,26 +144,33 @@ function Comment({ comment, isLoading, size }: CommentProps) {
 	}
 
 	return (
-		<Shell>
-			<Image
-				unoptimized={true}
-				src={comment.user.avatar}
-				alt="avatar"
-				width={circleSize}
-				height={circleSize}
-				className="rounded-full flex-grow-0 object-contain"
+		<div className="flex justify-between items-center space-x-4">
+			<Shell>
+				<Image
+					unoptimized={true}
+					src={comment.user.avatar}
+					alt="avatar"
+					width={circleSize}
+					height={circleSize}
+					className="rounded-full flex-grow-0 object-contain"
+				/>
+				<p className="space-x-1 text-sm [word-break:break-word]">
+					<Link
+						href={`/profile/${comment.user.username}`}
+						className="float-left flex flex-row space-x-2"
+					>
+						<span className="font-semibold whitespace-nowrap">
+							{comment.user.username}:
+						</span>
+					</Link>
+					<span>{comment.content}</span>
+				</p>
+			</Shell>
+			<PostDeleteButton
+				size="small"
+				postId={comment.id}
+				postAuthorId={comment.user.id}
 			/>
-			<p className="space-x-1 text-sm [word-break:break-word]">
-				<Link
-					href={`/profile/${comment.user.username}`}
-					className="float-left flex flex-row space-x-2"
-				>
-					<span className="font-semibold whitespace-nowrap">
-						{comment.user.username}:
-					</span>
-				</Link>
-				<span>{comment.content}</span>
-			</p>
-		</Shell>
+		</div>
 	)
 }

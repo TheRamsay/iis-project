@@ -4,6 +4,8 @@ import { PostLikeButton } from '@/app/_ui/post/post-like-button'
 import { PostCommentButton } from '@/app/_ui/post/post-comment/post-comment-button'
 import { PostDialog } from '@/app/_ui/post/post-dialog'
 import { PostComments } from '@/app/_ui/post/post-comment/post-comments'
+import { PostDeleteButton } from '@/app/_ui/post/post-delete-button'
+import { UserAvatarName } from '@/app/_ui/user/user-avatar-name'
 
 interface Post {
 	id: number
@@ -14,15 +16,25 @@ interface Post {
 	}
 	caption: string
 	user: {
+		id: string
 		username: string
-		avatar: string
+		avatar: {
+			src: string
+			width: number
+			height: number
+		}
 	}
 	like_count: number
 	comments: {
 		id: number
 		user: {
+			id: string
 			username: string
-			avatar: string
+			avatar: {
+				src: string
+				width: number
+				height: number
+			}
 		}
 		content: string
 	}[]
@@ -32,19 +44,7 @@ export function Post(post: Post) {
 	return (
 		<div key={post.id} className="w-full flex flex-col space-y-3">
 			<div>
-				<div className="flex flex-row space-x-3 p-2 items-center w-full">
-					<Image
-						unoptimized={true}
-						src={post.user.avatar}
-						alt="avatar"
-						width={32}
-						height={32}
-						className="rounded-full"
-					/>
-					<Link href={`/profile/${post.user.username}`}>
-						<span>{post.user.username}</span>
-					</Link>
-				</div>
+				<UserAvatarName user={post.user} />
 				<PostDialog post={post}>
 					<div className="relative h-full w-full">
 						<Image
@@ -58,12 +58,17 @@ export function Post(post: Post) {
 					</div>
 				</PostDialog>
 			</div>
-			<div className="space-x-5 flex">
-				<PostLikeButton postId={post.id} likeCount={post.like_count} />
-				<PostCommentButton
-					postId={post.id}
-					commentCount={post.comments.length}
-				/>
+			<div className="flex justify-between">
+				<div className="space-x-4 flex">
+					<PostLikeButton postId={post.id} likeCount={post.like_count} />
+					<PostCommentButton
+						postId={post.id}
+						commentCount={post.comments.length}
+					/>
+				</div>
+				<div className="space-x-4 flex">
+					<PostDeleteButton postId={post.id} postAuthorId={post.user.id} />
+				</div>
 			</div>
 			<PostComments post={post} size="small" />
 		</div>

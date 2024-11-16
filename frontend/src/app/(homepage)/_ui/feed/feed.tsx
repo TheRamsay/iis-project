@@ -10,15 +10,25 @@ interface Feed {
 		}
 		caption: string
 		user: {
+			id: string
 			username: string
-			avatar: string
+			avatar: {
+				src: string
+				width: number
+				height: number
+			}
 		}
 		like_count: number
 		comments: {
 			id: number
 			user: {
+				id: string
 				username: string
-				avatar: string
+				avatar: {
+					src: string
+					width: number
+					height: number
+				}
 			}
 			content: string
 		}[]

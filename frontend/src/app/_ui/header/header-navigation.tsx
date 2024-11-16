@@ -11,7 +11,7 @@ export async function HeaderNavigation() {
 				<HomeIcon width={24} height={24} />
 			</Link>
 			{session && (
-				<Link href="/submit">
+				<Link href="/post/submit">
 					<SquarePlusIcon width={24} height={24} />
 				</Link>
 			)}

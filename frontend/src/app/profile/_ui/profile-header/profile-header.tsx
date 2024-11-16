@@ -13,7 +13,7 @@ export async function ProfileHeader({ username }: ProfileHeader) {
 	const profile = {
 		id: 'user_id',
 		username: 'johndoe',
-		bio: 'I am a person.',
+		description: 'I am a person.',
 		avatar: {
 			src: 'https://www.gravatar.com/avatar/',
 			width: 32,
@@ -36,10 +36,10 @@ export async function ProfileHeader({ username }: ProfileHeader) {
 	}
 
 	return (
-		<div className="flex w-full justify-between items-center">
+		<div className="flex w-full justify-between items-center space-x-4">
 			<div className="flex-col flex">
 				<div className="flex-row flex items-center space-x-6">
-					<div className="relative h-28 w-28 rounded-full">
+					<div className="relative h-28 w-28 rounded-full shrink-0">
 						<Image
 							unoptimized
 							src={profile.avatar.src}
@@ -48,9 +48,11 @@ export async function ProfileHeader({ username }: ProfileHeader) {
 							className="rounded-full"
 						/>
 					</div>
-					<div>
-						<span className="text-2xl">{profile.username}</span>
-					</div>
+					<p className="space-y-2 [word-break:break-word]">
+						<span className="text-2xl float-left">{profile.username}</span>
+						<br />
+						<span className="text-sm text-gray-300">{profile.description}</span>
+					</p>
 				</div>
 			</div>
 			<ProfileActions username={username} role={role} />

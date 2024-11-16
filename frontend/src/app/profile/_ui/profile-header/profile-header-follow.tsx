@@ -1,7 +1,7 @@
 'use client'
 
 import { useSession } from '@/app/_lib/auth/auth-provider'
-import { SkeletonText } from '@/components'
+import { SkeletonText } from '@/components/components/skeleton'
 import { Button } from '@/components/components/button'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 

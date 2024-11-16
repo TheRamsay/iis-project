@@ -9,6 +9,8 @@ import Link from 'next/link'
 import { PostComments } from './post-comment/post-comments'
 import { PostLikeButton } from './post-like-button'
 import { PostCommentAdd } from './post-comment/post-comment-add'
+import { PostDeleteButton } from './post-delete-button'
+import { PostEditButton } from './post-edit-button'
 
 interface PostDialog {
 	children: React.ReactNode
@@ -21,15 +23,24 @@ interface PostDialog {
 		}
 		caption: string
 		user: {
+			id: string
 			username: string
-			avatar: string
+			avatar: {
+				src: string
+				width: number
+				height: number
+			}
 		}
 		like_count: number
 		comments: {
 			id: number
 			user: {
 				username: string
-				avatar: string
+				avatar: {
+					src: string
+					width: number
+					height: number
+				}
 			}
 			content: string
 		}[]
@@ -72,8 +83,23 @@ export function PostDialog({ children, post }: PostDialog) {
 							</div>
 						</div>
 						<div>
-							<div className="border-y border-accent p-4">
-								<PostLikeButton postId={post.id} likeCount={post.like_count} />
+							<div className="border-y border-accent p-4 flex justify-between">
+								<div className="space-x-4">
+									<PostLikeButton
+										postId={post.id}
+										likeCount={post.like_count}
+									/>
+								</div>
+								<div className="space-x-4 flex ">
+									<PostEditButton
+										postId={post.id}
+										postAuthorId={post.user.id}
+									/>
+									<PostDeleteButton
+										postId={post.id}
+										postAuthorId={post.user.id}
+									/>
+								</div>
 							</div>
 							<div className="px-4 py-2">
 								<PostCommentAdd postId={post.id} />

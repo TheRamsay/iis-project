@@ -35,12 +35,14 @@ export default async function RootLayout({
 			suppressHydrationWarning
 		>
 			<body
-				className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen w-full flex flex-col`}
+				className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen w-full flex flex-col overflow-x-hidden`}
 			>
 				<Providers session={session}>
 					<Header />
 					<div className="h-full">{children}</div>
 				</Providers>
+
+				<div id="popover-portal" />
 			</body>
 		</html>
 	)

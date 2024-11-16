@@ -45,6 +45,7 @@ export * from "./splash-controller";
 export * from "./stat";
 export * from "./switch";
 export * from "./tabs";
+export * from "./text-area";
 export * from "./text-field";
 export * from "./toggle";
 export * from "./tooltip";

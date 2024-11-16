@@ -1,7 +1,6 @@
 'use client'
 
 import { Heart } from 'lucide-react'
-import { useCallback } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import classNames from 'classnames'
 import { useSession } from '@/app/_lib/auth/auth-provider'

@@ -13,7 +13,7 @@ export default async function Layout({
 	}
 
 	return (
-		<Container maxWidth="md" className="pt-4">
+		<Container maxWidth="md" className="py-8 pb-40">
 			{children}
 		</Container>
 	)

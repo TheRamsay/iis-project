@@ -1,8 +1,15 @@
 import { Feed } from './_ui/feed/feed'
 import { getSession } from '../_lib/auth/get-session'
+import { FeedSortDropdown } from '../_ui/feed/feed-sort'
+import { FeedSearchProvider } from '../_ui/feed/feed-search/feed-search-provider'
+import { getTypedSearchParams } from '../_lib/typed-search-params/get-typed-search-params'
+import { feedSearchSchema } from '../_ui/feed/feed-search/feed-search-schema'
 
-export default async function Home() {
+export default async function Page({
+	searchParams,
+}: { searchParams: Record<string, string> }) {
 	const session = await getSession()
+	const filters = getTypedSearchParams(feedSearchSchema, searchParams)
 
 	const entry = {
 		id: 1,
@@ -13,24 +20,39 @@ export default async function Home() {
 		},
 		caption: 'This is a post',
 		user: {
+			id: '1',
 			username: 'fitstagram',
-			avatar: 'https://avatars.githubusercontent.com/u/7655549?v=4',
+			avatar: {
+				src: 'https://avatars.githubusercontent.com/u/7655549?v=4',
+				width: 128,
+				height: 128,
+			},
 		},
 		like_count: 0,
 		comments: [
 			{
 				id: 1,
 				user: {
+					id: '1',
 					username: 'fitstagram',
-					avatar: 'https://avatars.githubusercontent.com/u/7655549?v=4',
+					avatar: {
+						src: 'https://avatars.githubusercontent.com/u/7655549?v=4',
+						width: 128,
+						height: 128,
+					},
 				},
 				content: 'This is a comment',
 			},
 			{
 				id: 2,
 				user: {
+					id: '1',
 					username: 'fitstagram',
-					avatar: 'https://avatars.githubusercontent.com/u/7655549?v=4',
+					avatar: {
+						src: 'https://avatars.githubusercontent.com/u/7655549?v=4',
+						width: 128,
+						height: 128,
+					},
 				},
 				content: 'This is a comment',
 			},
@@ -40,8 +62,13 @@ export default async function Home() {
 	const feed = [entry, { ...entry, id: 2 }]
 
 	return (
-		<div className="">
+		<FeedSearchProvider>
+			<div className="w-full flex justify-end">
+				<div className="w-1/3">
+					<FeedSortDropdown />
+				</div>
+			</div>
 			<Feed data={feed} />
-		</div>
+		</FeedSearchProvider>
 	)
 }
