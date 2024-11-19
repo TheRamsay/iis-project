@@ -2,7 +2,7 @@ use std::{future::Future, sync::Arc};
 
 use models::{
     domain::{
-        group::Group,
+        group::{self, Group},
         group_join_request::{GroupJoinRequest, GroupJoinRequestStatus},
         user::User,
         Id,
@@ -77,12 +77,12 @@ impl GroupJoinRequestRepository for DbGroupJoinRequestRepository {
 
     async fn update(&self, group_join_request: GroupJoinRequest) -> Result<(), DbErr> {
         let group_join_request_model: models::schema::group_join_request::Model =
-            group_join_request.into();
+            group_join_request.clone().into();
 
         let mut active_model: models::schema::group_join_request::ActiveModel =
             group_join_request_model.into();
 
-        active_model.status = Set(GroupJoinRequestStatus::Accepted.into());
+        active_model.status = Set(group_join_request.status.into());
 
         let _ = models::schema::group_join_request::Entity::update(active_model)
             .exec(self.db.as_ref())
