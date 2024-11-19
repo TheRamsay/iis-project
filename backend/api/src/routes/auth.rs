@@ -15,7 +15,7 @@ use crate::{
     AppState,
 };
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct LoginRequest {
     username: String,
     password: String,
@@ -71,7 +71,7 @@ async fn logout(jar: CookieJar) -> AppResult<()> {
     Ok(())
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct RegisterRequest {
     username: String,
     email: String,

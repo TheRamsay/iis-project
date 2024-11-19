@@ -9,7 +9,11 @@ pub struct PostComment {
     pub id: Id<PostComment>,
     pub post_id: Id<Post>,
     pub user_id: Id<User>,
-    #[validate(length(min = 1, max = 255))]
+    #[validate(length(
+        min = 1,
+        max = 255,
+        message = "Content must be between 1 and 255 characters"
+    ))]
     pub content: String,
     pub parent_id: Option<Id<PostComment>>,
 }

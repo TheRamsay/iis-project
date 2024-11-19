@@ -16,9 +16,17 @@ pub enum UserType {
 #[derive(Clone, Debug, PartialEq, Validate, Serialize, Deserialize)]
 pub struct User {
     pub id: Id<User>,
-    #[validate(length(min = 3, max = 255))]
+    #[validate(length(
+        min = 3,
+        max = 255,
+        message = "Display name must be between 3 and 255 characters"
+    ))]
     pub display_name: String,
-    #[validate(length(min = 3, max = 255))]
+    #[validate(length(
+        min = 3,
+        max = 255,
+        message = "Username must be between 3 and 255 characters"
+    ))]
     pub username: String,
     pub email: Email,
     #[validate(url)]

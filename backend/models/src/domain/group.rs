@@ -7,7 +7,11 @@ use super::{user::User, wall::Wall, Id};
 #[derive(Clone, Debug, PartialEq, Validate)]
 pub struct Group {
     pub id: Id<Group>,
-    #[validate(length(min = 3, max = 255))]
+    #[validate(length(
+        min = 3,
+        max = 255,
+        message = "Name must be between 3 and 255 characters"
+    ))]
     pub name: String,
     pub admin_id: Id<User>,
     pub wall_id: Id<Wall>,

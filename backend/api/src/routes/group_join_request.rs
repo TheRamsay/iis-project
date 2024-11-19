@@ -37,7 +37,7 @@ async fn accept(
 
     let input = ResolveGroupJoinRequestInput {
         id: group_join_request_id,
-        user_id: user.id,
+        admin_id: user.id,
         new_status: GroupJoinRequestStatus::Accepted,
     };
 
@@ -51,6 +51,7 @@ async fn reject(
     user: AuthUser,
     Path(group_join_request_id): Path<Uuid>,
 ) -> AppResult<()> {
+    println!("Hello from reject");
     let resolve_group_join_request_usecase =
         resolve_group_join_request::ResolveGroupJoinRequestUseCase::new(
             state.group_repository.clone(),
@@ -60,7 +61,7 @@ async fn reject(
 
     let input = ResolveGroupJoinRequestInput {
         id: group_join_request_id,
-        user_id: user.id,
+        admin_id: user.id,
         new_status: GroupJoinRequestStatus::Rejected,
     };
 

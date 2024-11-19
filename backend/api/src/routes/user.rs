@@ -15,7 +15,7 @@ use crate::{
     AppState,
 };
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 struct CreateUserRequest {
     display_name: String,
     username: String,
@@ -50,7 +50,7 @@ async fn create_user(
     anyhow::Result::Ok(Json(CreateUserResponse { id: output.id }))
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 struct GetUserResponse {
     id: Uuid,
     display_name: String,
@@ -86,7 +86,7 @@ async fn get_user(
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 struct MeResponse {
     username: String,
     id: Uuid,
