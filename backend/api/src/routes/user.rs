@@ -5,6 +5,7 @@ use axum::{
 use models::errors::{AppError, AppResult};
 use serde::{Deserialize, Serialize};
 use usecase::user::{
+    block_user::{BlockUserInput, BlockUserUseCase},
     get_user::{GetUserInput, GetUserUseCase},
     register_user::{RegisterUserInput, RegisterUserUseCase},
 };
@@ -99,9 +100,44 @@ async fn me(user: AuthUser) -> AppResult<Json<MeResponse>> {
     }))
 }
 
+async fn block_user(
+    state: State<AppState>,
+    admin: AuthUser,
+    Path(id): Path<Uuid>,
+) -> AppResult<()> {
+    let get_user_usercase = GetUserUseCase::new(state.user_repository.clone());
+    let block_user_usecase = BlockUserUseCase::new(state.user_repository.clone());
+
+    let user = get_user_usercase.execute(GetUserInput { id }).await?;
+
+    if user.is_none() {
+        return Err(AppError::NotFound("User".into()));
+    }
+
+    let user = user.unwrap();
+
+    if user.is_blocked {
+        return Err(AppError::BadRequest("User is already blocked".into()));
+    }
+
+    if (admin.role == models::domain::user::UserType::Regular)
+        || (admin.id == user.id.into())
+        || (admin.role as i32 <= user.user_type as i32)
+    {
+        return Err(AppError::Unauthorized("You can't block this user".into()));
+    }
+
+    block_user_usecase
+        .execute(BlockUserInput { user_id: id })
+        .await?;
+
+    Ok(())
+}
+
 pub fn user_routes() -> axum::Router<crate::AppState> {
     axum::Router::new()
         .route("/", post(create_user))
         .route("/:id", get(get_user))
         .route("/me", get(me))
+        .route("/:id/block", get(block_user))
 }

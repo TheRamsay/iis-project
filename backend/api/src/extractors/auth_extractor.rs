@@ -1,10 +1,14 @@
 use core::time;
+use std::marker::PhantomData;
 
 use axum::{async_trait, extract::FromRequestParts, http::request::Parts, Json};
 use axum_extra::headers::{Authorization, Cookie, HeaderMapExt};
 use chrono::Utc;
 use jsonwebtoken::{DecodingKey, Validation};
-use models::errors::{AppError, AppResult};
+use models::{
+    domain::user::UserType,
+    errors::{AppError, AppResult},
+};
 use sea_orm::prelude::TimeDateTimeWithTimeZone;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -15,6 +19,7 @@ const DEFAULT_SESSION_DURATION: time::Duration = time::Duration::from_secs(60 * 
 pub struct AuthUser {
     pub id: Uuid,
     pub username: String,
+    pub role: UserType,
 }
 
 pub struct OptionalAuthUser(pub Option<AuthUser>);
@@ -23,6 +28,7 @@ pub struct OptionalAuthUser(pub Option<AuthUser>);
 struct AuthUserClaims {
     pub id: Uuid,
     pub username: String,
+    pub role: UserType,
     pub exp: usize,
 }
 
@@ -33,6 +39,7 @@ impl AuthUser {
         let claims = AuthUserClaims {
             id: self.id,
             username: self.username.clone(),
+            role: self.role.clone(),
             exp,
         };
 
@@ -55,6 +62,7 @@ impl AuthUser {
         Ok(AuthUser {
             id: token_data.claims.id,
             username: token_data.claims.username,
+            role: token_data.claims.role,
         })
     }
 }

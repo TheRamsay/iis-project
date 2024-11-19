@@ -47,6 +47,7 @@ pub async fn login(
     let token = AuthUser {
         id: user.id.into(),
         username: user.username.clone(),
+        role: user.user_type,
     }
     .to_jwt();
 

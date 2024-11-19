@@ -8,9 +8,9 @@ use super::{email::Email, wall::Wall, Id};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum UserType {
-    Administrator,
-    Moderator,
-    Regular,
+    Regular = 0,
+    Moderator = 1,
+    Administrator = 2,
 }
 
 #[derive(Clone, Debug, PartialEq, Validate, Serialize, Deserialize)]
@@ -62,6 +62,10 @@ impl User {
         model.validate()?;
 
         Ok(model)
+    }
+
+    pub fn block(&mut self) {
+        self.is_blocked = true;
     }
 }
 

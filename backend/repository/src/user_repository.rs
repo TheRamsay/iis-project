@@ -3,7 +3,7 @@ use std::{future::Future, sync::Arc};
 use models::domain::{user::User, Id};
 use sea_orm::{
     sea_query::{extension::postgres::PgExpr, ExprTrait},
-    DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter,
+    DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter, Set,
 };
 
 #[derive(Debug, Clone)]
@@ -22,6 +22,7 @@ pub trait UserRepository {
     async fn get_by_username(&self, username: String) -> Result<Option<User>, DbErr>;
     async fn get_by_email(&self, email: String) -> Result<Option<User>, DbErr>;
     async fn create(&self, user: User) -> Result<Id<User>, DbErr>;
+    async fn update(&self, user: User) -> Result<(), DbErr>;
 }
 
 impl UserRepository for DbUserRepository {
@@ -68,5 +69,18 @@ impl UserRepository for DbUserRepository {
             .await?;
 
         Ok(user.map(User::from))
+    }
+
+    async fn update(&self, user: User) -> Result<(), DbErr> {
+        let user_member_model: models::schema::user::Model = user.clone().into();
+        let mut active_model: models::schema::user::ActiveModel = user_member_model.into();
+
+        active_model.is_blocked = Set(user.is_blocked);
+
+        let _ = models::schema::user::Entity::update(active_model)
+            .exec(self.db.as_ref())
+            .await?;
+
+        Ok(())
     }
 }
