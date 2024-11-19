@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use usecase::post::{
     create_post::{CreatePostInput, CreatePostUseCase},
@@ -73,7 +74,7 @@ struct GetPostResponse {
     content_url: String,
     visibility: String,
     location_id: Option<Uuid>,
-    created_at: chrono::NaiveDateTime,
+    created_at: DateTime<Utc>,
 }
 
 async fn get_post(
