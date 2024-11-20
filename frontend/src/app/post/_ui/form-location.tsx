@@ -38,7 +38,7 @@ export function FormLocation<T extends FormSubset>({
 				control={form.control}
 				render={({
 					field: { name, value, onBlur, onChange },
-					fieldState: { invalid: isError },
+					fieldState: { isDirty, invalid: isError },
 				}) => (
 					<FormItem className="w-full">
 						<label htmlFor={name}>Location (LAT)</label>
@@ -49,7 +49,7 @@ export function FormLocation<T extends FormSubset>({
 								value={value}
 								onValueChange={(value) => onChange(value)}
 								onBlur={onBlur}
-								className={formClassnames({ isError })}
+								className={formClassnames({ isDirty, isError })}
 								disabled={disabled}
 							/>
 						</FormControl>
@@ -61,7 +61,7 @@ export function FormLocation<T extends FormSubset>({
 				control={form.control}
 				render={({
 					field: { name, value, onBlur, onChange },
-					fieldState: { invalid: isError },
+					fieldState: { isDirty, invalid: isError },
 				}) => (
 					<FormItem className="w-full">
 						<label htmlFor={name}>Location (LNG)</label>
@@ -72,7 +72,7 @@ export function FormLocation<T extends FormSubset>({
 								value={value}
 								onValueChange={(value) => onChange(value)}
 								onBlur={onBlur}
-								className={formClassnames({ isError })}
+								className={formClassnames({ isDirty, isError })}
 								disabled={disabled}
 							/>
 						</FormControl>
