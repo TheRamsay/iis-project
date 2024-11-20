@@ -1,8 +1,12 @@
 use axum::{
     extract::{Path, State},
-    routing::{get, post},
+    routing::{delete, get, patch, post, put, Route},
 };
-use models::errors::{AppError, AppResult};
+use models::{
+    domain::user::UserType,
+    errors::{AppError, AppResult},
+};
+use repository::user_repository::UserRepository;
 use serde::{Deserialize, Serialize};
 use usecase::user::{
     block_user::{BlockUserInput, BlockUserUseCase},
@@ -134,10 +138,61 @@ async fn block_user(
     Ok(())
 }
 
+async fn delete_user(
+    state: State<AppState>,
+    admin: AuthUser,
+    Path(id): Path<Uuid>,
+) -> AppResult<()> {
+    if admin.role != models::domain::user::UserType::Administrator {
+        return Err(AppError::Unauthorized("You can't delete this user".into()));
+    }
+
+    let get_user_usercase = GetUserUseCase::new(state.user_repository.clone());
+
+    let user = get_user_usercase.execute(GetUserInput { id }).await?;
+
+    if user.is_none() {
+        return Err(AppError::NotFound("User".into()));
+    }
+
+    let user = user.unwrap();
+
+    if admin.id == user.id.clone().into() {
+        return Err(AppError::Unauthorized("You can't delete yourself".into()));
+    }
+
+    state.user_repository.delete(user.id).await?;
+
+    Ok(())
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct ModifyUserRequest {
+    display_name: String,
+    username: String,
+    email: String,
+    avatar_url: Option<String>,
+    password: String,
+}
+
+async fn modify_user(
+    state: State<AppState>,
+    actor: AuthUser,
+    Path(id): Path<Uuid>,
+    Json(payload): Json<ModifyUserRequest>,
+) -> AppResult<()> {
+    if (actor.role != UserType::Administrator) || (actor.id != id) {
+        return Err(AppError::Unauthorized("You can't modify this user".into()));
+    }
+
+    std::result::Result::Ok(())
+}
 pub fn user_routes() -> axum::Router<crate::AppState> {
     axum::Router::new()
         .route("/", post(create_user))
         .route("/:id", get(get_user))
         .route("/me", get(me))
         .route("/:id/block", get(block_user))
+        .route("/:id", delete(delete_user))
+        .route("/:id", post(modify_user))
 }
