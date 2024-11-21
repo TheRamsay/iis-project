@@ -1,3 +1,4 @@
+pub mod cloudinary_repository;
 pub mod group_join_request_repository;
 pub mod group_member_repository;
 pub mod group_repository;
