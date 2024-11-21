@@ -35,7 +35,7 @@ use crate::{
     AppState,
 };
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 struct CreateGroupRequest {
     name: String,
 }
@@ -111,7 +111,7 @@ async fn get_group(
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 struct SearchGroupRequest {
     query: Option<String>,
 }
@@ -199,7 +199,7 @@ async fn leave_group(
     Ok(())
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 struct AddUserToGroupRequest {
     user_id: Uuid,
 }
@@ -226,7 +226,7 @@ async fn add_user(
     Ok(())
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 struct RemoveUserFromGroupRequest {
     user_id: Uuid,
 }

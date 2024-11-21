@@ -15,7 +15,7 @@ use crate::{
     AppState,
 };
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct LoginRequest {
     username: String,
     password: String,
@@ -44,11 +44,7 @@ pub async fn login(
 
     verify_password(payload.password, user.password_hash).await?;
 
-    let token = AuthUser {
-        id: user.id.into(),
-        username: user.username.clone(),
-    }
-    .to_jwt();
+    let token = AuthUser::new(user.id.into(), user.username.clone(), user.user_type).to_jwt();
 
     let cookie = Cookie::build(("jwt", token))
         .same_site(axum_extra::extract::cookie::SameSite::Strict)
@@ -71,7 +67,7 @@ async fn logout(jar: CookieJar) -> AppResult<()> {
     Ok(())
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct RegisterRequest {
     username: String,
     email: String,

@@ -20,7 +20,7 @@ use uuid::Uuid;
 #[derive(Debug)]
 pub struct ResolveGroupJoinRequestInput {
     pub id: Uuid,
-    pub user_id: Uuid,
+    pub admin_id: Uuid,
     pub new_status: GroupJoinRequestStatus,
 }
 
@@ -59,24 +59,34 @@ where
             .await?
             .ok_or(AppError::NotFound("Request not found".into()))?;
 
+        if group_join_request.status != group_join_request::GroupJoinRequestStatus::Pending {
+            return Err(AppError::BadRequest("Request already resolved".into()));
+        }
+
         let (_, admin) = self
             .group_repository
             .get_by_id(&group_join_request.group_id)
             .await?
             .ok_or(AppError::NotFound("Group not found".into()))?;
 
-        if admin.id.id != input.user_id {
+        if admin.id.id != input.admin_id {
             return Err(AppError::Unauthorized(
                 "Only group admin can resolve join requests".into(),
             ));
         }
 
+        println!("input.new_status: {:?}", input.new_status);
+
         match input.new_status {
             GroupJoinRequestStatus::Accepted => {
-                let _ = self.group_member_repository.create(GroupMember::new(
-                    input.user_id.into(),
-                    group_join_request.group_id.clone(),
-                )?);
+                println!("Accepting request {:?}", group_join_request);
+                let _ = self
+                    .group_member_repository
+                    .create(GroupMember::new(
+                        group_join_request.user_id.clone(),
+                        group_join_request.group_id.clone(),
+                    )?)
+                    .await?;
 
                 group_join_request.accept()
             }

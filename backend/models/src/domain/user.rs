@@ -1,3 +1,5 @@
+use std::default;
+
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use validator::{Validate, ValidationErrors};
@@ -6,19 +8,28 @@ use crate::schema;
 
 use super::{email::Email, wall::Wall, Id};
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub enum UserType {
-    Administrator,
-    Moderator,
-    Regular,
+    #[default]
+    Regular = 0,
+    Moderator = 1,
+    Administrator = 2,
 }
 
 #[derive(Clone, Debug, PartialEq, Validate, Serialize, Deserialize)]
 pub struct User {
     pub id: Id<User>,
-    #[validate(length(min = 3, max = 255))]
+    #[validate(length(
+        min = 3,
+        max = 255,
+        message = "Display name must be between 3 and 255 characters"
+    ))]
     pub display_name: String,
-    #[validate(length(min = 3, max = 255))]
+    #[validate(length(
+        min = 3,
+        max = 255,
+        message = "Username must be between 3 and 255 characters"
+    ))]
     pub username: String,
     pub email: Email,
     #[validate(url)]
@@ -55,6 +66,10 @@ impl User {
 
         Ok(model)
     }
+
+    pub fn block(&mut self) {
+        self.is_blocked = true;
+    }
 }
 
 impl From<schema::user::Model> for User {
@@ -65,11 +80,7 @@ impl From<schema::user::Model> for User {
             username: model.username,
             email: Email::new(model.email).expect("Invalid email from database"),
             avatar_url: model.avatar_url,
-            user_type: match model.user_type {
-                schema::sea_orm_active_enums::UserType::Administrator => UserType::Administrator,
-                schema::sea_orm_active_enums::UserType::Moderator => UserType::Moderator,
-                schema::sea_orm_active_enums::UserType::Regular => UserType::Regular,
-            },
+            user_type: model.user_type.into(),
             wall_id: Id::new(model.wall_id),
             is_blocked: model.is_blocked,
             password_hash: model.password_hash,
@@ -85,14 +96,30 @@ impl From<User> for schema::user::Model {
             username: user.username,
             email: user.email.value,
             avatar_url: user.avatar_url,
-            user_type: match user.user_type {
-                UserType::Administrator => schema::sea_orm_active_enums::UserType::Administrator,
-                UserType::Moderator => schema::sea_orm_active_enums::UserType::Moderator,
-                UserType::Regular => schema::sea_orm_active_enums::UserType::Regular,
-            },
+            user_type: user.user_type.into(),
             wall_id: user.wall_id.id,
             is_blocked: user.is_blocked,
             password_hash: user.password_hash,
+        }
+    }
+}
+
+impl From<UserType> for schema::sea_orm_active_enums::UserType {
+    fn from(user_type: UserType) -> Self {
+        match user_type {
+            UserType::Administrator => Self::Administrator,
+            UserType::Moderator => Self::Moderator,
+            UserType::Regular => Self::Regular,
+        }
+    }
+}
+
+impl From<schema::sea_orm_active_enums::UserType> for UserType {
+    fn from(user_type: schema::sea_orm_active_enums::UserType) -> Self {
+        match user_type {
+            schema::sea_orm_active_enums::UserType::Administrator => Self::Administrator,
+            schema::sea_orm_active_enums::UserType::Moderator => Self::Moderator,
+            schema::sea_orm_active_enums::UserType::Regular => Self::Regular,
         }
     }
 }

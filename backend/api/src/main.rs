@@ -19,8 +19,10 @@ use routes::post::post_routes;
 use routes::user::user_routes;
 use sea_orm::*;
 use sea_orm::{Database, DatabaseConnection};
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use uuid::{serde, Uuid};
 
+pub mod auth;
 mod extractors;
 mod routes;
 
@@ -35,10 +37,46 @@ pub struct AppState {
     pub group_member_repository: DbGroupMemberRepository,
     pub group_join_request_repository: DbGroupJoinRequestRepository,
     pub jwt_secret: String,
+    pub redis_client: Arc<redis::Client>,
 }
 
-#[shuttle_runtime::main]
-async fn main() -> shuttle_axum::ShuttleAxum {
+// #[shuttle_runtime::main]
+// async fn main() -> shuttle_axum::ShuttleAxum {
+//     dotenv().ok();
+//     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL is not set");
+//     let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET is not set");
+
+//     let conn = Database::connect(db_url)
+//         .await
+//         .expect("Database connection failed");
+
+//     Migrator::up(&conn, None).await.expect("Migration failed");
+
+//     let app_state = AppState {
+//         user_repository: DbUserRepository::new(Arc::new(conn.clone())),
+//         group_repository: DbGroupRepository::new(Arc::new(conn.clone())),
+//         wall_repository: DbWallRepository::new(Arc::new(conn.clone())),
+//         group_member_repository: DbGroupMemberRepository::new(Arc::new(conn.clone())),
+//         group_join_request_repository: DbGroupJoinRequestRepository::new(Arc::new(conn.clone())),
+//         post_repository: DbPostRepository::new(Arc::new(conn.clone())),
+//         conn: conn.clone(),
+//         jwt_secret,
+//         redis_client: Arc::new(redis::Client::open("redis://localhost:6379").unwrap()),
+//     };
+
+//     let router = Router::new()
+//         .nest("/api/users", user_routes())
+//         .nest("/api/groups", group_routes())
+//         .nest("/api/auth", auth_routes())
+//         .nest("/api/group-join-requests", group_join_request_router())
+//         .nest("/api/posts", post_routes())
+//         .with_state(app_state);
+
+//     Ok(router.into())
+// }
+
+#[tokio::main]
+async fn main() {
     dotenv().ok();
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL is not set");
     let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET is not set");
@@ -59,6 +97,7 @@ async fn main() -> shuttle_axum::ShuttleAxum {
         cloudinary_repository: GenericRepository {},
         conn: conn.clone(),
         jwt_secret,
+        redis_client: Arc::new(redis::Client::open("redis://localhost:6379").unwrap()),
     };
 
     let router = Router::new()
@@ -69,5 +108,8 @@ async fn main() -> shuttle_axum::ShuttleAxum {
         .nest("/api/posts", post_routes())
         .with_state(app_state);
 
-    Ok(router.into())
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:8000")
+        .await
+        .unwrap();
+    axum::serve(listener, router).await.unwrap();
 }

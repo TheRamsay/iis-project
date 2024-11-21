@@ -20,9 +20,17 @@ pub enum PostVisibilityType {
 #[derive(Clone, Debug, PartialEq, Validate)]
 pub struct Post {
     pub id: Id<Post>,
-    #[validate(length(min = 3, max = 50))]
+    #[validate(length(
+        min = 3,
+        max = 50,
+        message = "Title must be between 3 and 50 characters"
+    ))]
     pub title: String,
-    #[validate(length(min = 3, max = 500))]
+    #[validate(length(
+        min = 3,
+        max = 500,
+        message = "Description must be between 3 and 500 characters"
+    ))]
     pub description: String,
     pub author_id: Id<User>,
     pub post_type: PostType,
