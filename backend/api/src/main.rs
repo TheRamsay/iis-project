@@ -5,6 +5,7 @@ use axum::routing::post;
 use axum::{extract::State, routing::get, Json, Router};
 use dotenv::dotenv;
 use migration::{Migrator, MigratorTrait};
+use repository::cloudinary_repository::{CloudinaryRepository, GenericRepository};
 use repository::group_join_request_repository::DbGroupJoinRequestRepository;
 use repository::group_member_repository::DbGroupMemberRepository;
 use repository::group_repository::DbGroupRepository;
@@ -31,6 +32,7 @@ pub struct AppState {
     pub user_repository: DbUserRepository,
     pub group_repository: DbGroupRepository,
     pub post_repository: DbPostRepository,
+    pub cloudinary_repository: GenericRepository,
     pub wall_repository: DbWallRepository,
     pub group_member_repository: DbGroupMemberRepository,
     pub group_join_request_repository: DbGroupJoinRequestRepository,
@@ -92,6 +94,7 @@ async fn main() {
         group_member_repository: DbGroupMemberRepository::new(Arc::new(conn.clone())),
         group_join_request_repository: DbGroupJoinRequestRepository::new(Arc::new(conn.clone())),
         post_repository: DbPostRepository::new(Arc::new(conn.clone())),
+        cloudinary_repository: GenericRepository {},
         conn: conn.clone(),
         jwt_secret,
         redis_client: Arc::new(redis::Client::open("redis://localhost:6379").unwrap()),

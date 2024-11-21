@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use usecase::post::{
     create_post::{CreatePostInput, CreatePostUseCase},
     get_post::{GetPostInput, GetPostUseCase},
+    upload_image::{UploadImageInput, UploadImageUseCase},
 };
 use uuid::Uuid;
 use validator::ValidationErrors;
@@ -107,8 +108,34 @@ async fn get_post(
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct UploadImageRequest {
+    image: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct UploadImageResponse {
+    link: String,
+}
+
+async fn upload_image(
+    state: State<AppState>,
+    Json(payload): Json<UploadImageRequest>,
+) -> AppResult<Json<UploadImageResponse>> {
+    let upload_image_use_case = UploadImageUseCase::new(state.cloudinary_repository.clone());
+
+    let input = UploadImageInput {
+        image: payload.image,
+    };
+
+    let output = upload_image_use_case.execute(input).await?;
+
+    anyhow::Result::Ok(Json(UploadImageResponse { link: output.url }))
+}
+
 pub fn post_routes() -> axum::Router<crate::AppState> {
     axum::Router::new()
         .route("/", post(create_post))
         .route("/:id", get(get_post))
+        .route("/upload_image", post(upload_image))
 }
