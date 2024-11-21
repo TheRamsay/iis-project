@@ -18,8 +18,9 @@ use uuid::Uuid;
 
 use crate::{auth::jwt::is_token_blacklisted, AppState};
 
-// Default session duration is 7 days
-const DEFAULT_SESSION_DURATION: time::Duration = time::Duration::from_secs(60 * 60 * 24 * 7);
+// Default session duration is 1 day
+const DEFAULT_SESSION_DURATION: time::Duration = time::Duration::from_secs(60);
+// const DEFAULT_SESSION_DURATION: time::Duration = time::Duration::from_secs(60 * 60 * 24);
 
 pub struct AuthUser {
     pub id: Uuid,
@@ -69,10 +70,14 @@ impl AuthUser {
     }
 
     pub fn from_jwt(token: &str) -> AppResult<Self> {
+        let mut validation = Validation::new(jsonwebtoken::Algorithm::HS256);
+        validation.reject_tokens_expiring_in_less_than =
+            time::Duration::from_secs(5).as_secs() as u64;
+
         let token_data = jsonwebtoken::decode::<AuthUserClaims>(
             token,
             &DecodingKey::from_secret("secret".as_ref()),
-            &Validation::default(),
+            &validation,
         )
         .map_err(|_| AppError::Unauthorized("Couldn't decode the JWT token".into()))?;
 

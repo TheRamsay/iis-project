@@ -4,6 +4,7 @@ use axum::{
     routing::{delete, get, patch, post, put, Route},
 };
 use axum_extra::extract::{cookie::Cookie, CookieJar};
+use chrono::Utc;
 use models::{
     domain::user::{User, UserType},
     errors::{AppError, AppResult},
@@ -224,24 +225,20 @@ async fn update_user(
 
     // If the user is modifying himself, update the jwt, otherwise, do nothing
     if modifies_self {
+        let old_jwt_str = jar
+            .get("jwt")
+            .map(|cookie| cookie.value().to_string())
+            .expect("JWT cookie not found");
+
+        blacklist_token(&state.redis_client, &old_jwt_str, actor.exp)
+            .map_err(|e| AppError::Anyhow(anyhow!(e)))?;
+
         let new_jwt_str = AuthUser::new(
             updated.id.into(),
             updated.username.clone(),
             updated.user_type,
         )
         .to_jwt();
-
-        println!("{:?}", jar);
-        let old_jwt_str = jar.get("jwt").map(|cookie| cookie.value().to_string());
-        println!("old_jwt_str: {:?}", old_jwt_str);
-
-        // Blacklist old token
-        if let Some(old_jwt_str) = old_jwt_str {
-            let old_jwt = AuthUser::from_jwt(&old_jwt_str)?;
-
-            blacklist_token(&state.redis_client, &old_jwt_str, old_jwt.exp)
-                .map_err(|e| AppError::Anyhow(anyhow!(e)))?;
-        }
 
         let cookie = Cookie::build(("jwt", new_jwt_str))
             .same_site(axum_extra::extract::cookie::SameSite::Strict)

@@ -153,6 +153,7 @@ dependencies = [
  "shuttle-runtime",
  "thiserror",
  "tokio",
+ "tracing-subscriber",
  "usecase",
  "uuid",
  "validator",
