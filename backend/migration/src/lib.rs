@@ -31,7 +31,6 @@ impl MigratorTrait for Migrator {
             Box::new(m20241102_185447_pwd_hash_for_user::Migration),
             Box::new(m20241110_225527_group_join_request::Migration),
             Box::new(m20241121_111845_user_make_fields_unique::Migration),
-            Box::new(m20241121_111845_user_make_fields_unique::Migration),
         ]
     }
 }
