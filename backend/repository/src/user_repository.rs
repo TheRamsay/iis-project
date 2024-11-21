@@ -83,11 +83,14 @@ impl UserRepository for DbUserRepository {
         active_model.username = Set(user.username);
         active_model.password_hash = Set(user.password_hash);
 
-        let updated = models::schema::user::Entity::update(active_model)
+        match models::schema::user::Entity::update(active_model)
             .exec(self.db.as_ref())
-            .await?;
-
-        Ok(updated.into())
+            .await
+        {
+            Ok(updated) => Ok(updated.into()),
+            Err(DbErr::Exec(e)) if e.cont
+            Err(err) => Err(err),
+        }
     }
 
     async fn delete(&self, user: Id<User>) -> Result<(), DbErr> {
