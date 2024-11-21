@@ -44,12 +44,7 @@ pub async fn login(
 
     verify_password(payload.password, user.password_hash).await?;
 
-    let token = AuthUser {
-        id: user.id.into(),
-        username: user.username.clone(),
-        role: user.user_type,
-    }
-    .to_jwt();
+    let token = AuthUser::new(user.id.into(), user.username.clone(), user.user_type).to_jwt();
 
     let cookie = Cookie::build(("jwt", token))
         .same_site(axum_extra::extract::cookie::SameSite::Strict)

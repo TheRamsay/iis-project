@@ -8,12 +8,11 @@
 //! - Complexity: Manually implementing `FromRequest` results on more complex code
 use axum::{
     async_trait,
-    extract::{rejection::JsonRejection, FromRequest, MatchedPath, Request},
+    extract::{rejection::JsonRejection, FromRequest, Request},
     http::StatusCode,
     response::IntoResponse,
-    RequestPartsExt,
 };
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use serde_json::{json, Value};
 
 pub struct Json<T>(pub T);

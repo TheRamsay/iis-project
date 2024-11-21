@@ -20,6 +20,7 @@ use sea_orm::*;
 use sea_orm::{Database, DatabaseConnection};
 use uuid::{serde, Uuid};
 
+pub mod auth;
 mod extractors;
 mod routes;
 
@@ -33,6 +34,7 @@ pub struct AppState {
     pub group_member_repository: DbGroupMemberRepository,
     pub group_join_request_repository: DbGroupJoinRequestRepository,
     pub jwt_secret: String,
+    pub redis_client: Arc<redis::Client>,
 }
 
 #[shuttle_runtime::main]
@@ -56,6 +58,7 @@ async fn main() -> shuttle_axum::ShuttleAxum {
         post_repository: DbPostRepository::new(Arc::new(conn.clone())),
         conn: conn.clone(),
         jwt_secret,
+        redis_client: Arc::new(redis::Client::open("redis://localhost:6379").unwrap()),
     };
 
     let router = Router::new()

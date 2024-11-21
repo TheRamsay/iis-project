@@ -1,9 +1,11 @@
+use anyhow::anyhow;
 use axum::{
     extract::{Path, State},
     routing::{delete, get, patch, post, put, Route},
 };
+use axum_extra::extract::{cookie::Cookie, CookieJar};
 use models::{
-    domain::user::UserType,
+    domain::user::{User, UserType},
     errors::{AppError, AppResult},
 };
 use repository::user_repository::UserRepository;
@@ -12,10 +14,12 @@ use usecase::user::{
     block_user::{BlockUserInput, BlockUserUseCase},
     get_user::{GetUserInput, GetUserUseCase},
     register_user::{RegisterUserInput, RegisterUserUseCase},
+    update_user::{UpdateUserInput, UpdateUserUseCase},
 };
 use uuid::Uuid;
 
 use crate::{
+    auth::jwt::blacklist_token,
     extractors::{auth_extractor::AuthUser, json_extractor::Json},
     AppState,
 };
@@ -93,14 +97,16 @@ async fn get_user(
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 struct MeResponse {
-    username: String,
     id: Uuid,
+    username: String,
+    user_type: UserType,
 }
 
 async fn me(user: AuthUser) -> AppResult<Json<MeResponse>> {
     Ok(Json(MeResponse {
         username: user.username,
         id: user.id,
+        user_type: user.role,
     }))
 }
 
@@ -167,25 +173,85 @@ async fn delete_user(
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct ModifyUserRequest {
+struct UpdateUserRequest {
     display_name: String,
     username: String,
     email: String,
     avatar_url: Option<String>,
     password: String,
+    user_type: UserType,
 }
 
-async fn modify_user(
+async fn update_user(
     state: State<AppState>,
+    mut jar: CookieJar,
     actor: AuthUser,
     Path(id): Path<Uuid>,
-    Json(payload): Json<ModifyUserRequest>,
-) -> AppResult<()> {
-    if (actor.role != UserType::Administrator) || (actor.id != id) {
+    Json(payload): Json<UpdateUserRequest>,
+) -> AppResult<(CookieJar, ())> {
+    let is_admin = actor.role == UserType::Administrator;
+    let modifies_self = actor.id == id;
+
+    // Check if the actor is an admin or the user being modified
+    if (!is_admin) && (!modifies_self) {
         return Err(AppError::Unauthorized("You can't modify this user".into()));
     }
 
-    std::result::Result::Ok(())
+    let get_user_usecase = GetUserUseCase::new(state.user_repository.clone());
+    let user = get_user_usecase
+        .execute(GetUserInput { id })
+        .await?
+        .ok_or_else(|| AppError::NotFound("User not found".into()))?;
+
+    // If actor tries to change user type, he must be an admin
+    if !is_admin && user.user_type != payload.user_type {
+        return Err(AppError::Unauthorized("You can't change user type".into()));
+    }
+
+    let update_user_usecase = UpdateUserUseCase::new(state.user_repository.clone());
+    let updated = update_user_usecase
+        .execute(UpdateUserInput {
+            id,
+            email: payload.email,
+            username: payload.username,
+            display_name: payload.display_name,
+            avatar_url: payload.avatar_url,
+            user_type: payload.user_type,
+            password: payload.password,
+            user: user.clone(),
+        })
+        .await?;
+
+    // If the user is modifying himself, update the jwt, otherwise, do nothing
+    if modifies_self {
+        let new_jwt_str = AuthUser::new(
+            updated.id.into(),
+            updated.username.clone(),
+            updated.user_type,
+        )
+        .to_jwt();
+
+        println!("{:?}", jar);
+        let old_jwt_str = jar.get("jwt").map(|cookie| cookie.value().to_string());
+        println!("old_jwt_str: {:?}", old_jwt_str);
+
+        // Blacklist old token
+        if let Some(old_jwt_str) = old_jwt_str {
+            let old_jwt = AuthUser::from_jwt(&old_jwt_str)?;
+
+            blacklist_token(&state.redis_client, &old_jwt_str, old_jwt.exp)
+                .map_err(|e| AppError::Anyhow(anyhow!(e)))?;
+        }
+
+        let cookie = Cookie::build(("jwt", new_jwt_str))
+            .same_site(axum_extra::extract::cookie::SameSite::Strict)
+            .http_only(true)
+            .secure(true);
+
+        jar = jar.add(cookie);
+    }
+
+    std::result::Result::Ok((jar, ()))
 }
 pub fn user_routes() -> axum::Router<crate::AppState> {
     axum::Router::new()
@@ -194,5 +260,5 @@ pub fn user_routes() -> axum::Router<crate::AppState> {
         .route("/me", get(me))
         .route("/:id/block", get(block_user))
         .route("/:id", delete(delete_user))
-        .route("/:id", post(modify_user))
+        .route("/:id", put(update_user))
 }
