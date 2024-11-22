@@ -19,8 +19,9 @@ import {
 import { FormLocation, formLocationSchema } from '../../../_ui/form-location'
 import { z, type ZodType } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { formTagsSchema } from '../../../_ui/form-tags'
+import { FormTags, formTagsSchema } from '../../../_ui/form-tags'
 import { useEffect } from 'react'
+import { FormLabelError } from '@/app/_ui/form/form-label-error'
 
 const editPostFromSchema: ZodType<EditPostForm> = z
 	.object({
@@ -123,10 +124,11 @@ export function EditPostForm({ postId }: { postId: string }) {
 						<FormItem className="w-full">
 							<FormControl>
 								<>
-									<div className="flex w-full justify-between">
-										<label htmlFor={name}>Title*</label>
-										<span className="text-red-500">{error?.message}</span>
-									</div>
+									<FormLabelError
+										htmlFor="title"
+										label="Title"
+										error={error?.message}
+									/>
 									<TextField
 										type="text"
 										placeholder="Title"
@@ -146,12 +148,16 @@ export function EditPostForm({ postId }: { postId: string }) {
 					control={form.control}
 					render={({
 						field: { name, value, onChange, onBlur },
-						fieldState: { isDirty, invalid: isError },
+						fieldState: { isDirty, invalid: isError, error },
 					}) => (
 						<FormItem className="w-full">
 							<FormControl>
 								<>
-									<label htmlFor={name}>Description</label>
+									<FormLabelError
+										htmlFor="description"
+										label="Description"
+										error={error?.message}
+									/>
 									<TextArea
 										type="text"
 										placeholder="Description"
@@ -170,29 +176,7 @@ export function EditPostForm({ postId }: { postId: string }) {
 				<FormLocation form={form} />
 				<FormVisibility form={form} />
 
-				<FormField
-					name="tags"
-					control={form.control}
-					render={({
-						field: { name, value, onChange },
-						fieldState: { isDirty, invalid: isError },
-					}) => (
-						<FormItem className="w-full">
-							<label htmlFor={name}>Tags</label>
-							<FormControl>
-								<div
-									className={formClassnames({ isDirty, isError }, 'rounded-lg')}
-								>
-									<ChipInput
-										values={value}
-										onValueChange={onChange}
-										placeholder="Tags"
-									/>
-								</div>
-							</FormControl>
-						</FormItem>
-					)}
-				/>
+				<FormTags form={form} />
 
 				<div className="flex flex-row w-full justify-between items-center">
 					<div className={classNames(!loading && 'hidden')}>

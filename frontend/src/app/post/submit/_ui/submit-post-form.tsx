@@ -10,21 +10,21 @@ import { useMutation } from '@tanstack/react-query'
 import { Loader } from '@/components/components/loader'
 import classNames from 'classnames'
 import { TextArea } from '@/components/components/text-area'
-import { ImageDropzone } from './image-dropzone'
+import { FormImage, formImageSchema } from '../../../_ui/form/form-image'
 import type { Entity } from '../../_ui/pick-entities'
-import { ChipInput } from '@/components/components/chip-input'
 import { FormVisibility, formVisibilitySchema } from '../../_ui/form-visibility'
 import { FormLocation, formLocationSchema } from '../../_ui/form-location'
 import { z, type ZodType } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { formTagsSchema } from '../../_ui/form-tags'
+import { FormTags, formTagsSchema } from '../../_ui/form-tags'
+import { FormLabelError } from '@/app/_ui/form/form-label-error'
 
 const submitPostFromSchema: ZodType<PostForm> = z
 	.object({
-		title: z.string().min(3).max(255),
+		title: z.string().min(3).max(64),
 		description: z.string().max(255),
-		image: z.custom<globalThis.File>(),
 	})
+	.merge(formImageSchema(true))
 	.merge(formLocationSchema)
 	.merge(formVisibilitySchema)
 	.merge(formTagsSchema)
@@ -51,13 +51,14 @@ export function SubmitPostForm() {
 			await new Promise((resolve) => setTimeout(resolve, 1000))
 		},
 		onSuccess: () => {
-			// goto profile?
+			// TODO: goto profile?
 		},
 	})
 
 	const loading = isPending
 
 	const form = useForm<PostForm>({
+		mode: 'all',
 		defaultValues: {
 			description: '',
 			location: { lat: '', lng: '' },
@@ -89,19 +90,23 @@ export function SubmitPostForm() {
 					control={form.control}
 					render={({
 						field: { name, value, onChange, onBlur },
-						fieldState: { invalid: isError },
+						fieldState: { isDirty, invalid: isError, error },
 					}) => (
 						<FormItem className="w-full">
 							<FormControl>
 								<>
-									<label htmlFor={name}>Title*</label>
+									<FormLabelError
+										htmlFor={name}
+										label="Title*"
+										error={error?.message}
+									/>
 									<TextField
 										type="text"
 										placeholder="Title"
 										value={value}
 										onChange={(e) => onChange(e.target.value)}
 										onBlur={onBlur}
-										className={formClassnames({ isError })}
+										className={formClassnames({ isDirty, isError })}
 										disabled={loading}
 									/>
 								</>
@@ -114,19 +119,23 @@ export function SubmitPostForm() {
 					control={form.control}
 					render={({
 						field: { name, value, onChange, onBlur },
-						fieldState: { invalid: isError },
+						fieldState: { isDirty, invalid: isError, error },
 					}) => (
 						<FormItem className="w-full">
 							<FormControl>
 								<>
-									<label htmlFor={name}>Description</label>
+									<FormLabelError
+										htmlFor={name}
+										label="Description"
+										error={error?.message}
+									/>
 									<TextArea
 										type="text"
 										placeholder="Description"
 										value={value}
 										onChange={(e) => onChange(e.target.value)}
 										onBlur={onBlur}
-										className={formClassnames({ isError })}
+										className={formClassnames({ isDirty, isError })}
 										disabled={loading}
 									/>
 								</>
@@ -138,44 +147,9 @@ export function SubmitPostForm() {
 				<FormLocation form={form} />
 				<FormVisibility form={form} />
 
-				<FormField
-					name="tags"
-					control={form.control}
-					render={({
-						field: { name, value, onChange },
-						fieldState: { invalid: isError },
-					}) => (
-						<FormItem className="w-full">
-							<label htmlFor={name}>Tags</label>
-							<FormControl>
-								<ChipInput
-									values={value}
-									onValueChange={onChange}
-									placeholder="Tags"
-								/>
-							</FormControl>
-						</FormItem>
-					)}
-				/>
+				<FormTags form={form} />
 
-				<FormField
-					name="image"
-					control={form.control}
-					render={({
-						field: { name, value, onChange },
-						fieldState: { isDirty },
-						formState: { disabled },
-					}) => (
-						<FormItem className="w-full">
-							<FormControl>
-								<>
-									<label htmlFor={name}>Image*</label>
-									<ImageDropzone file={value} setFile={onChange} />
-								</>
-							</FormControl>
-						</FormItem>
-					)}
-				/>
+				<FormImage form={form} />
 
 				<div className="flex flex-row w-full justify-between items-center">
 					<div className={classNames(!loading && 'hidden')}>

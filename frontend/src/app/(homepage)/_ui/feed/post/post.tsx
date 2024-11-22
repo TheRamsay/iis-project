@@ -2,45 +2,13 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { PostLikeButton } from '@/app/_ui/post/post-like-button'
 import { PostCommentButton } from '@/app/_ui/post/post-comment/post-comment-button'
-import { PostDialog } from '@/app/_ui/post/post-dialog'
+import { PostDialog } from '@/app/_ui/post/post-dialog/post-dialog'
 import { PostComments } from '@/app/_ui/post/post-comment/post-comments'
 import { PostDeleteButton } from '@/app/_ui/post/post-delete-button'
 import { UserAvatarName } from '@/app/_ui/user/user-avatar-name'
+import type { Post as PostType } from '@/app/_types/post'
 
-interface Post {
-	id: number
-	image: {
-		src: string
-		width: number
-		height: number
-	}
-	caption: string
-	user: {
-		id: string
-		username: string
-		avatar: {
-			src: string
-			width: number
-			height: number
-		}
-	}
-	like_count: number
-	comments: {
-		id: number
-		user: {
-			id: string
-			username: string
-			avatar: {
-				src: string
-				width: number
-				height: number
-			}
-		}
-		content: string
-	}[]
-}
-
-export function Post(post: Post) {
+export function Post(post: PostType) {
 	return (
 		<div key={post.id} className="w-full flex flex-col space-y-3">
 			<div>
@@ -60,7 +28,7 @@ export function Post(post: Post) {
 			</div>
 			<div className="flex justify-between">
 				<div className="space-x-4 flex">
-					<PostLikeButton postId={post.id} likeCount={post.like_count} />
+					<PostLikeButton post={post} />
 					<PostCommentButton
 						postId={post.id}
 						commentCount={post.comments.length}

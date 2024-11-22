@@ -1,7 +1,7 @@
 'use client'
 
 import type { schema } from '@/app/_lib/db'
-import { DataTable, TextField } from '@/components/components'
+import { Button, DataTable, Loader, TextField } from '@/components/components'
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query'
 import type { ColumnDef } from '@tanstack/react-table'
 import classNames from 'classnames'
@@ -17,8 +17,47 @@ const columns = [
 		enableSorting: false,
 	},
 	{
+		header: 'Role',
+		cell: ({ row }) => {
+			const role: 'manager' | 'member' = 'manager'
+
+			if (role === 'manager') {
+				return <div>Manager</div>
+			}
+
+			return <div>Member</div>
+		},
+	},
+	{
 		id: 'manage',
 		cell: ({ row }) => {
+			const role = 'member'
+
+			const [kicked, setKicked] = useState<boolean>(false)
+
+			const { mutate, isPending } = useMutation({
+				mutationKey: ['group-kick-user', row.original.id],
+				mutationFn: async () => {
+					await new Promise((resolve) => setTimeout(resolve, 1000))
+				},
+				onSuccess: () => setKicked(true),
+			})
+
+			if (role === 'member') {
+				return (
+					<div className="w-full flex justify-end">
+						{!kicked && (
+							<div className="flex items-center space-x-2">
+								{isPending && <Loader />}
+								<Button variant="outline" onClick={() => mutate()}>
+									Kick
+								</Button>
+							</div>
+						)}
+					</div>
+				)
+			}
+
 			return <div className="justify-end flex w-full">?</div>
 		},
 		meta: {

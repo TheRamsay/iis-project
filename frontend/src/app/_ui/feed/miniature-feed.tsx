@@ -1,10 +1,11 @@
-import { PostDialog } from '@/app/_ui/post/post-dialog'
+import { PostDialog } from '@/app/_ui/post/post-dialog/post-dialog'
 import Image from 'next/image'
 import { FeedSearchProvider } from './feed-search/feed-search-provider'
 import { FeedSortDropdown } from './feed-sort'
 import { Suspense } from 'react'
 import { getTypedSearchParams } from '@/app/_lib/typed-search-params/get-typed-search-params'
 import { feedSearchSchema } from './feed-search/feed-search-schema'
+import { dummyPosts } from '@/app/_types/post'
 
 type MiniatureFeed = (
 	| {
@@ -30,43 +31,7 @@ async function _MiniatureFeed(props: MiniatureFeed) {
 	const name = 'groupname' in props ? props.groupname : props.username
 	const filters = getTypedSearchParams(feedSearchSchema, props.searchParams)
 
-	const posts = Array(10)
-		.fill(0)
-		.map((_, i) => ({
-			id: i,
-			image: {
-				src: 'https://picsum.photos/256',
-				width: 800,
-				height: 800,
-			},
-			caption: 'This is a post',
-			user: {
-				id: '1',
-				username: 'fitstagram',
-				avatar: 'https://avatars.githubusercontent.com/u/7655549?v=4',
-			},
-			like_count: 0,
-			comments: [
-				{
-					id: 1,
-					user: {
-						id: '1',
-						username: 'fitstagram',
-						avatar: 'https://avatars.githubusercontent.com/u/7655549?v=4',
-					},
-					content: 'This is a comment',
-				},
-				{
-					id: 2,
-					user: {
-						id: '1',
-						username: 'fitstagram',
-						avatar: 'https://avatars.githubusercontent.com/u/7655549?v=4',
-					},
-					content: 'This is a comment',
-				},
-			],
-		}))
+	const posts = dummyPosts
 
 	return (
 		<FeedSearchProvider>

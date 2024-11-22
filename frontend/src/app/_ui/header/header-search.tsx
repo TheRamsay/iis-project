@@ -24,7 +24,7 @@ export function HeaderSearch() {
 
 	return (
 		<div className="flex flex-col gap-3 relative justify-center">
-			<div className="z-10 flex w-full gap-4">
+			<div className="z-10 flex w-full gap-4 min-w-[400px]">
 				<div
 					ref={ref}
 					onFocus={() => setOpen(true)}

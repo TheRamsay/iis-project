@@ -14,26 +14,12 @@ export async function GroupHeader({ groupname }: GroupHeader) {
 		name: 'groupname',
 		description:
 			'descriptiondondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescription',
-		avatar: {
-			src: 'https://www.gravatar.com/avatar/',
-			width: 32,
-			height: 32,
-		},
 	}
 
 	return (
 		<div className="flex w-full justify-between items-center space-x-4">
 			<div className="flex-col flex">
 				<div className="flex-row flex items-center space-x-6">
-					<div className="relative h-28 w-28 rounded-full shrink-0">
-						<Image
-							unoptimized
-							src={group.avatar.src}
-							fill
-							alt={group.name}
-							className="rounded-full"
-						/>
-					</div>
 					<p className="space-y-2 [word-break:break-word]">
 						<span className="text-2xl float-left">{group.name}</span>
 						<br />

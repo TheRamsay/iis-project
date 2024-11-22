@@ -4,24 +4,22 @@ import { Heart } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import classNames from 'classnames'
 import { useSession } from '@/app/_lib/auth/auth-provider'
+import type { Post } from '@/app/_types/post'
 
-interface PostLikeButton {
-	postId: number
-	likeCount: number
-}
+type PostLikeButton = { post: Pick<Post, 'id' | 'likeCount'> }
 
 type LikeData = {
 	currentLikes: number
 	isLiked: boolean
 }
 
-export function PostLikeButton({ postId, likeCount }: PostLikeButton) {
+export function PostLikeButton({ post }: PostLikeButton) {
 	const session = useSession()
 
 	const queryClient = useQueryClient()
 
 	const { data, refetch } = useQuery<LikeData>({
-		queryKey: ['like', session?.userId, postId],
+		queryKey: ['like', session?.userId, post.id],
 		queryFn: async () => {
 			return {
 				currentLikes: 0,
@@ -30,25 +28,25 @@ export function PostLikeButton({ postId, likeCount }: PostLikeButton) {
 		},
 		enabled: !!session,
 		placeholderData: {
-			currentLikes: likeCount,
+			currentLikes: post.likeCount,
 			isLiked: false,
 		},
 	})
 
 	const { mutateAsync } = useMutation({
-		mutationKey: ['like', postId],
+		mutationKey: ['like', post.id],
 		mutationFn: async () => {},
 		onMutate: async () => {
 			await queryClient.cancelQueries({
-				queryKey: ['like', session?.userId, postId],
+				queryKey: ['like', session?.userId, post.id],
 			})
 			const previous = queryClient.getQueryData<LikeData>([
 				'like',
 				session?.userId,
-				postId,
+				post.id,
 			])
 			queryClient.setQueryData<LikeData>(
-				['like', session?.userId, postId],
+				['like', session?.userId, post.id],
 				(old) => {
 					if (old) {
 						return {
@@ -57,7 +55,7 @@ export function PostLikeButton({ postId, likeCount }: PostLikeButton) {
 						}
 					}
 					return {
-						currentLikes: likeCount + 1,
+						currentLikes: post.likeCount + 1,
 						isLiked: true,
 					}
 				},

@@ -10,12 +10,23 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { Loader } from '@/components/components/loader'
 import classNames from 'classnames'
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	TextArea,
+} from '@/components/components'
+import { FormLabelError } from '@/app/_ui/form/form-label-error'
 
 interface GroupSettingsFormProps {
 	groupId: string
 }
 
-type Group = Pick<typeof schema.group.$inferSelect, 'id' | 'name'>
+type Group = Pick<typeof schema.group.$inferSelect, 'id' | 'name'> & {
+	visibility: 'public' | 'private'
+	description: string
+}
 
 export type GroupForm = Pick<Group, 'id'> & Partial<Group>
 
@@ -28,6 +39,8 @@ export function GroupSettingsForm({ groupId }: GroupSettingsFormProps) {
 			return {
 				id: Math.random().toString(),
 				name: 'groupdoe',
+				visibility: 'public',
+				description: 'BIO',
 			}
 		},
 	})
@@ -48,6 +61,8 @@ export function GroupSettingsForm({ groupId }: GroupSettingsFormProps) {
 		defaultValues: {
 			id: '',
 			name: '',
+			visibility: 'public',
+			description: '',
 		},
 	})
 
@@ -60,70 +75,24 @@ export function GroupSettingsForm({ groupId }: GroupSettingsFormProps) {
 	return (
 		<div className="space-y-4">
 			<FormProvider {...form}>
-				<div className="flex space-x-4 w-full">
-					<FormField
-						name="name"
-						control={form.control}
-						render={({
-							field: { name, value, onChange, onBlur },
-							formState: { isDirty },
-						}) => (
-							<FormItem className="w-full">
-								<FormControl>
-									<>
-										<label htmlFor={name}>Username</label>
-										<TextField
-											type="text"
-											value={value}
-											onChange={(e) => onChange(e.target.value)}
-											onBlur={onBlur}
-											className={formClassnames({ isDirty })}
-											disabled={loading}
-										/>
-									</>
-								</FormControl>
-							</FormItem>
-						)}
-					/>
-					{/* <FormField
-						name="displayName"
-						control={form.control}
-						render={({
-							field: { name, value, onChange, onBlur },
-							fieldState: { isDirty },
-						}) => (
-							<FormItem className="w-full">
-								<FormControl>
-									<>
-										<label htmlFor={name}>Display Name</label>
-										<TextField
-											type="text"
-											value={value}
-											onChange={(e) => onChange(e.target.value)}
-											onBlur={onBlur}
-											className={formClassnames({ isDirty })}
-											disabled={loading}
-										/>
-									</>
-								</FormControl>
-							</FormItem>
-						)}
-					/> */}
-				</div>
-				{/* <FormField
-					name="avatarUrl"
+				<FormField
+					name="name"
 					control={form.control}
 					render={({
-						field: { name, value, onBlur, onChange },
-						fieldState: { isDirty },
+						field: { name, value, onChange, onBlur },
+						fieldState: { isDirty, error },
 					}) => (
 						<FormItem className="w-full">
 							<FormControl>
 								<>
-									<label htmlFor={name}>Avatar</label>
+									<FormLabelError
+										htmlFor={name}
+										label="Description"
+										error={error?.message}
+									/>
 									<TextField
 										type="text"
-										value={value || ''}
+										value={value}
 										onChange={(e) => onChange(e.target.value)}
 										onBlur={onBlur}
 										className={formClassnames({ isDirty })}
@@ -133,15 +102,82 @@ export function GroupSettingsForm({ groupId }: GroupSettingsFormProps) {
 							</FormControl>
 						</FormItem>
 					)}
-				/> */}
+				/>
+
+				<FormField
+					name="description"
+					control={form.control}
+					render={({
+						field: { name, value, onChange, onBlur },
+						fieldState: { isDirty, invalid: isError, error },
+					}) => (
+						<FormItem className="w-full">
+							<FormControl>
+								<>
+									<FormLabelError
+										htmlFor={name}
+										label="Description"
+										error={error?.message}
+									/>
+									<TextArea
+										type="text"
+										placeholder="Description"
+										value={value}
+										onChange={(e) => onChange(e.target.value)}
+										onBlur={onBlur}
+										className={formClassnames({ isDirty, isError })}
+										disabled={loading}
+									/>
+								</>
+							</FormControl>
+						</FormItem>
+					)}
+				/>
+
+				<FormField
+					name="visibility"
+					control={form.control}
+					render={({
+						field: { name, value, onChange },
+						fieldState: { isDirty },
+						formState: { disabled },
+					}) => (
+						<FormItem className="w-full">
+							<FormControl>
+								<div className="flex flex-row items-center space-x-4">
+									<label htmlFor={name}>Visibility</label>
+									<Select
+										value={value}
+										onValueChange={onChange}
+										disabled={disabled}
+									>
+										<SelectTrigger
+											className={formClassnames(
+												{ isDirty },
+												'flex justify-between w-full',
+											)}
+										>
+											{value === 'private' ? 'Private' : 'Public'}
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="private">Private</SelectItem>
+											<SelectItem value="public">Public</SelectItem>
+										</SelectContent>
+									</Select>
+								</div>
+							</FormControl>
+						</FormItem>
+					)}
+				/>
+
 				<div className="flex flex-row w-full justify-between items-center">
 					<div className={classNames(!loading && 'hidden')}>
 						<Loader size={20} />
 					</div>
 					<div className="flex w-full justify-end space-x-4">
 						<Button
-						// onClick={() => mutate(form.watch())}
-						// disabled={loading || !form.formState.isDirty}
+							onClick={() => mutate(form.watch())}
+							disabled={loading || !form.formState.isDirty}
 						>
 							Save
 						</Button>

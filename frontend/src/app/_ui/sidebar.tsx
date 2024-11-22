@@ -5,12 +5,14 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useMemo } from 'react'
 
+export type SidebarItem = {
+	name: string
+	path: string
+	className?: string
+}
+
 interface Sidebar {
-	items: {
-		name: string
-		path: string
-		className?: string
-	}[]
+	items: SidebarItem[]
 }
 
 export function Sidebar({ items }: Sidebar) {

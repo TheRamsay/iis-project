@@ -4,6 +4,7 @@ import { FormControl, FormField, FormItem } from '@/components/components/form'
 import { ChipInput } from '@/components/components/chip-input'
 import type { UseFormReturn } from 'react-hook-form'
 import { z } from 'zod'
+import { formClassnames } from '@/app/_lib/form-classnames'
 
 export const formTagsSchema = z.object({
 	tags: z.array(z.string()),
@@ -29,16 +30,18 @@ export function FormTags<T extends FormSubset>({
 			control={form.control}
 			render={({
 				field: { name, value, onChange },
-				fieldState: { invalid: isError },
+				fieldState: { isDirty, invalid: isError },
 			}) => (
 				<FormItem className="w-full">
 					<label htmlFor={name}>Tags</label>
 					<FormControl>
-						<ChipInput
-							values={value}
-							onValueChange={onChange}
-							placeholder="Tags"
-						/>
+						<div className={formClassnames({ isDirty, isError }, 'rounded-xl')}>
+							<ChipInput
+								values={value}
+								onValueChange={onChange}
+								placeholder="Tags"
+							/>
+						</div>
 					</FormControl>
 				</FormItem>
 			)}

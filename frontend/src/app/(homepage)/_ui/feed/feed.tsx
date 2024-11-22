@@ -1,38 +1,8 @@
+import type { Post as PostType } from '@/app/_types/post'
 import { Post } from './post/post'
 
 interface Feed {
-	data: {
-		id: number
-		image: {
-			src: string
-			width: number
-			height: number
-		}
-		caption: string
-		user: {
-			id: string
-			username: string
-			avatar: {
-				src: string
-				width: number
-				height: number
-			}
-		}
-		like_count: number
-		comments: {
-			id: number
-			user: {
-				id: string
-				username: string
-				avatar: {
-					src: string
-					width: number
-					height: number
-				}
-			}
-			content: string
-		}[]
-	}[]
+	data: PostType[]
 }
 
 export function Feed({ data }: Feed) {

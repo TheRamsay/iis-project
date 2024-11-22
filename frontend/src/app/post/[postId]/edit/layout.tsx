@@ -1,7 +1,7 @@
 import { Container } from '@/components/components/container'
 import { redirect } from 'next/navigation'
 import type React from 'react'
-import { getSession } from '../_lib/auth/get-session'
+import { getSession } from '../../../_lib/auth/get-session'
 
 export default async function Layout({
 	children,

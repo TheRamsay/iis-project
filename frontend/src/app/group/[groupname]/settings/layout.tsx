@@ -1,13 +1,17 @@
 import { Container } from '@/components/components/container'
-import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { Sidebar } from '@/app/_ui/sidebar'
+import { Sidebar, type SidebarItem } from '@/app/_ui/sidebar'
 import { getSession } from '@/app/_lib/auth/get-session'
 
-const sidebarItems = (id: string) => [
+const sidebarItems = (id: string): SidebarItem[] => [
 	{ name: 'Settings', path: `/group/${id}/settings` },
 	{ name: 'Requests', path: `/group/${id}/settings/requests` },
 	{ name: 'Users', path: `/group/${id}/settings/users` },
+	{
+		name: 'Delete',
+		path: `/group/${id}/settings/delete`,
+		className: '!text-red-500',
+	},
 ]
 
 export default async function Layout({
