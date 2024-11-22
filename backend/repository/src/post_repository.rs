@@ -20,6 +20,7 @@ impl DbPostRepository {
 pub trait PostRepository {
     async fn get_by_id(&self, id: Id<Post>) -> Result<Option<Post>, DbErr>;
     async fn create(&self, post: Post) -> Result<Id<Post>, DbErr>;
+    async fn delete_by_id(&self, id: Id<Post>) -> Result<bool, DbErr>;
 }
 
 impl PostRepository for DbPostRepository {
@@ -29,6 +30,17 @@ impl PostRepository for DbPostRepository {
             .await?;
 
         Ok(user.map(Post::from))
+    }
+
+    async fn delete_by_id(&self, id: Id<Post>) -> Result<bool, DbErr> {
+        let result = models::schema::post::Entity::delete_by_id(id.id)
+            .exec(self.db.as_ref())
+            .await?;
+
+        match result.rows_affected {
+            1 => Ok(true),
+            _ => Ok(false),
+        }
     }
 
     async fn create(&self, post: Post) -> Result<Id<Post>, DbErr> {

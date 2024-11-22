@@ -1,22 +1,30 @@
+use anyhow::Ok;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use usecase::post::{
     create_post::{CreatePostInput, CreatePostUseCase},
+    delete_post::{DeletePostInput, DeletePostUseCase},
     get_post::{GetPostInput, GetPostUseCase},
     upload_image::{UploadImageInput, UploadImageUseCase},
 };
 use uuid::Uuid;
 use validator::ValidationErrors;
 
-use crate::{extractors::json_extractor::Json, AppState};
+use crate::{
+    extractors::{auth_extractor::AuthUser, json_extractor::Json},
+    AppState,
+};
 
 use axum::{
     extract::{Path, State},
     response::IntoResponse,
-    routing::{get, post},
+    routing::{delete, get, post},
 };
 use models::{
-    domain::post::{Post, PostType, PostVisibilityType},
+    domain::{
+        post::{Post, PostType, PostVisibilityType},
+        user::UserType,
+    },
     errors::{AppError, AppResult},
     schema::post,
 };
@@ -109,6 +117,40 @@ async fn get_post(
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+struct DeletePostResponse {
+    success: bool,
+}
+
+async fn delete_post(
+    state: State<AppState>,
+    Path(id): Path<Uuid>,
+    user: AuthUser,
+) -> AppResult<Json<DeletePostResponse>> {
+    let post_use_case = GetPostUseCase::new(state.post_repository.clone());
+    let delete_use_case = DeletePostUseCase::new(state.post_repository.clone());
+    let post = post_use_case.execute(GetPostInput { id }).await?;
+
+    if post.is_none() {
+        return Err(AppError::NotFound("Post".into()));
+    }
+
+    if user.id.into() != post.unwrap().post.author_id
+        && user.role != UserType::Administrator
+        && user.role != UserType::Moderator
+    {
+        return Err(AppError::Unauthorized("Unauthorized".into()));
+    }
+
+    let result = delete_use_case.execute(DeletePostInput { id }).await?;
+
+    if result.is_none() {
+        return Err(AppError::NotFound("Post".into()));
+    }
+
+    anyhow::Result::Ok(Json(DeletePostResponse { success: true }))
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 struct UploadImageRequest {
     image: String,
 }
@@ -137,5 +179,6 @@ pub fn post_routes() -> axum::Router<crate::AppState> {
     axum::Router::new()
         .route("/", post(create_post))
         .route("/:id", get(get_post))
+        .route("/:id", delete(delete_post))
         .route("/upload_image", post(upload_image))
 }
