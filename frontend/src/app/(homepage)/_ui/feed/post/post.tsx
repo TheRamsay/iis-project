@@ -7,6 +7,7 @@ import { PostComments } from '@/app/_ui/post/post-comment/post-comments'
 import { PostDeleteButton } from '@/app/_ui/post/post-delete-button'
 import { UserAvatarName } from '@/app/_ui/user/user-avatar-name'
 import type { Post as PostType } from '@/app/_types/post'
+import { PostShareButton } from '@/app/_ui/post/post-share-button'
 
 export function Post(post: PostType) {
 	return (
@@ -33,6 +34,7 @@ export function Post(post: PostType) {
 						postId={post.id}
 						commentCount={post.comments.length}
 					/>
+					<PostShareButton post={post} />
 				</div>
 				<div className="space-x-4 flex">
 					<PostDeleteButton postId={post.id} postAuthorId={post.user.id} />

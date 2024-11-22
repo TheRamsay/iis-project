@@ -71,7 +71,9 @@ async function _HeaderProfile() {
 								</Link>
 							</div>
 							<div className="rounded-full border p-2 border-accent hover:border-accent-foreground">
-								<LogOut width={20} height={20} />
+								<Link href="/logout">
+									<LogOut width={20} height={20} />
+								</Link>
 							</div>
 						</div>
 					</div>

@@ -82,7 +82,7 @@ export function UserForm({ userId }: UserFormProps) {
 						control={form.control}
 						render={({
 							field: { name, value, onChange, onBlur },
-							formState: { isDirty },
+							fieldState: { isDirty },
 						}) => (
 							<FormItem className="w-full">
 								<FormControl>
