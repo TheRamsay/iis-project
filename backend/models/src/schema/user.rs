@@ -10,7 +10,9 @@ pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
     pub display_name: String,
+    #[sea_orm(unique)]
     pub username: String,
+    #[sea_orm(unique)]
     pub email: String,
     pub avatar_url: Option<String>,
     pub user_type: UserType,

@@ -22,12 +22,6 @@ pub struct Post {
     pub id: Id<Post>,
     #[validate(length(
         min = 3,
-        max = 50,
-        message = "Title must be between 3 and 50 characters"
-    ))]
-    pub title: String,
-    #[validate(length(
-        min = 3,
         max = 500,
         message = "Description must be between 3 and 500 characters"
     ))]
@@ -53,7 +47,6 @@ impl Post {
     ) -> Result<Self, ValidationErrors> {
         let model = Self {
             id: Id::gen(),
-            title,
             description,
             author_id,
             post_type,
@@ -73,7 +66,6 @@ impl From<schema::post::Model> for Post {
     fn from(model: schema::post::Model) -> Self {
         Self {
             id: Id::new(model.id),
-            title: model.title,
             description: model.description,
             author_id: Id::new(model.author_id),
             visibility: match model.visibility.as_str() {
@@ -96,7 +88,6 @@ impl From<Post> for schema::post::Model {
     fn from(value: Post) -> Self {
         Self {
             id: value.id.id,
-            title: value.title,
             description: value.description,
             author_id: value.author_id.id,
             visibility: match value.visibility {
