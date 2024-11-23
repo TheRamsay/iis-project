@@ -1,4 +1,5 @@
 use ::chrono::{DateTime, Utc};
+use sea_orm::ActiveValue;
 
 use crate::schema;
 
@@ -27,6 +28,26 @@ impl From<schema::post_like::Model> for PostLike {
             post_id: Id::new(model.post_id),
             user_id: Id::new(model.user_id),
             created_at: model.created_at.and_utc(),
+        }
+    }
+}
+
+impl From<PostLike> for schema::post_like::ActiveModel {
+    fn from(like: PostLike) -> Self {
+        Self {
+            post_id: ActiveValue::Set(like.post_id.id),
+            user_id: ActiveValue::Set(like.user_id.id),
+            created_at: ActiveValue::Set(like.created_at.naive_utc()),
+        }
+    }
+}
+
+impl From<PostLike> for schema::post_like::Model {
+    fn from(value: PostLike) -> Self {
+        Self {
+            post_id: value.post_id.id,
+            user_id: value.user_id.id,
+            created_at: value.created_at.naive_utc(),
         }
     }
 }
