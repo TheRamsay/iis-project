@@ -14,6 +14,7 @@ pub struct GetPostInput {
     pub id: Uuid,
 }
 
+#[derive(Clone)]
 pub struct GetPostOutput {
     pub post: Post,
 }
