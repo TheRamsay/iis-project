@@ -6,7 +6,7 @@ use models::domain::{
 };
 use sea_orm::{
     sea_query::{extension::postgres::PgExpr, ExprTrait},
-    DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter, Set,
+    DbConn, DbErr, EntityTrait, IntoSimpleExpr, PaginatorTrait, QueryFilter, Set,
 };
 
 #[derive(Debug, Clone)]

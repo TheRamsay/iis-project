@@ -5,6 +5,9 @@ use usecase::post::{
     create_post::{CreatePostInput, CreatePostUseCase},
     delete_post::{DeletePostInput, DeletePostUseCase},
     get_post::{GetPostInput, GetPostUseCase},
+    get_post_likes::{self, GetPostLikesInput},
+    like_post::{LikePostInput, LikePostUseCase},
+    unlike_post::{UnlikePostInput, UnlikePostUseCase},
     update_post::{UpdatePostInput, UpdatePostUseCase},
     upload_image::{UploadImageInput, UploadImageUseCase},
 };
@@ -83,6 +86,7 @@ struct GetPostResponse {
     author_id: Uuid,
     content_url: String,
     visibility: String,
+    like_count: i32,
     location_id: Option<Uuid>,
     created_at: DateTime<Utc>,
 }
@@ -92,8 +96,13 @@ async fn get_post(
     Path(id): Path<Uuid>,
 ) -> AppResult<Json<GetPostResponse>> {
     let post_usecase = GetPostUseCase::new(state.post_repository.clone());
+    let get_post_likes_use_case =
+        get_post_likes::GetPostLikesUseCase::new(state.post_likes_repository.clone());
 
     let post = post_usecase.execute(GetPostInput { id }).await?;
+    let likes = get_post_likes_use_case
+        .execute(GetPostLikesInput { id: id })
+        .await?;
 
     if let Some(post) = post {
         anyhow::Result::Ok(Json(GetPostResponse {
@@ -110,6 +119,9 @@ async fn get_post(
                 PostVisibilityType::Private => "private".into(),
             },
             location_id: post.post.location_id.map(|id| id.into()),
+            like_count: likes
+                .unwrap_or(get_post_likes::GetPostLikesOutput { like_count: 0 })
+                .like_count,
             created_at: post.post.created_at,
         }))
     } else {
@@ -243,6 +255,58 @@ async fn update_post(
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+struct LikePostResponse {
+    success: bool,
+}
+
+async fn like_post(
+    state: State<AppState>,
+    Path(id): Path<Uuid>,
+    user: AuthUser,
+) -> AppResult<Json<LikePostResponse>> {
+    let like_use_case = LikePostUseCase::new(state.post_likes_repository.clone());
+
+    let result = like_use_case
+        .execute(LikePostInput {
+            post_id: id,
+            user_id: user.id,
+        })
+        .await?;
+
+    if result.is_none() {
+        return Err(AppError::NotFound("Post".into()));
+    }
+
+    anyhow::Result::Ok(Json(LikePostResponse { success: true }))
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct UnlikePostResponse {
+    success: bool,
+}
+
+async fn unlike_post(
+    state: State<AppState>,
+    Path(id): Path<Uuid>,
+    user: AuthUser,
+) -> AppResult<Json<UnlikePostResponse>> {
+    let like_use_case = UnlikePostUseCase::new(state.post_likes_repository.clone());
+
+    let result = like_use_case
+        .execute(UnlikePostInput {
+            post_id: id,
+            user_id: user.id,
+        })
+        .await?;
+
+    if result.is_none() {
+        return Err(AppError::NotFound("Post".into()));
+    }
+
+    anyhow::Result::Ok(Json(UnlikePostResponse { success: true }))
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 struct UploadImageRequest {
     image: String,
 }
@@ -273,5 +337,7 @@ pub fn post_routes() -> axum::Router<crate::AppState> {
         .route("/:id", get(get_post))
         .route("/:id", delete(delete_post))
         .route("/:id", put(update_post))
+        .route("/:id/like", post(like_post))
+        .route("/:id/like", delete(unlike_post))
         .route("/upload_image", post(upload_image))
 }
