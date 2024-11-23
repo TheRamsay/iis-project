@@ -88,7 +88,7 @@ impl UserRepository for DbUserRepository {
             .await
         {
             Ok(updated) => Ok(updated.into()),
-            Err(DbErr::Exec(e)) if e.cont
+            // Err(DbErr::Exec(e)) if e.cont,
             Err(err) => Err(err),
         }
     }
