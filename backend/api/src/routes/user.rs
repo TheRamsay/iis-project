@@ -1,12 +1,11 @@
 use anyhow::anyhow;
 use axum::{
     extract::{Path, State},
-    routing::{delete, get, patch, post, put, Route},
+    routing::{delete, get, post, put},
 };
 use axum_extra::extract::{cookie::Cookie, CookieJar};
-use chrono::Utc;
 use models::{
-    domain::user::{User, UserType},
+    domain::user::UserType,
     errors::{AppError, AppResult},
 };
 use repository::user_repository::UserRepository;
@@ -32,6 +31,7 @@ struct CreateUserRequest {
     email: String,
     avatar_url: Option<String>,
     password: String,
+    user_type: UserType,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -41,8 +41,13 @@ struct CreateUserResponse {
 
 async fn create_user(
     state: State<AppState>,
+    user: AuthUser,
     Json(payload): Json<CreateUserRequest>,
 ) -> AppResult<Json<CreateUserResponse>> {
+    if user.role != UserType::Administrator {
+        return Err(AppError::Unauthorized("You can't create a user".into()));
+    }
+
     let user_usercase =
         RegisterUserUseCase::new(state.user_repository.clone(), state.wall_repository.clone());
 
@@ -51,7 +56,7 @@ async fn create_user(
         username: payload.username,
         email: payload.email,
         avatar_url: payload.avatar_url,
-        user_type: models::domain::user::UserType::Regular,
+        user_type: payload.user_type,
         password: payload.password,
     };
 
