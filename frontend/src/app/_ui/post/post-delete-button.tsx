@@ -21,7 +21,9 @@ export function PostDeleteButton({
 	const { mutateAsync } = useMutation({
 		mutationKey: ['delete-post', postId],
 		// TODO: Implement the mutation function
-		mutationFn: async () => {},
+		mutationFn: async () => {
+			// TODO: endpoint
+		},
 	})
 
 	if (!session) {

@@ -44,6 +44,7 @@ export function FormRegister() {
 	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['register'],
 		mutationFn: async (data: FormRegister) => {
+			// TODO: endpoint
 			await new Promise((resolve) => setTimeout(resolve, 1000))
 		},
 		onSuccess: () => {

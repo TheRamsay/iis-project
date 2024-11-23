@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { Sidebar } from '../_ui/sidebar'
 import { getSession } from '../_lib/auth/get-session'
+import { isMinModerator } from '../_lib/get-permission-level'
 
 const sidebarItems = [
 	{ name: 'Dashboard', path: '/admin' },
@@ -14,7 +15,7 @@ export default async function Layout({
 }: { children: React.ReactNode }) {
 	const session = await getSession()
 
-	if (!session || session.role === 'regular') {
+	if (!session || !isMinModerator(session.role)) {
 		return redirect('/')
 	}
 

@@ -5,6 +5,8 @@ export async function getSession(): Promise<Session | null> {
   const cookiez = cookies();
   const session = cookiez.get("session");
 
+  // TODO: endpoint
+
   // if (!session) {
   // 	return null
   // }
@@ -17,7 +19,7 @@ export async function getSession(): Promise<Session | null> {
       width: 128,
       height: 128,
     },
-    role: "regular",
+    role: "administrator",
     expires: Date.now() + 1000 * 60 * 60 * 24,
   };
 }

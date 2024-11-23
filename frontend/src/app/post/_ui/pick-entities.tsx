@@ -32,6 +32,7 @@ export function PickEntities({ type, list, onChange }: PickEntities) {
 	const { data, isLoading, isError } = useQuery<Entity[]>({
 		queryKey: ['query-followed', type, query],
 		queryFn: async () => {
+			// TODO: endpoint
 			return [
 				{
 					avatar: {
@@ -73,7 +74,7 @@ export function PickEntities({ type, list, onChange }: PickEntities) {
 
 	return (
 		<div className="space-y-2">
-			<div className="flex items-center space-x-2">
+			<div className="flex items-center space-x-2 justify-between">
 				<div className="capitalize">{type}s</div>
 				<SimpleSearch
 					query={query}

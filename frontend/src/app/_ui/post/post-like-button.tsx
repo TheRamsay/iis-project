@@ -21,6 +21,7 @@ export function PostLikeButton({ post }: PostLikeButton) {
 	const { data, refetch } = useQuery<LikeData>({
 		queryKey: ['like', session?.userId, post.id],
 		queryFn: async () => {
+			// TODO: endpoint
 			return {
 				currentLikes: 0,
 				isLiked: false,
@@ -35,7 +36,9 @@ export function PostLikeButton({ post }: PostLikeButton) {
 
 	const { mutateAsync } = useMutation({
 		mutationKey: ['like', post.id],
-		mutationFn: async () => {},
+		mutationFn: async () => {
+			// TODO: endpoint
+		},
 		onMutate: async () => {
 			await queryClient.cancelQueries({
 				queryKey: ['like', session?.userId, post.id],

@@ -97,6 +97,16 @@ export function FormVisibility<T extends FormSubset>({
 						onChange={(newList) => form.setValue('allowedGroups', newList)}
 					/>
 				</Collapsible>
+				<Collapsible
+					open={form.watch('visibility') === 'public'}
+					className="pt-2"
+				>
+					<PickEntities
+						type="group"
+						list={form.watch('allowedGroups')}
+						onChange={(newList) => form.setValue('allowedGroups', newList)}
+					/>
+				</Collapsible>
 			</span>
 		</>
 	)

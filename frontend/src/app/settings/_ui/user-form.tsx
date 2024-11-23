@@ -29,6 +29,7 @@ export function UserForm({ userId }: UserFormProps) {
 	const { data, isFetching, refetch } = useQuery<User>({
 		queryKey: ['admin-user', userId],
 		queryFn: async () => {
+			// TODO: endpoint
 			await new Promise((resolve) => setTimeout(resolve, 1000))
 
 			return {
@@ -46,6 +47,7 @@ export function UserForm({ userId }: UserFormProps) {
 	const { mutate, isPending } = useMutation({
 		mutationKey: ['admin-user', userId],
 		mutationFn: async (data: UserForm) => {
+			// TODO: endpoint
 			await new Promise((resolve) => setTimeout(resolve, 1000))
 		},
 		onSuccess: () => {

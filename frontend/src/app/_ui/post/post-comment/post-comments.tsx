@@ -36,6 +36,7 @@ export function PostComments({ post, size }: PostComments) {
 	const { data: fetchedComments, isLoading } = useQuery({
 		queryKey: ['comments', post.id],
 		queryFn: async () => {
+			// TODO: endpoint
 			await new Promise((resolve) => setTimeout(resolve, 1000))
 
 			return [

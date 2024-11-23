@@ -4,6 +4,7 @@ import { PostDialogContent } from '@/app/_ui/post/post-dialog/post-dialog-conten
 export default function Page({
 	params: { postId },
 }: { params: { postId: string } }) {
+	// TODO: endpoint
 	const post = {
 		id: '1',
 		title: 'Post 1',

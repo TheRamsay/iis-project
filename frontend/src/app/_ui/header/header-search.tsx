@@ -16,6 +16,7 @@ export function HeaderSearch() {
 
 	useOnClickOutside(ref, () => setOpen(false))
 
+	// TODO: endpoint
 	const { data, isLoading, isError } = {
 		data: [],
 		isLoading: false,

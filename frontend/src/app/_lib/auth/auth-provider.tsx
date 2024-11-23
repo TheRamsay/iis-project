@@ -12,18 +12,10 @@ interface AuthProvider {
 
 export function AuthProvider({ initialSession, children }: AuthProvider) {
 	const [session, _setSession] = useState<Session | null>(initialSession)
-
-	console.log(session, initialSession)
-
 	return <AuthContext.Provider value={session}>{children}</AuthContext.Provider>
 }
 
 export function useSession() {
 	const session = useContext(AuthContext)
-
-	// if (!session) {
-	// 	throw new Error('useSessionContext must be used within a AuthProvider')
-	// }
-
 	return session
 }

@@ -14,6 +14,9 @@ type MiniatureFeed = (
 	| {
 			groupname: string
 	  }
+	| {
+			tag: string
+	  }
 ) & {
 	searchParams: Record<string, string>
 }
@@ -26,12 +29,38 @@ export async function MiniatureFeed(props: MiniatureFeed) {
 	)
 }
 
+async function fetchPosts(
+	props: MiniatureFeed,
+	filters: ReturnType<typeof getTypedSearchParams<typeof feedSearchSchema>>,
+) {
+	if ('username' in props) {
+		// TODO: endpoint
+		const username = props.username
+		const posts = dummyPosts
+		return posts
+	}
+
+	if ('groupname' in props) {
+		// TODO: endpoint
+		const groupname = props.groupname
+		const posts = dummyPosts
+		return posts
+	}
+
+	if ('tag' in props) {
+		// TODO: endpoint
+		const tag = props.tag
+		const posts = dummyPosts
+		return posts
+	}
+
+	throw new Error('Invalid props')
+}
+
 async function _MiniatureFeed(props: MiniatureFeed) {
-	const type: 'group' | 'user' = 'groupname' in props ? 'group' : 'user'
-	const name = 'groupname' in props ? props.groupname : props.username
 	const filters = getTypedSearchParams(feedSearchSchema, props.searchParams)
 
-	const posts = dummyPosts
+	const posts = await fetchPosts(props, filters)
 
 	return (
 		<FeedSearchProvider>

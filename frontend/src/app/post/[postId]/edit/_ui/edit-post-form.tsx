@@ -53,6 +53,7 @@ export function EditPostForm({ postId }: { postId: string }) {
 	const { data, isFetching, refetch } = useQuery<Post>({
 		queryKey: ['post', postId],
 		queryFn: async () => {
+			// TODO: endpoint
 			await new Promise((resolve) => setTimeout(resolve, 1000))
 
 			return {
@@ -81,7 +82,7 @@ export function EditPostForm({ postId }: { postId: string }) {
 	const { mutate, isPending } = useMutation({
 		mutationKey: ['edit-post'],
 		mutationFn: async (data: EditPostForm) => {
-			console.log('mutation')
+			// TODO: endpoint
 			await new Promise((resolve) => setTimeout(resolve, 1000))
 		},
 		onSuccess: () => {

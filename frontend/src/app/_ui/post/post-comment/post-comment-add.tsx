@@ -16,8 +16,8 @@ export function PostCommentAdd({ postId }: PostCommentAdd) {
 	const { mutate, isPending } = useMutation({
 		mutationKey: ['add-comment', postId],
 		mutationFn: async () => {
+			// TODO: endpoint
 			await new Promise((resolve) => setTimeout(resolve, 1000))
-			console.log('comment', comment)
 		},
 		onSettled: () => {
 			setComment('')

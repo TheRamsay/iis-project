@@ -5,7 +5,7 @@ interface PostCommentButton {
 	commentCount: number
 }
 
-export function PostCommentButton({ postId, commentCount }: PostCommentButton) {
+export function PostCommentButton({ commentCount }: PostCommentButton) {
 	return (
 		<div className="space-x-3 flex items-center">
 			<MessageCircle

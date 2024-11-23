@@ -6,107 +6,98 @@ import { TextField } from '@/components/components/text-field'
 import { FormControl, FormField, FormItem } from '@/components/components/form'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Button } from '@/components/components/button'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { Loader } from '@/components/components/loader'
 import classNames from 'classnames'
-import { TextArea } from '@/components/components/text-area'
-import { FormImage, formImageSchema } from '../../../_ui/form/form-image'
-import type { Entity } from '../../_ui/pick-entities'
-import { FormVisibility, formVisibilitySchema } from '../../_ui/form-visibility'
-import { FormLocation, formLocationSchema } from '../../_ui/form-location'
-import { z, type ZodType } from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { FormTags, formTagsSchema } from '../../_ui/form-tags'
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	TextArea,
+} from '@/components/components'
 import { FormLabelError } from '@/app/_ui/form/form-label-error'
 
-const submitPostFromSchema: ZodType<PostForm> = z
-	.object({
-		title: z.string().min(3).max(64),
-		description: z.string().max(255),
-	})
-	.merge(formImageSchema(true))
-	.merge(formLocationSchema)
-	.merge(formVisibilitySchema)
-	.merge(formTagsSchema)
-
-type Post = Pick<typeof schema.post.$inferSelect, 'description' | 'title'> & {
-	visibility: 'public' | 'private'
-	image: globalThis.File | null
-	location: {
-		lat: string
-		lng: string
-	}
-	allowedUsers: Entity[]
-	allowedGroups: Entity[]
-	tags: string[]
+interface GroupSettingsFormProps {
+	groupId: string
 }
 
-export type PostForm = Post
+type Group = Pick<typeof schema.group.$inferSelect, 'id' | 'name'> & {
+	visibility: 'public' | 'private'
+	description: string
+}
 
-export function SubmitPostForm() {
+export type GroupForm = Pick<Group, 'id'> & Partial<Group>
+
+export function GroupSettingsForm({ groupId }: GroupSettingsFormProps) {
+	const { data, isFetching, refetch } = useQuery<Group>({
+		queryKey: ['group-settings', groupId],
+		queryFn: async () => {
+			// TODO: endpoint
+			await new Promise((resolve) => setTimeout(resolve, 1000))
+
+			return {
+				id: Math.random().toString(),
+				name: 'groupdoe',
+				visibility: 'public',
+				description: 'BIO',
+			}
+		},
+	})
+
 	const { mutate, isPending } = useMutation({
-		mutationKey: ['submit-post'],
-		mutationFn: async (data: PostForm) => {
+		mutationKey: ['group-settings', groupId],
+		mutationFn: async (data: GroupForm) => {
 			// TODO: endpoint
 			await new Promise((resolve) => setTimeout(resolve, 1000))
 		},
 		onSuccess: () => {
-			// TODO: goto profile?
+			refetch()
 		},
 	})
 
-	const loading = isPending
+	const loading = isFetching || isPending
 
-	const form = useForm<PostForm>({
-		mode: 'all',
+	const form = useForm<GroupForm>({
 		defaultValues: {
-			description: '',
-			location: { lat: '', lng: '' },
-			title: '',
+			id: '',
+			name: '',
 			visibility: 'public',
-			tags: [],
-			image: null,
-			allowedGroups: [],
-			allowedUsers: [
-				{
-					avatar: {
-						src: 'https://avatars.githubusercontent.com/u/7655549?v=4',
-						width: 128,
-						height: 128,
-					},
-					id: '1',
-					username: 'John Doe',
-				},
-			],
+			description: '',
 		},
-		resolver: zodResolver(submitPostFromSchema),
 	})
+
+	useEffect(() => {
+		if (data) {
+			form.reset(data, { keepDirty: false })
+		}
+	}, [data, form.reset])
 
 	return (
 		<div className="space-y-4">
 			<FormProvider {...form}>
 				<FormField
-					name="title"
+					name="name"
 					control={form.control}
 					render={({
 						field: { name, value, onChange, onBlur },
-						fieldState: { isDirty, invalid: isError, error },
+						fieldState: { isDirty, error },
 					}) => (
 						<FormItem className="w-full">
 							<FormControl>
 								<>
 									<FormLabelError
 										htmlFor={name}
-										label="Title*"
+										label="Description"
 										error={error?.message}
 									/>
 									<TextField
 										type="text"
-										placeholder="Title"
 										value={value}
 										onChange={(e) => onChange(e.target.value)}
 										onBlur={onBlur}
-										className={formClassnames({ isDirty, isError })}
+										className={formClassnames({ isDirty })}
 										disabled={loading}
 									/>
 								</>
@@ -114,6 +105,7 @@ export function SubmitPostForm() {
 						</FormItem>
 					)}
 				/>
+
 				<FormField
 					name="description"
 					control={form.control}
@@ -144,12 +136,41 @@ export function SubmitPostForm() {
 					)}
 				/>
 
-				<FormLocation form={form} />
-				<FormVisibility form={form} />
-
-				<FormTags form={form} />
-
-				<FormImage form={form} />
+				<FormField
+					name="visibility"
+					control={form.control}
+					render={({
+						field: { name, value, onChange },
+						fieldState: { isDirty },
+						formState: { disabled },
+					}) => (
+						<FormItem className="w-full">
+							<FormControl>
+								<div className="flex flex-row items-center space-x-4">
+									<label htmlFor={name}>Visibility</label>
+									<Select
+										value={value}
+										onValueChange={onChange}
+										disabled={disabled}
+									>
+										<SelectTrigger
+											className={formClassnames(
+												{ isDirty },
+												'flex justify-between w-full',
+											)}
+										>
+											{value === 'private' ? 'Private' : 'Public'}
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="private">Private</SelectItem>
+											<SelectItem value="public">Public</SelectItem>
+										</SelectContent>
+									</Select>
+								</div>
+							</FormControl>
+						</FormItem>
+					)}
+				/>
 
 				<div className="flex flex-row w-full justify-between items-center">
 					<div className={classNames(!loading && 'hidden')}>
@@ -157,14 +178,10 @@ export function SubmitPostForm() {
 					</div>
 					<div className="flex w-full justify-end space-x-4">
 						<Button
-							onClick={form.handleSubmit((data) => {
-								mutate(data)
-							})}
-							disabled={
-								loading || Object.values(form.formState.errors).some(Boolean)
-							}
+							onClick={() => mutate(form.watch())}
+							disabled={loading || !form.formState.isDirty}
 						>
-							Submit
+							Save
 						</Button>
 					</div>
 				</div>
