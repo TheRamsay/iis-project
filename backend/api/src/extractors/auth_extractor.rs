@@ -19,8 +19,7 @@ use uuid::Uuid;
 use crate::{auth::jwt::is_token_blacklisted, AppState};
 
 // Default session duration is 1 day
-const DEFAULT_SESSION_DURATION: time::Duration = time::Duration::from_secs(60);
-// const DEFAULT_SESSION_DURATION: time::Duration = time::Duration::from_secs(60 * 60 * 24);
+const DEFAULT_SESSION_DURATION: time::Duration = time::Duration::from_secs(60 * 60 * 24);
 
 pub struct AuthUser {
     pub id: Uuid,

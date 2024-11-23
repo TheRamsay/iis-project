@@ -1,7 +1,7 @@
 use models::domain::{user::User, Id};
 use sea_orm::{
     sea_query::{extension::postgres::PgExpr, ExprTrait},
-    DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter, Set,
+    DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter, RuntimeErr, Set, SqlxError,
 };
 use std::{future::Future, sync::Arc};
 
@@ -78,19 +78,16 @@ impl UserRepository for DbUserRepository {
         active_model.is_blocked = Set(user.is_blocked);
         active_model.avatar_url = Set(user.avatar_url);
         active_model.display_name = Set(user.display_name);
-        active_model.email = Set(user.email.value);
+        active_model.email = Set(user.email);
         active_model.user_type = Set(user.user_type.into());
         active_model.username = Set(user.username);
         active_model.password_hash = Set(user.password_hash);
 
-        match models::schema::user::Entity::update(active_model)
+        let updated = models::schema::user::Entity::update(active_model)
             .exec(self.db.as_ref())
-            .await
-        {
-            Ok(updated) => Ok(updated.into()),
-            Err(DbErr::Exec(e)) if e.cont
-            Err(err) => Err(err),
-        }
+            .await?;
+
+        Ok(updated.into())
     }
 
     async fn delete(&self, user: Id<User>) -> Result<(), DbErr> {

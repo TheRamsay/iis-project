@@ -83,7 +83,7 @@ async fn get_user(
             id: user.id.id,
             display_name: user.display_name,
             username: user.username,
-            email: user.email.value,
+            email: user.email,
             avatar_url: user.avatar_url,
             user_type: match user.user_type {
                 models::domain::user::UserType::Regular => "Regular".to_string(),

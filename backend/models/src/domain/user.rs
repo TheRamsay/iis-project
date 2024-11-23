@@ -1,12 +1,18 @@
 use std::default;
 
+use sea_orm::{ColumnTrait, DbConn, EntityTrait, QueryFilter};
 use serde::{Deserialize, Serialize};
+use tokio::runtime::Handle;
 use uuid::Uuid;
-use validator::{Validate, ValidationErrors};
+use validator::{Validate, ValidateArgs, ValidationError, ValidationErrors};
 
 use crate::schema;
 
-use super::{email::Email, wall::Wall, Id};
+use super::{
+    email::{self, Email},
+    wall::Wall,
+    Id,
+};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub enum UserType {
@@ -31,7 +37,8 @@ pub struct User {
         message = "Username must be between 3 and 255 characters"
     ))]
     pub username: String,
-    pub email: Email,
+    #[validate(email)]
+    pub email: String,
     #[validate(url)]
     pub avatar_url: Option<String>,
     pub user_type: UserType,
@@ -44,7 +51,7 @@ impl User {
     pub fn new(
         display_name: String,
         username: String,
-        email: Email,
+        email: String,
         avatar_url: Option<String>,
         user_type: UserType,
         wall_id: Id<Wall>,
@@ -78,7 +85,7 @@ impl From<schema::user::Model> for User {
             id: Id::new(model.id),
             display_name: model.display_name,
             username: model.username,
-            email: Email::new(model.email).expect("Invalid email from database"),
+            email: model.email,
             avatar_url: model.avatar_url,
             user_type: model.user_type.into(),
             wall_id: Id::new(model.wall_id),
@@ -94,7 +101,7 @@ impl From<User> for schema::user::Model {
             id: user.id.id,
             display_name: user.display_name,
             username: user.username,
-            email: user.email.value,
+            email: user.email,
             avatar_url: user.avatar_url,
             user_type: user.user_type.into(),
             wall_id: user.wall_id.id,

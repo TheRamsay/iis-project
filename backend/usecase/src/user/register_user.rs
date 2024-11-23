@@ -71,7 +71,7 @@ where
         {
             return Err(AppError::Conflict(format!(
                 "User with email {} already exists",
-                u.email.value
+                u.email
             )));
         }
 
@@ -80,7 +80,7 @@ where
         let user = User::new(
             input.display_name,
             input.username,
-            input.email.try_into()?,
+            input.email,
             input.avatar_url,
             input.user_type,
             wall_id,
