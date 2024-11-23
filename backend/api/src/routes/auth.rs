@@ -49,6 +49,7 @@ pub async fn login(
     let cookie = Cookie::build(("jwt", token))
         .same_site(axum_extra::extract::cookie::SameSite::Strict)
         .http_only(true)
+        .path("/")
         .secure(true);
 
     let jar = CookieJar::new().add(cookie);

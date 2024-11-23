@@ -242,6 +242,7 @@ async fn update_user(
 
         let cookie = Cookie::build(("jwt", new_jwt_str))
             .same_site(axum_extra::extract::cookie::SameSite::Strict)
+            .path("/")
             .http_only(true)
             .secure(true);
 
