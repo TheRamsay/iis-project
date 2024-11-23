@@ -1,4 +1,4 @@
-use std::default;
+use std::{cmp::Ordering, default, fmt::Display, ops};
 
 use sea_orm::{ColumnTrait, DbConn, EntityTrait, QueryFilter};
 use serde::{Deserialize, Serialize};
@@ -20,6 +20,50 @@ pub enum UserType {
     Regular = 0,
     Moderator = 1,
     Administrator = 2,
+}
+
+impl Display for UserType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            UserType::Regular => write!(f, "Regular"),
+            UserType::Moderator => write!(f, "Moderator"),
+            UserType::Administrator => write!(f, "Administrator"),
+        }
+    }
+}
+
+impl UserType {
+    pub fn has_higher_privilege_than(&self, other: &UserType) -> bool {
+        (self.to_owned() as i32) > (other.to_owned() as i32)
+    }
+
+    pub fn has_lower_privilege_than(&self, other: &UserType) -> bool {
+        (self.to_owned() as i32) < (other.to_owned() as i32)
+    }
+
+    pub fn has_same_privilege_as(&self, other: &UserType) -> bool {
+        (self.to_owned() as i32) == (other.to_owned() as i32)
+    }
+
+    pub fn is_administrator(&self) -> bool {
+        self.has_same_privilege_as(&UserType::Administrator)
+    }
+
+    pub fn is_moderator(&self) -> bool {
+        self.has_same_privilege_as(&UserType::Moderator)
+    }
+
+    pub fn is_regular(&self) -> bool {
+        self.has_same_privilege_as(&UserType::Regular)
+    }
+
+    pub fn has_highter_or_same_privilege_as(&self, other: &UserType) -> bool {
+        self.has_higher_privilege_than(other) || self.has_same_privilege_as(other)
+    }
+
+    pub fn has_lower_or_same_privilege_as(&self, other: &UserType) -> bool {
+        self.has_lower_privilege_than(other) || self.has_same_privilege_as(other)
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Validate, Serialize, Deserialize)]
