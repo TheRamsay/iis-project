@@ -2,11 +2,15 @@ use anyhow::Ok;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use usecase::post::{
+    comment_post::{CommentPostInput, CommentPostUseCase},
     create_post::{CreatePostInput, CreatePostUseCase},
     delete_post::{DeletePostInput, DeletePostUseCase},
-    get_post::{GetPostInput, GetPostUseCase},
+    get_comment::{GetCommentInput, GetCommentUseCase},
+    get_post::{self, GetPostInput, GetPostUseCase},
+    get_post_comments::{GetPostCommentsInput, GetPostCommentsUseCase},
     get_post_likes::{self, GetPostLikesInput},
     like_post::{LikePostInput, LikePostUseCase},
+    uncomment_post::{UncommentPostInput, UncommentPostUseCase},
     unlike_post::{UnlikePostInput, UnlikePostUseCase},
     update_post::{UpdatePostInput, UpdatePostUseCase},
     upload_image::{UploadImageInput, UploadImageUseCase},
@@ -27,6 +31,7 @@ use axum::{
 use models::{
     domain::{
         post::{Post, PostType, PostVisibilityType},
+        post_comment::PostComment,
         user::UserType,
     },
     errors::{AppError, AppResult},
@@ -87,8 +92,17 @@ struct GetPostResponse {
     content_url: String,
     visibility: String,
     like_count: i32,
+    comments: Option<Vec<GetPostCommentResponse>>,
     location_id: Option<Uuid>,
     created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct GetPostCommentResponse {
+    id: Uuid,
+    content: String,
+    user_id: Uuid,
+    parent_id: Option<Uuid>,
 }
 
 async fn get_post(
@@ -98,10 +112,15 @@ async fn get_post(
     let post_usecase = GetPostUseCase::new(state.post_repository.clone());
     let get_post_likes_use_case =
         get_post_likes::GetPostLikesUseCase::new(state.post_likes_repository.clone());
+    let get_post_comments_use_case =
+        GetPostCommentsUseCase::new(state.post_comments_repository.clone());
 
     let post = post_usecase.execute(GetPostInput { id }).await?;
     let likes = get_post_likes_use_case
         .execute(GetPostLikesInput { id: id })
+        .await?;
+    let comments = get_post_comments_use_case
+        .execute(GetPostCommentsInput { id: id })
         .await?;
 
     if let Some(post) = post {
@@ -122,6 +141,18 @@ async fn get_post(
             like_count: likes
                 .unwrap_or(get_post_likes::GetPostLikesOutput { like_count: 0 })
                 .like_count,
+            comments: comments.map(|comments| {
+                comments
+                    .comments
+                    .iter()
+                    .map(|comment| GetPostCommentResponse {
+                        id: comment.id.clone().into(),
+                        content: comment.content.clone(),
+                        user_id: comment.clone().user_id.into(),
+                        parent_id: comment.clone().parent_id.map(|id| id.into()),
+                    })
+                    .collect()
+            }),
             created_at: post.post.created_at,
         }))
     } else {
@@ -307,6 +338,92 @@ async fn unlike_post(
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+struct CommentPostRequest {
+    content: String,
+    parent_id: Option<Uuid>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct CommentPostResponse {
+    id: Uuid,
+}
+
+async fn comment_post(
+    state: State<AppState>,
+    Path(id): Path<Uuid>,
+    user: AuthUser,
+    Json(payload): Json<CommentPostRequest>,
+) -> AppResult<Json<CommentPostResponse>> {
+    let comment_use_case = CommentPostUseCase::new(state.post_comments_repository.clone());
+
+    let result = comment_use_case
+        .execute(CommentPostInput {
+            post_id: id,
+            user_id: user.id,
+            content: payload.content,
+            parent_id: payload.parent_id,
+        })
+        .await?;
+
+    if result.is_none() {
+        return Err(AppError::NotFound("Comment".into()));
+    }
+
+    anyhow::Result::Ok(Json(CommentPostResponse {
+        id: result.unwrap().id,
+    }))
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct DeletePostCommentResponse {
+    success: bool,
+}
+
+async fn delete_post_comment(
+    state: State<AppState>,
+    Path(ids): Path<(Uuid, Uuid)>,
+    user: AuthUser,
+) -> AppResult<Json<DeletePostCommentResponse>> {
+    let uncomment_use_case = UncommentPostUseCase::new(state.post_comments_repository.clone());
+    let post_use_case = GetPostUseCase::new(state.post_repository.clone());
+    let comment_use_case = GetCommentUseCase::new(state.post_comments_repository.clone());
+
+    let post = post_use_case.execute(GetPostInput { id: ids.0 }).await?;
+    let comment = comment_use_case
+        .execute(GetCommentInput { id: ids.1 })
+        .await?;
+
+    if post.is_none() {
+        return Err(AppError::NotFound("Post".into()));
+    }
+
+    if comment.is_none() {
+        return Err(AppError::NotFound("Comment".into()));
+    }
+
+    let unwraped_post = post.unwrap();
+    let unwraped_comment = comment.unwrap();
+
+    if user.id != unwraped_post.post.author_id.id
+        && user.id != unwraped_comment.comment.user_id.id
+        && user.role != UserType::Administrator
+        && user.role != UserType::Moderator
+    {
+        return Err(AppError::Unauthorized("Unauthorized".into()));
+    }
+
+    let result = uncomment_use_case
+        .execute(UncommentPostInput { id: ids.1 })
+        .await?;
+
+    if result.is_none() {
+        return Err(AppError::NotFound("Comment".into()));
+    }
+
+    anyhow::Result::Ok(Json(DeletePostCommentResponse { success: true }))
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 struct UploadImageRequest {
     image: String,
 }
@@ -337,6 +454,8 @@ pub fn post_routes() -> axum::Router<crate::AppState> {
         .route("/:id", get(get_post))
         .route("/:id", delete(delete_post))
         .route("/:id", put(update_post))
+        .route("/:id/comment", post(comment_post))
+        .route("/:id/comment/:comment_id", delete(delete_post_comment))
         .route("/:id/like", post(like_post))
         .route("/:id/like", delete(unlike_post))
         .route("/upload_image", post(upload_image))

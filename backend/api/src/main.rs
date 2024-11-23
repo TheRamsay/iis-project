@@ -9,6 +9,8 @@ use repository::cloudinary_repository::{CloudinaryRepository, GenericRepository}
 use repository::group_join_request_repository::DbGroupJoinRequestRepository;
 use repository::group_member_repository::DbGroupMemberRepository;
 use repository::group_repository::DbGroupRepository;
+use repository::post_comments_repository::DbPostCommentsRepository;
+use repository::post_likes_repository::DbPostLikesRepository;
 use repository::post_repository::DbPostRepository;
 use repository::user_repository::{DbUserRepository, UserRepository};
 use repository::wall_repository::DbWallRepository;
@@ -32,6 +34,8 @@ pub struct AppState {
     pub user_repository: DbUserRepository,
     pub group_repository: DbGroupRepository,
     pub post_repository: DbPostRepository,
+    pub post_likes_repository: DbPostLikesRepository,
+    pub post_comments_repository: DbPostCommentsRepository,
     pub cloudinary_repository: GenericRepository,
     pub wall_repository: DbWallRepository,
     pub group_member_repository: DbGroupMemberRepository,
@@ -59,10 +63,13 @@ async fn main() -> shuttle_axum::ShuttleAxum {
         group_member_repository: DbGroupMemberRepository::new(Arc::new(conn.clone())),
         group_join_request_repository: DbGroupJoinRequestRepository::new(Arc::new(conn.clone())),
         post_repository: DbPostRepository::new(Arc::new(conn.clone())),
+        post_likes_repository: DbPostLikesRepository::new(Arc::new(conn.clone())),
+        post_comments_repository: DbPostCommentsRepository::new(Arc::new(conn.clone())),
         cloudinary_repository: GenericRepository {},
         conn: conn.clone(),
         jwt_secret,
         redis_client: Arc::new(redis::Client::open("redis://localhost:6379").unwrap()),
+        // redis_client: Arc::new(redis::Client::open("rediss://default:AWEgAAIjcDEzNmU1YzI0MzU1MGI0NThhOGM5N2Y4M2VlMDNjYjkxMnAxMA@sincere-mink-24864.upstash.io:6379").unwrap()),
     };
 
     let router = Router::new()
