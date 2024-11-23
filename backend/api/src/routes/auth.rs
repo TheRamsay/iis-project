@@ -1,16 +1,22 @@
 use anyhow::anyhow;
 use argon2::{Argon2, PasswordHash};
 use axum::{extract::State, routing::post};
-use axum_extra::extract::{cookie::Cookie, CookieJar};
+use axum_extra::extract::{
+    cookie::{Cookie, Expiration},
+    CookieJar,
+};
+use chrono::Offset;
 use models::errors::{AppError, AppResult};
 use repository::user_repository::{self, DbUserRepository, UserRepository};
 use serde::{Deserialize, Serialize};
+use time::OffsetDateTime;
 use usecase::user::{
     auth_utils::verify_password,
     register_user::{RegisterUserInput, RegisterUserUseCase},
 };
 
 use crate::{
+    auth,
     extractors::{auth_extractor::AuthUser, json_extractor::Json},
     AppState,
 };
@@ -44,12 +50,17 @@ pub async fn login(
 
     verify_password(payload.password, user.password_hash).await?;
 
-    let token = AuthUser::new(user.id.into(), user.username.clone(), user.user_type).to_jwt();
+    let auth_user = AuthUser::new(user.id.into(), user.username.clone(), user.user_type);
+    let token = auth_user.to_jwt();
 
     let cookie = Cookie::build(("jwt", token))
         .same_site(axum_extra::extract::cookie::SameSite::Strict)
         .http_only(true)
         .path("/")
+        .expires(Expiration::DateTime(
+            OffsetDateTime::from_unix_timestamp(auth_user.exp as i64)
+                .map_err(|_| anyhow!("Failed to create expiration time"))?,
+        ))
         .secure(true);
 
     let jar = CookieJar::new().add(cookie);

@@ -3,13 +3,17 @@ use axum::{
     extract::{Path, State},
     routing::{delete, get, post, put},
 };
-use axum_extra::extract::{cookie::Cookie, CookieJar};
+use axum_extra::extract::{
+    cookie::{Cookie, Expiration},
+    CookieJar,
+};
 use models::{
     domain::user::UserType,
     errors::{AppError, AppResult},
 };
 use repository::user_repository::UserRepository;
 use serde::{Deserialize, Serialize};
+use time::OffsetDateTime;
 use usecase::user::{
     block_user::{BlockUserInput, BlockUserUseCase},
     get_user::{GetUserInput, GetUserUseCase},
@@ -73,6 +77,7 @@ struct GetUserResponse {
     email: String,
     avatar_url: Option<String>,
     user_type: String,
+    wall_id: Uuid,
 }
 
 async fn get_user(
@@ -90,30 +95,32 @@ async fn get_user(
             username: user.username,
             email: user.email,
             avatar_url: user.avatar_url,
-            user_type: match user.user_type {
-                models::domain::user::UserType::Regular => "Regular".to_string(),
-                models::domain::user::UserType::Administrator => "Admin".to_string(),
-                models::domain::user::UserType::Moderator => "Moderator".to_string(),
-            },
+            user_type: user.user_type.to_string(),
+            wall_id: user.wall_id.id,
         }))
     } else {
         Err(AppError::NotFound("User".into()))
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-struct MeResponse {
-    id: Uuid,
-    username: String,
-    user_type: UserType,
-}
+async fn me(state: State<AppState>, user: AuthUser) -> AppResult<Json<GetUserResponse>> {
+    let user_usercase = GetUserUseCase::new(state.user_repository.clone());
 
-async fn me(user: AuthUser) -> AppResult<Json<MeResponse>> {
-    Ok(Json(MeResponse {
-        username: user.username,
-        id: user.id,
-        user_type: user.role,
-    }))
+    let user = user_usercase.execute(GetUserInput { id: user.id }).await?;
+
+    if let Some(user) = user {
+        anyhow::Result::Ok(Json(GetUserResponse {
+            id: user.id.id,
+            display_name: user.display_name,
+            username: user.username,
+            email: user.email,
+            avatar_url: user.avatar_url,
+            user_type: user.user_type.to_string(),
+            wall_id: user.wall_id.id,
+        }))
+    } else {
+        Err(AppError::NotFound("User".into()))
+    }
 }
 
 async fn block_user(
@@ -136,11 +143,14 @@ async fn block_user(
         return Err(AppError::BadRequest("User is already blocked".into()));
     }
 
-    if (admin.role == models::domain::user::UserType::Regular)
-        || (admin.id == user.id.into())
-        || (admin.role as i32 <= user.user_type as i32)
+    let self_block = admin.id == user.id.into();
+    if admin.role.is_regular()
+        || admin.role.has_lower_or_same_privilege_as(&user.user_type)
+        || self_block
     {
-        return Err(AppError::Unauthorized("You can't block this user".into()));
+        return Err(AppError::Unauthorized(
+            "You do not have sufficient privileges to block this user.".into(),
+        ));
     }
 
     block_user_usecase
@@ -195,11 +205,10 @@ async fn update_user(
     Path(id): Path<Uuid>,
     Json(payload): Json<UpdateUserRequest>,
 ) -> AppResult<(CookieJar, ())> {
-    let is_admin = actor.role == UserType::Administrator;
     let modifies_self = actor.id == id;
 
     // Check if the actor is an admin or the user being modified
-    if (!is_admin) && (!modifies_self) {
+    if actor.role.is_administrator() && !modifies_self {
         return Err(AppError::Unauthorized("You can't modify this user".into()));
     }
 
@@ -210,7 +219,7 @@ async fn update_user(
         .ok_or_else(|| AppError::NotFound("User not found".into()))?;
 
     // If actor tries to change user type, he must be an admin
-    if !is_admin && user.user_type != payload.user_type {
+    if !actor.role.is_administrator() && !user.user_type.has_same_privilege_as(&payload.user_type) {
         return Err(AppError::Unauthorized("You can't change user type".into()));
     }
 
@@ -238,17 +247,22 @@ async fn update_user(
         blacklist_token(&state.redis_client, &old_jwt_str, actor.exp)
             .map_err(|e| AppError::Anyhow(anyhow!(e)))?;
 
-        let new_jwt_str = AuthUser::new(
+        let new_jwt = AuthUser::new(
             updated.id.into(),
             updated.username.clone(),
             updated.user_type,
-        )
-        .to_jwt();
+        );
+
+        let new_jwt_str = new_jwt.to_jwt();
 
         let cookie = Cookie::build(("jwt", new_jwt_str))
             .same_site(axum_extra::extract::cookie::SameSite::Strict)
             .path("/")
             .http_only(true)
+            .expires(Expiration::DateTime(
+                OffsetDateTime::from_unix_timestamp(new_jwt.exp as i64)
+                    .map_err(|_| anyhow!("Failed to create expiration time"))?,
+            ))
             .secure(true);
 
         jar = jar.add(cookie);
