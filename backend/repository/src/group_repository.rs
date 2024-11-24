@@ -5,7 +5,8 @@ use models::{
     schema,
 };
 use sea_orm::{
-    sea_query::extension::postgres::PgExpr, DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter,
+    sea_query::extension::postgres::PgExpr, DbConn, DbErr, EntityTrait, IntoSimpleExpr,
+    QueryFilter, Set,
 };
 
 #[derive(Debug, Clone)]
@@ -23,6 +24,7 @@ pub trait GroupRepository {
     async fn get_by_id(&self, id: &Id<Group>) -> Result<Option<(Group, User)>, DbErr>;
     async fn create(&self, group: Group) -> Result<Id<Group>, DbErr>;
     async fn search(&self, query: String) -> Result<Vec<(Group, User)>, DbErr>;
+    async fn delete(&self, group: Id<Group>) -> Result<(), DbErr>;
 }
 
 impl GroupRepository for DbGroupRepository {
@@ -70,5 +72,18 @@ impl GroupRepository for DbGroupRepository {
             .into_iter()
             .map(|(group, author)| (group.into(), author.expect("Unknown author").into()))
             .collect())
+    }
+
+    async fn delete(&self, group_id: Id<Group>) -> Result<(), DbErr> {
+        let active_model = models::schema::group::ActiveModel {
+            id: Set(group_id.into()),
+            ..Default::default()
+        };
+
+        let _ = models::schema::group::Entity::delete(active_model)
+            .exec(self.db.as_ref())
+            .await?;
+
+        Ok(())
     }
 }

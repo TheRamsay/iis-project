@@ -4,7 +4,7 @@ use models::{
         user::{User, UserType},
         Id,
     },
-    errors::AppResult,
+    errors::{AppError, AppResult},
 };
 use repository::{
     group_join_request_repository::{self, GroupJoinRequestRepository},
@@ -32,20 +32,24 @@ pub struct GroupMemberStatusOutput {
     pub status: GroupMemberStatus,
 }
 
-pub struct GroupMemberStatusUseCase<T>
+pub struct GroupMemberStatusUseCase<T, X>
 where
     T: GroupJoinRequestRepository,
+    X: GroupRepository,
 {
     group_join_request_repository: T,
+    group_repository: X,
 }
 
-impl<T> GroupMemberStatusUseCase<T>
+impl<T, X> GroupMemberStatusUseCase<T, X>
 where
     T: GroupJoinRequestRepository,
+    X: GroupRepository,
 {
-    pub fn new(group_join_request_repository: T) -> Self {
+    pub fn new(group_join_request_repository: T, group_repository: X) -> Self {
         Self {
             group_join_request_repository,
+            group_repository,
         }
     }
 
@@ -53,6 +57,11 @@ where
         &self,
         input: GroupMemberStatusInput,
     ) -> AppResult<GroupMemberStatusOutput> {
+        self.group_repository
+            .get_by_id(&input.group_id)
+            .await?
+            .ok_or(AppError::NotFound("Group".to_string()))?;
+
         let requests = self
             .group_join_request_repository
             .find_by_user_id_and_group_id(&input.user_id, &input.group_id)

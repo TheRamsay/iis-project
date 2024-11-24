@@ -1,7 +1,7 @@
 use axum::{
     extract::{Path, Query, State},
     response::IntoResponse,
-    routing::{get, post},
+    routing::{delete, get, post},
 };
 use models::{
     domain::{
@@ -17,6 +17,7 @@ use usecase::{
     group::{
         add_user_to_group,
         create_group::{CreateGroupInput, CreateGroupUseCase},
+        delete_group::{DeleteGroupInput, DeleteGroupUseCase},
         get_group::{GetGroupInput, GetGroupUseCase},
         get_group_members::{GetGroupMembersInput, GetGroupMembersUseCase},
         get_group_requests::{GetGroupRequestsInput, GetGroupRequestsUseCase},
@@ -268,7 +269,10 @@ async fn check_user_status_in_group(
     user: AuthUser,
     Path(group_id): Path<Uuid>,
 ) -> AppResult<impl IntoResponse> {
-    let usecase = GroupMemberStatusUseCase::new(state.group_join_request_repository.clone());
+    let usecase = GroupMemberStatusUseCase::new(
+        state.group_join_request_repository.clone(),
+        state.group_repository.clone(),
+    );
 
     let input = GroupMemberStatusInput {
         user_id: user.id.into(),
@@ -297,7 +301,10 @@ async fn get_group_members(
     state: State<AppState>,
     Path(group_id): Path<Uuid>,
 ) -> AppResult<Json<Vec<GetGroupMembersResponse>>> {
-    let usecase = GetGroupMembersUseCase::new(state.group_member_repository.clone());
+    let usecase = GetGroupMembersUseCase::new(
+        state.group_member_repository.clone(),
+        state.group_repository.clone(),
+    );
 
     let input = models::domain::Id::from(group_id);
 
@@ -341,7 +348,10 @@ async fn get_group_requests(
     state: State<AppState>,
     Path(group_id): Path<Uuid>,
 ) -> AppResult<Json<Vec<GetGroupRequestsResponse>>> {
-    let usecase = GetGroupRequestsUseCase::new(state.group_join_request_repository.clone());
+    let usecase = GetGroupRequestsUseCase::new(
+        state.group_join_request_repository.clone(),
+        state.group_repository.clone(),
+    );
 
     let input = models::domain::Id::from(group_id);
 
@@ -366,11 +376,40 @@ async fn get_group_requests(
     ))
 }
 
+async fn delete_group(
+    state: State<AppState>,
+    user: AuthUser,
+    Path(group_id): Path<Uuid>,
+) -> AppResult<()> {
+    let delete_use_case = DeleteGroupUseCase::new(state.group_repository.clone());
+    let get_use_case = GetGroupUseCase::new(state.group_repository.clone());
+
+    let group = get_use_case
+        .execute(GetGroupInput { id: group_id })
+        .await?
+        .ok_or(AppError::NotFound("Group".into()))?;
+
+    let is_group_admin = group.admin.id.id == user.id;
+
+    if !is_group_admin && user.role.is_regular() {
+        return Err(AppError::Unauthorized("Only admin can delete group".into()));
+    }
+
+    let input = DeleteGroupInput {
+        id: group_id.into(),
+    };
+
+    delete_use_case.execute(input).await?;
+
+    Ok(())
+}
+
 pub fn group_routes() -> axum::Router<crate::AppState> {
     axum::Router::new()
         .route("/", get(search_group))
         .route("/", post(create_group))
         .route("/:id", get(get_group))
+        .route("/:id", delete(delete_group))
         .route("/:id/members", get(get_group_members))
         .route("/:id/requests", get(get_group_requests))
         .route("/:id/status", get(check_user_status_in_group))
