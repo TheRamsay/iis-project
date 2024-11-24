@@ -28,15 +28,15 @@ export function PostDialogContent({
 					unoptimized
 					src={post.image.src}
 					alt="image"
-					width={post.image.width}
-					height={post.image.height}
+					width={512}
+					height={512}
 					className="h-full w-full object-contain"
 				/>
 			</div>
 			<div className="flex flex-col justify-between w-[35%] min-w-[35%]">
 				<div className="">
 					<div className="p-4 border-b border-accent flex flex-row justify-between items-center">
-						<UserAvatarName user={post.user} />
+						{/* <UserAvatarName user={post.user} /> */}
 						{dialog && (
 							<DialogClose>
 								<XIcon width={24} height={24} />

@@ -7,6 +7,8 @@ import { Trash2Icon } from 'lucide-react'
 import type { Post } from '@/app/post/_lib/fetch-post'
 import type { Comment } from '@/app/_types/comments'
 import { ErrorTooltip } from '../../error-tooltip'
+import { backendFetch } from '@/app/_lib/backend-fetch'
+import { useRouter } from 'next/navigation'
 
 interface PostCommentDeleteButton {
 	post: Pick<Post, 'id'>
@@ -21,14 +23,15 @@ export function PostCommentDeleteButton({
 }: PostCommentDeleteButton) {
 	const session = useSession()
 
+	const router = useRouter()
+
 	const { mutate, error } = useMutation({
 		mutationKey: ['delete-comment', comment],
 		mutationFn: async () => {
-			const response = await fetch(
+			const response = await backendFetch(
 				`/api/posts/${post.id}/comment/${comment.id}`,
 				{
 					method: 'DELETE',
-					credentials: 'include',
 				},
 			)
 
@@ -37,6 +40,9 @@ export function PostCommentDeleteButton({
 			}
 
 			return response.json()
+		},
+		onSuccess: () => {
+			router.refresh()
 		},
 	})
 

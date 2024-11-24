@@ -6,6 +6,7 @@ import { useMutation } from '@tanstack/react-query'
 import { Trash2Icon } from 'lucide-react'
 import { ErrorTooltip } from '../error-tooltip'
 import type { Post } from '@/app/post/_lib/fetch-post'
+import { backendFetch } from '@/app/_lib/backend-fetch'
 
 interface PostDeleteButton {
 	post: Pick<Post, 'id'> & {
@@ -25,7 +26,7 @@ export function PostDeleteButton({
 	const { mutate, error } = useMutation({
 		mutationKey: ['delete-post', post, groupModeratorId],
 		mutationFn: async () => {
-			const response = await fetch(`/api/posts/${post.id}`, {
+			const response = await backendFetch(`/api/posts/${post.id}`, {
 				method: 'DELETE',
 				credentials: 'include',
 			})

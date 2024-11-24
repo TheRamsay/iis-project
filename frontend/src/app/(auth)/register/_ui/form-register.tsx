@@ -1,5 +1,6 @@
 'use client'
 
+import { backendFetch } from '@/app/_lib/backend-fetch'
 import { BACKEND_URL } from '@/app/_lib/constants'
 import { formClassnames } from '@/app/_lib/form-classnames'
 import { myz } from '@/app/_types/zod'
@@ -48,11 +49,8 @@ export function FormRegister() {
 	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['register'],
 		mutationFn: async (formData: FormRegister) => {
-			const response = await fetch(`${BACKEND_URL}/api/auth/register`, {
+			const response = await backendFetch('/api/auth/register', {
 				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
 				body: JSON.stringify(formData),
 			})
 

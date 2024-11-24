@@ -4,9 +4,7 @@ export type Session = {
   userId: string;
   username: string;
   avatar: {
-    src: string;
-    width: number;
-    height: number;
+    src: string | undefined;
   };
   role: (typeof schema)["userType"]["enumValues"][number];
 };

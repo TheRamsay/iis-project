@@ -6,20 +6,24 @@ import { TextField } from '@/components/components/text-field'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { ErrorTooltip } from '../../error-tooltip'
+import { backendFetch } from '@/app/_lib/backend-fetch'
+import type { Post } from '@/app/post/_lib/fetch-post'
+import { useRouter } from 'next/navigation'
 
 interface PostCommentAdd {
-	postId: number
+	post: Pick<Post, 'id'>
 }
 
-export function PostCommentAdd({ postId }: PostCommentAdd) {
+export function PostCommentAdd({ post }: PostCommentAdd) {
 	const [comment, setComment] = useState('')
 
+	const router = useRouter()
+
 	const { mutate, error, isPending } = useMutation({
-		mutationKey: ['add-comment', postId],
+		mutationKey: ['add-comment', post.id],
 		mutationFn: async () => {
-			const response = await fetch(`/api/posts/${postId}/comment`, {
+			const response = await backendFetch(`/api/posts/${post.id}/comment`, {
 				method: 'POST',
-				credentials: 'include',
 				body: JSON.stringify({ content: comment }),
 			})
 
@@ -31,6 +35,7 @@ export function PostCommentAdd({ postId }: PostCommentAdd) {
 		},
 		onSuccess: () => {
 			setComment('')
+			router.refresh()
 		},
 	})
 

@@ -17,9 +17,7 @@ export type Entity = {
 	id: string
 	username: string
 	avatar: {
-		src: string
-		width: number
-		height: number
+		src: string | undefined
 	}
 }
 
@@ -50,9 +48,7 @@ export function PickEntities({ type, list, onChange }: PickEntities) {
 					id: group.id,
 					username: group.groupname,
 					avatar: {
-						src: '/avatar-placeholder.png', // TODO: group avatar
-						width: 32,
-						height: 32,
+						src: undefined,
 					},
 				}))
 			}

@@ -24,6 +24,7 @@ import { FormLabelError } from '@/app/_ui/form/form-label-error'
 import { FormServerError } from '@/app/_ui/form/form-server-error'
 import { fetchPost } from '@/app/post/_lib/fetch-post'
 import { myz } from '@/app/_types/zod'
+import { backendFetch } from '@/app/_lib/backend-fetch'
 
 const editPostFromSchema: ZodType<EditPostForm> = z
 	.object({
@@ -73,17 +74,16 @@ export function EditPostForm({ postId }: { postId: string }) {
 	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['edit-post'],
 		mutationFn: async (formData: EditPostForm) => {
-			const response = await fetch(`/api/posts/${postId}`, {
+			const response = await backendFetch(`/api/posts/${postId}`, {
 				method: 'PUT',
 				body: JSON.stringify({
-					// title: formData.title, // TODO: add title to the endpoint
+					title: formData.title,
 					description: formData.description,
 					visibility: formData.visibility,
 					// location: formData.location,
 					tags: formData.tags,
 					post_type: 'photo',
 				}),
-				credentials: 'include',
 			})
 
 			if (!response.ok) {

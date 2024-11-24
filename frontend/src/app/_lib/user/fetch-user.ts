@@ -9,9 +9,7 @@ export type User = {
   role: "regular" | "administrator" | "moderator";
   isBlocked: boolean;
   avatar: {
-    src: string;
-    width: number;
-    height: number;
+    src: string | undefined;
   };
 };
 
@@ -26,9 +24,7 @@ function transform(data: any) {
     role: data.user_type,
     isBlocked: data.is_blocked,
     avatar: {
-      src: data.avatar_url || "/avatar-placeholder.png",
-      width: 32,
-      height: 32,
+      src: data.avatar_url,
     },
   };
 }

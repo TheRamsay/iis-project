@@ -10,15 +10,29 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { Loader } from '@/components/components/loader'
 import classNames from 'classnames'
-import { FormImage } from '@/app/_ui/form/form-image'
+import { FormImage, formImageSchema } from '@/app/_ui/form/form-image'
 import { FormLabelError } from '@/app/_ui/form/form-label-error'
 import { TextArea } from '@/components/components'
 import { FormServerError } from '@/app/_ui/form/form-server-error'
-import { fetchUserByUsername } from '@/app/_lib/user/fetch-user'
+import { fetchUserById } from '@/app/_lib/user/fetch-user'
 import { backendFetch, checkResponse } from '@/app/_lib/backend-fetch'
 import { uploadImage } from '@/app/_lib/upload-image'
+import { z, type ZodType } from 'zod'
+import { myz } from '@/app/_types/zod'
+import { zodResolver } from '@hookform/resolvers/zod'
 
 // TODO: validation
+
+const userSchema: ZodType<User> = z
+	.object({
+		id: z.string(),
+		displayName: myz.displayName,
+		email: z.string().email(),
+		username: myz.username,
+		description: myz.description,
+		password: myz.password.or(z.literal('')),
+	})
+	.merge(formImageSchema(false))
 
 interface UserFormProps {
 	userId: string
@@ -27,7 +41,7 @@ interface UserFormProps {
 type User = Pick<
 	typeof schema.user.$inferSelect,
 	'id' | 'displayName' | 'email' | 'username'
-> & { image: string | null; description: string }
+> & { image: string | null; description: string; password: string }
 
 export type UserForm = Pick<User, 'id'> & Partial<User>
 
@@ -35,10 +49,11 @@ export function UserForm({ userId }: UserFormProps) {
 	const { data, isFetching, refetch } = useQuery({
 		queryKey: ['edit-user', userId],
 		queryFn: async () => {
-			const user = await fetchUserByUsername(userId)
+			const user = await fetchUserById(userId)
 
 			return {
 				...user,
+				password: '',
 				image: user.avatar.src,
 			}
 		},
@@ -53,7 +68,7 @@ export function UserForm({ userId }: UserFormProps) {
 				imageUrl = link
 			}
 
-			const response = await backendFetch(`/api/user/${userId}`, {
+			const response = await backendFetch(`/api/users/id/${userId}`, {
 				method: 'PUT',
 				body: JSON.stringify({
 					display_name: formData.displayName,
@@ -76,14 +91,17 @@ export function UserForm({ userId }: UserFormProps) {
 	const loading = isFetching || isPending
 
 	const form = useForm<UserForm>({
+		mode: 'all',
 		defaultValues: {
 			displayName: '',
 			email: '',
 			id: '',
 			username: '',
 			description: '',
+			password: '',
 			image: null,
 		},
+		resolver: zodResolver(userSchema),
 	})
 
 	useEffect(() => {
@@ -102,18 +120,22 @@ export function UserForm({ userId }: UserFormProps) {
 						control={form.control}
 						render={({
 							field: { name, value, onChange, onBlur },
-							fieldState: { isDirty },
+							fieldState: { isDirty, error, invalid: isError },
 						}) => (
 							<FormItem className="w-full">
 								<FormControl>
 									<>
-										<label htmlFor={name}>Username</label>
+										<FormLabelError
+											htmlFor={name}
+											label="Username"
+											error={error?.message}
+										/>
 										<TextField
 											type="text"
 											value={value}
 											onChange={(e) => onChange(e.target.value)}
 											onBlur={onBlur}
-											className={formClassnames({ isDirty })}
+											className={formClassnames({ isDirty, isError })}
 											disabled={loading}
 										/>
 									</>
@@ -126,18 +148,22 @@ export function UserForm({ userId }: UserFormProps) {
 						control={form.control}
 						render={({
 							field: { name, value, onChange, onBlur },
-							fieldState: { isDirty },
+							fieldState: { isDirty, error, invalid: isError },
 						}) => (
 							<FormItem className="w-full">
 								<FormControl>
 									<>
-										<label htmlFor={name}>Display Name</label>
+										<FormLabelError
+											htmlFor={name}
+											label="Display Name"
+											error={error?.message}
+										/>
 										<TextField
 											type="text"
 											value={value}
 											onChange={(e) => onChange(e.target.value)}
 											onBlur={onBlur}
-											className={formClassnames({ isDirty })}
+											className={formClassnames({ isDirty, isError })}
 											disabled={loading}
 										/>
 									</>
@@ -147,21 +173,53 @@ export function UserForm({ userId }: UserFormProps) {
 					/>
 				</div>
 				<FormField
+					name="password"
+					control={form.control}
+					render={({
+						field: { name, value, onBlur, onChange },
+						fieldState: { isDirty, error, invalid: isError },
+					}) => (
+						<FormItem className="w-full">
+							<FormLabelError
+								htmlFor={name}
+								label="Password"
+								error={error?.message}
+							/>
+							<FormControl>
+								<TextField
+									type="text"
+									inputType="password"
+									placeholder="Unchanged"
+									value={value}
+									onChange={(e) => onChange(e.target.value)}
+									onBlur={onBlur}
+									className={formClassnames({ isDirty, isError })}
+									disabled={loading}
+								/>
+							</FormControl>
+						</FormItem>
+					)}
+				/>
+				<FormField
 					name="email"
 					control={form.control}
 					render={({
 						field: { name, value, onBlur, onChange },
-						fieldState: { isDirty },
+						fieldState: { isDirty, error, invalid: isError },
 					}) => (
 						<FormItem className="w-full">
-							<label htmlFor={name}>E-mail</label>
+							<FormLabelError
+								htmlFor={name}
+								label="E-mail"
+								error={error?.message}
+							/>
 							<FormControl>
 								<TextField
 									type="text"
 									value={value}
 									onChange={(e) => onChange(e.target.value)}
 									onBlur={onBlur}
-									className={formClassnames({ isDirty })}
+									className={formClassnames({ isDirty, isError })}
 									disabled={loading}
 								/>
 							</FormControl>

@@ -2,9 +2,12 @@ import { SkeletonCircle, SkeletonText } from '@/components/components/skeleton'
 import Image from 'next/image'
 import Link from 'next/link'
 import classNames from 'classnames'
-import type { Post } from '@/app/post/_lib/fetch-post'
+import { fetchPost, type Post } from '@/app/post/_lib/fetch-post'
 import { PostCommentDeleteButton } from './post-comment-delete-button'
 import type { Comment as CommentType } from '@/app/_types/comments'
+import { unstable_cache } from 'next/cache'
+import { Suspense } from 'react'
+import { Avatar } from '../../avatar'
 
 interface PostComments {
 	post: Pick<Post, 'comments' | 'id'> & {
@@ -13,12 +16,28 @@ interface PostComments {
 	size: 'small' | 'full'
 }
 
-export function PostComments({ post, size }: PostComments) {
-	const data = post.comments
+export async function PostComments({ post, size }: PostComments) {
+	return (
+		<Suspense
+			fallback={
+				<div className="space-y-2">
+					<Comment isLoading size={size} />
+					<Comment isLoading size={size} />
+					<Comment isLoading size={size} />
+				</div>
+			}
+		>
+			<_PostComments post={post} size={size} />
+		</Suspense>
+	)
+}
+
+async function _PostComments({ post: { id }, size }: PostComments) {
+	const post = await fetchPost(id)
 
 	return (
 		<div className="space-y-2">
-			{data.map((comment) => (
+			{post.comments.map((comment) => (
 				<Comment post={post} key={comment.id} comment={comment} size={size} />
 			))}
 		</div>
@@ -26,8 +45,8 @@ export function PostComments({ post, size }: PostComments) {
 }
 
 type CommentLoading = {
-	post: undefined
-	comment: undefined
+	post?: undefined
+	comment?: undefined
 	isLoading: true
 	size: 'small' | 'full'
 }
@@ -75,13 +94,13 @@ function Comment({ post, comment, isLoading, size }: CommentProps) {
 	return (
 		<div className="flex justify-between items-center space-x-4">
 			<Shell>
-				<Image
+				<Avatar
+					name={comment.user.username}
 					unoptimized={true}
-					src={comment.user.avatar}
+					src={comment.user.avatar.src}
 					alt="avatar"
-					width={circleSize}
-					height={circleSize}
-					className="rounded-full flex-grow-0 object-contain"
+					className="rounded-full"
+					size={32}
 				/>
 				<p className="space-x-1 text-sm [word-break:break-word]">
 					<Link

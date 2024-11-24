@@ -18,9 +18,7 @@ export async function fetchGroupById(groupId: string): Promise<Group> {
       username: group.admin.username,
       email: group.admin.email,
       avatar: {
-        src: group.admin.avatar_url || "/avatar-placeholder.png",
-        width: 32,
-        height: 32,
+        src: group.admin.avatar_url,
       },
       role: group.admin.user_type,
     },

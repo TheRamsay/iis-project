@@ -19,14 +19,19 @@ export type Post = {
   comments: Comment[];
 };
 
-export async function fetchPost(postId: string): Promise<Post> {
-  const response = await backendFetch(`/api/posts/${postId}`);
+export async function fetchPost(
+  postId: string,
+  opts?: RequestInit
+): Promise<Post> {
+  const response = await backendFetch(`/api/posts/${postId}`, opts);
 
   await checkResponse(response);
 
   const data = await response.json();
 
   const user = await fetchUserById(data.author_id);
+
+  console.log(data);
 
   return {
     id: data.id,
@@ -41,6 +46,19 @@ export async function fetchPost(postId: string): Promise<Post> {
     },
     visibility: data.visibility,
     likeCount: data.like_count,
-    comments: data.comments,
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    comments: data.comments.map((comment: any) => ({
+      id: comment.id,
+      content: comment.content,
+      user: {
+        id: comment.user_id,
+        username: comment.username,
+        avatar: {
+          src: comment.avatar_url,
+          width: 32,
+          height: 32,
+        },
+      },
+    })),
   };
 }

@@ -6,7 +6,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { ErrorTooltip } from '@/app/_ui/error-tooltip'
 import type { Group } from '@/app/(feeds)/group/_lib/fetch-groups-by-username'
-import { checkResponse } from '@/app/_lib/backend-fetch'
+import { backendFetch, checkResponse } from '@/app/_lib/backend-fetch'
 
 interface GroupDelete {
 	group: Group
@@ -18,7 +18,7 @@ export function GroupDelete({ group }: GroupDelete) {
 	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['delete-group', group.id],
 		mutationFn: async () => {
-			const response = await fetch(`/api/groups/${group.id}`, {
+			const response = await backendFetch(`/api/groups/${group.id}`, {
 				method: 'DELETE',
 			})
 

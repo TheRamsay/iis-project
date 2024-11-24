@@ -14,7 +14,7 @@ export const formImageSchema = (required: boolean) =>
 	z.object({
 		image: z.string().refine(
 			(data) => {
-				return !!data && required
+				return !(required && !data)
 			},
 			{ message: 'Image is required' },
 		),
@@ -47,6 +47,7 @@ export function FormImage<T extends FormSubset>({
 		accept: {
 			'image/*': [],
 		},
+		maxSize: 10 * 1024 * 1024, // 10MB
 		maxFiles: 1,
 		multiple: false,
 		onDrop: ([file]) => {
@@ -60,7 +61,15 @@ export function FormImage<T extends FormSubset>({
 			})
 		},
 		onDropRejected: (rejectedFiles) => {
-			form.setError('image', { message: rejectedFiles[0].errors[0].message })
+			const errorMessage = rejectedFiles[0].errors[0].message
+
+			if (errorMessage.includes('larger')) {
+				form.setError('image', {
+					message: 'Image size should be less than 10MB',
+				})
+			} else {
+				form.setError('image', { message: errorMessage })
+			}
 			deleteImage()
 		},
 		onError: (error) => {

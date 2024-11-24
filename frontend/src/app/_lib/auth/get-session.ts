@@ -19,16 +19,12 @@ export async function getSession(): Promise<Session | null> {
 
   const data = await response.json();
 
-  const avatar = data.avatar_url || {
-    src: "/avatar-placeholder.png",
-    width: 128,
-    height: 128,
-  };
-
   return {
     userId: data.id,
     username: data.username,
-    avatar: avatar,
+    avatar: {
+      src: data.avatar_url,
+    },
     role: data.user_type,
   };
 }

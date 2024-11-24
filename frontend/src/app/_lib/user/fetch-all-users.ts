@@ -26,9 +26,7 @@ export async function fetchAllUsers(filters?: Filters): Promise<User[]> {
       role: entry.user_type,
       isBlocked: entry.is_blocked,
       avatar: {
-        src: entry.avatar_url || "/avatar-placeholder.png",
-        width: 32,
-        height: 32,
+        src: entry.avatar_url,
       },
     };
   });

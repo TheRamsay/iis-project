@@ -4,12 +4,12 @@ import {
 	PopoverTrigger,
 } from '@/components/components/popover'
 import { Button } from '@/components/components/button'
-import Image from 'next/image'
 import { Suspense } from 'react'
 import { LogOut, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { HeaderProfileTheme } from './header-profile-theme'
 import { getSession } from '@/app/_lib/auth/get-session'
+import { Avatar } from '../../avatar'
 
 export function HeaderProfile() {
 	return (
@@ -41,12 +41,12 @@ async function _HeaderProfile() {
 				<PopoverTrigger>
 					<Button asChild variant="outline" className="space-x-2">
 						<span>{session.username}</span>
-						<Image
+						<Avatar
 							unoptimized={true}
 							src={session.avatar.src}
 							alt="avatar"
-							width={24}
-							height={24}
+							size={24}
+							name={session.username}
 						/>
 					</Button>
 				</PopoverTrigger>
@@ -56,12 +56,12 @@ async function _HeaderProfile() {
 				>
 					<div className="flex flex-col items-center p-2 space-y-5">
 						<div className="space-y-2 flex flex-col items-center">
-							<Image
+							<Avatar
 								unoptimized={true}
 								src={session.avatar.src}
 								alt={session.username}
-								width={96}
-								height={96}
+								size={96}
+								name={session.username}
 								className="rounded-full"
 							/>
 							<span>

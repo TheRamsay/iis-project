@@ -1,14 +1,13 @@
 import classNames from 'classnames'
 import Image from 'next/image'
 import Link from 'next/link'
+import { Avatar } from '../avatar'
 
 type User = {
 	id: string
 	username: string
 	avatar: {
-		src: string
-		width: number
-		height: number
+		src: string | undefined
 	}
 }
 
@@ -43,12 +42,12 @@ export function UserAvatarName({
 			)}
 		>
 			<_Link href={`/profile/${user.username}`}>
-				<Image
+				<Avatar
+					name={user.username}
 					unoptimized={true}
 					src={user.avatar.src}
 					alt="avatar"
-					width={pix}
-					height={pix}
+					size={pix}
 					className="rounded-full"
 				/>
 			</_Link>

@@ -10,9 +10,7 @@ export type Group = {
     username: string;
     email: string;
     avatar: {
-      src: string;
-      width: number;
-      height: number;
+      src: string | undefined;
     };
     role: Role;
   };
@@ -38,9 +36,7 @@ export async function fetchGroupsByUsername(
       username: entry.admin.username,
       email: entry.admin.email,
       avatar: {
-        src: entry.admin.avatar_url || "/avatar-placeholder.png",
-        width: 32,
-        height: 32,
+        src: entry.admin.avatar_url,
       },
       role: entry.admin.user_type,
     },

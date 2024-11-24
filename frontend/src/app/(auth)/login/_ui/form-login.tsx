@@ -1,5 +1,6 @@
 'use client'
 
+import { backendFetch, checkResponse } from '@/app/_lib/backend-fetch'
 import { BACKEND_URL } from '@/app/_lib/constants'
 import { formClassnames } from '@/app/_lib/form-classnames'
 import { myz } from '@/app/_types/zod'
@@ -46,32 +47,15 @@ export function FormLogin() {
 	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['login'],
 		mutationFn: async (formData: FormLogin) => {
-			const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
+			const response = await backendFetch(`${BACKEND_URL}/api/auth/login`, {
 				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
 				body: JSON.stringify(formData),
-				credentials: 'include',
 			})
 
-			if (!response.ok) {
-				const data = await response.json()
-
-				if (data.error) {
-					throw new Error(data.error)
-				}
-
-				throw new Error('An unknown error has occurred.')
-			}
+			await checkResponse(response)
 		},
 		onSuccess: () => {
 			refresh()
-		},
-		onError: (error) => {
-			// TODO: Error handling
-			form.setError('username', { message: 'Invalid username.' })
-			form.setError('password', { message: 'Invalid password.' })
 		},
 	})
 

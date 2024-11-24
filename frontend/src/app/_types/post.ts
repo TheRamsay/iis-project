@@ -5,8 +5,6 @@ export type Post = {
   id: number;
   image: {
     src: string;
-    width: number;
-    height: number;
   };
   title: string;
   description?: string;
@@ -26,8 +24,6 @@ export const dummyPosts: Post[] = Array(10)
     id: i,
     image: {
       src: "https://picsum.photos/256",
-      width: 800,
-      height: 800,
     },
     title: "This is a post",
     description: "This is a post description",
@@ -37,8 +33,6 @@ export const dummyPosts: Post[] = Array(10)
       username: "fitstagram",
       avatar: {
         src: "https://avatars.githubusercontent.com/u/7655549?v=4",
-        width: 32,
-        height: 32,
       },
     },
     likeCount: 10,
