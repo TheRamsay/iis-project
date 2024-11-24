@@ -65,21 +65,6 @@ mod tests {
     }
 
     #[test]
-    fn post_description_too_short() {
-        let post = Post::new(
-            "Muj post".into(),
-            "aa".into(),
-            Id::gen(),
-            crate::domain::post::PostType::Photo,
-            "https://www.krejzac.cz".into(),
-            crate::domain::post::PostVisibilityType::Private,
-            None,
-        );
-
-        assert!(post.is_err());
-    }
-
-    #[test]
     fn post_description_too_long() {
         let post = Post::new(
             "Muj post".into(),

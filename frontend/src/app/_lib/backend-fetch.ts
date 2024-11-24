@@ -16,6 +16,10 @@ export async function backendFetch(path: string, options: RequestInit = {}) {
   if (!session) {
     return fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}${path}`, {
       ...options,
+      headers: {
+        "content-type": "application/json",
+        ...options.headers,
+      },
       credentials: "include",
     });
   }
@@ -23,6 +27,7 @@ export async function backendFetch(path: string, options: RequestInit = {}) {
   return fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}${path}`, {
     ...options,
     headers: {
+      "content-type": "application/json",
       ...options.headers,
       cookie: `jwt=${session.value}`,
     },
@@ -31,6 +36,8 @@ export async function backendFetch(path: string, options: RequestInit = {}) {
 }
 
 export async function checkResponse(response: Response, customError?: string) {
+  console.log(response);
+
   if (!response.ok) {
     try {
       const data = await response.json();

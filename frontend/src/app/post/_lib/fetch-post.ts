@@ -20,7 +20,7 @@ export type Post = {
 };
 
 export async function fetchPost(postId: string): Promise<Post> {
-  const response = await backendFetch(`/api/post/${postId}`);
+  const response = await backendFetch(`/api/posts/${postId}`);
 
   await checkResponse(response);
 

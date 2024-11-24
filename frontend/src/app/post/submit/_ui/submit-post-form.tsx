@@ -21,11 +21,13 @@ import { FormLabelError } from '@/app/_ui/form/form-label-error'
 import { FormServerError } from '@/app/_ui/form/form-server-error'
 import { backendFetch, checkResponse } from '@/app/_lib/backend-fetch'
 import { useRouter } from 'next/navigation'
+import { uploadImage } from '@/app/_lib/upload-image'
+import { myz } from '@/app/_types/zod'
 
 const submitPostFromSchema: ZodType<PostForm> = z
 	.object({
-		title: z.string().min(3).max(64).or(z.literal('')),
-		description: z.string().max(255),
+		title: myz.title,
+		description: myz.description,
 	})
 	.merge(formImageSchema(true))
 	.merge(formLocationSchema)
@@ -52,8 +54,10 @@ export function SubmitPostForm() {
 	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['submit-post'],
 		mutationFn: async (formData: PostForm) => {
-			// TODO: upload image
-			const imageUrl = ''
+			if (!formData.image) {
+				throw new Error('Image is required')
+			}
+			const { link } = await uploadImage(formData.image)
 
 			const response = await backendFetch('/api/posts', {
 				method: 'POST',
@@ -62,7 +66,7 @@ export function SubmitPostForm() {
 					description: formData.description,
 					post_type: 'photo',
 					visibility: formData.visibility,
-					content_url: imageUrl,
+					content_url: link,
 					// TODO: author_id ?
 				}),
 			})

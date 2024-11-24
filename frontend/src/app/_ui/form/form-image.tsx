@@ -59,6 +59,14 @@ export function FormImage<T extends FormSubset>({
 				shouldValidate: true,
 			})
 		},
+		onDropRejected: (rejectedFiles) => {
+			form.setError('image', { message: rejectedFiles[0].errors[0].message })
+			deleteImage()
+		},
+		onError: (error) => {
+			console.log(error)
+			form.setError('image', { message: error.message })
+		},
 	})
 
 	const image = form.watch('image')

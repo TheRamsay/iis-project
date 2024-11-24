@@ -23,12 +23,13 @@ import { useEffect } from 'react'
 import { FormLabelError } from '@/app/_ui/form/form-label-error'
 import { FormServerError } from '@/app/_ui/form/form-server-error'
 import { fetchPost } from '@/app/post/_lib/fetch-post'
+import { myz } from '@/app/_types/zod'
 
 const editPostFromSchema: ZodType<EditPostForm> = z
 	.object({
 		id: z.string(),
-		title: z.string().min(3).max(255),
-		description: z.string().max(255),
+		title: myz.title,
+		description: myz.description,
 	})
 	.merge(formLocationSchema)
 	.merge(formVisibilitySchema)

@@ -23,6 +23,7 @@ import { myz } from '@/app/_types/zod'
 import { formImageSchema } from '@/app/_ui/form/form-image'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { backendFetch, checkResponse } from '@/app/_lib/backend-fetch'
+import { uploadImage } from '@/app/_lib/upload-image'
 
 const userModalSchema = z
 	.object({
@@ -71,8 +72,8 @@ export function UserModal({ children, username, open: _open }: UserModal) {
 		mutationFn: async (formData: UserForm) => {
 			let imageUrl = formData.image
 			if (imageUrl?.startsWith('blob:')) {
-				// TODO: upload image
-				imageUrl = formData.image
+				const { link } = await uploadImage(imageUrl)
+				imageUrl = link
 			}
 
 			const response = await backendFetch(`/api/user/${data?.id}`, {
