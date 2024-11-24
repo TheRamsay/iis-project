@@ -1,0 +1,1 @@
+sea-orm-cli generate entity -o models/src/schema/ --with-serde both

@@ -29,7 +29,7 @@ impl MigrationTrait for Migration {
                         ForeignKey::create()
                             .name("fk_group_wall")
                             .from(Group::Table, Group::WallId)
-                            .to(Post::Table, Post::Id),
+                            .to(Wall::Table, Wall::Id),
                     )
                     .to_owned(),
             )
@@ -77,7 +77,7 @@ impl MigrationTrait for Migration {
 }
 
 #[derive(DeriveIden)]
-enum Group {
+pub enum Group {
     Table,
     Id,
     Name,
