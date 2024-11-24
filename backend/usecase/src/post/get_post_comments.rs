@@ -18,7 +18,7 @@ pub struct GetPostCommentsInput {
 }
 
 pub struct GetPostCommentsOutput {
-    pub comments: Vec<PostComment>,
+    pub comments: Vec<(PostComment, User)>,
 }
 
 pub struct GetPostCommentsUseCase<T>

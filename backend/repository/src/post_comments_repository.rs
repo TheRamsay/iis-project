@@ -29,7 +29,7 @@ pub trait PostCommentsRepository {
     async fn get_comments_by_post_id(
         &self,
         id: Id<Post>,
-    ) -> Result<Option<Vec<PostComment>>, DbErr>;
+    ) -> Result<Option<Vec<(PostComment, User)>>, DbErr>;
     async fn get_comment_by_id(&self, id: Id<PostComment>) -> Result<Option<PostComment>, DbErr>;
 }
 
@@ -56,7 +56,7 @@ impl PostCommentsRepository for DbPostCommentsRepository {
     async fn get_comments_by_post_id(
         &self,
         id: Id<Post>,
-    ) -> Result<Option<Vec<PostComment>>, DbErr> {
+    ) -> Result<Option<Vec<(PostComment, User)>>, DbErr> {
         let comments = models::schema::post_comment::Entity::find()
             .filter(
                 models::schema::post_comment::Column::PostId
@@ -67,7 +67,18 @@ impl PostCommentsRepository for DbPostCommentsRepository {
             .await?;
 
         let comments: Vec<PostComment> = comments.into_iter().map(|model| model.into()).collect();
-        Ok(Some(comments))
+        let mut result = Vec::new();
+
+        for comment in comments {
+            if let Some(user) = models::schema::user::Entity::find_by_id(comment.user_id.clone())
+                .one(self.db.as_ref())
+                .await?
+            {
+                result.push((comment, user.into()));
+            }
+        }
+
+        Ok(Some(result))
     }
 
     async fn get_comment_by_id(&self, id: Id<PostComment>) -> Result<Option<PostComment>, DbErr> {

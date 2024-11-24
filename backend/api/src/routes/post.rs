@@ -106,6 +106,8 @@ struct GetPostResponse {
 struct GetPostCommentResponse {
     id: Uuid,
     content: String,
+    username: String,
+    avatar_url: String,
     user_id: Uuid,
     parent_id: Option<Uuid>,
 }
@@ -151,10 +153,12 @@ async fn get_post(
                     .comments
                     .iter()
                     .map(|comment| GetPostCommentResponse {
-                        id: comment.id.clone().into(),
-                        content: comment.content.clone(),
-                        user_id: comment.clone().user_id.into(),
-                        parent_id: comment.clone().parent_id.map(|id| id.into()),
+                        id: comment.0.id.clone().into(),
+                        username: comment.1.username.clone(),
+                        avatar_url: comment.1.avatar_url.clone().unwrap_or_default(),
+                        content: comment.0.content.clone(),
+                        user_id: comment.0.clone().user_id.into(),
+                        parent_id: comment.0.clone().parent_id.map(|id| id.into()),
                     })
                     .collect()
             }),
