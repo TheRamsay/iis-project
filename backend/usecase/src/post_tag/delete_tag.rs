@@ -17,6 +17,7 @@ use uuid::Uuid;
 #[derive(Debug)]
 pub struct DeletePostTagInput {
     pub id: Uuid,
+    pub tag: String,
 }
 
 pub struct DeletePostTagOutput {
@@ -42,7 +43,7 @@ where
 
     pub async fn execute(&self, input: DeletePostTagInput) -> AppResult<DeletePostTagOutput> {
         self.post_tag_repository
-            .delete_by_id(Id::new(input.id))
+            .delete_by_id(Id::new(input.id), &input.tag)
             .await?;
 
         Ok(DeletePostTagOutput { success: true })

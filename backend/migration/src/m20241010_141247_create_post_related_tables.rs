@@ -75,8 +75,9 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(PostTag::Table)
                     .if_not_exists()
-                    .col(string(PostTag::Tag).not_null().primary_key())
+                    .col(string(PostTag::Tag))
                     .col(uuid(PostTag::PostId))
+                    .primary_key(Index::create().col(PostTag::Tag).col(PostTag::PostId))
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_post_tag_post")

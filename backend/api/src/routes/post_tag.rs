@@ -46,17 +46,26 @@ async fn create_tag(
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+struct DeletePostTagRequest {
+    post_id: Uuid,
+    tag: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 struct DeletePostTagResponse {
     success: bool,
 }
 
 async fn delete_tag(
     state: State<AppState>,
-    Path(id): Path<Uuid>,
+    Json(data): Json<DeletePostTagRequest>,
 ) -> AppResult<Json<DeletePostTagResponse>> {
     let delete_location_use_case = DeletePostTagUseCase::new(state.post_tag_repository.clone());
 
-    let input = DeletePostTagInput { id };
+    let input = DeletePostTagInput {
+        id: data.post_id,
+        tag: data.tag,
+    };
 
     let result = delete_location_use_case.execute(input).await?;
 
@@ -83,7 +92,6 @@ pub struct SearchPostTag {
 
 async fn search_tag(
     state: State<AppState>,
-    // Json(payload): Json<SearchPostTagRequest>,
     Query(params): Query<SearchPostTagRequest>,
 ) -> AppResult<Json<SearchPostTagResponse>> {
     let search_location_use_case = SearchPostTagUseCase::new(state.post_tag_repository.clone());
@@ -109,6 +117,6 @@ async fn search_tag(
 pub fn post_tag_routes() -> axum::Router<crate::AppState> {
     axum::Router::new()
         .route("/", post(create_tag))
-        .route("/:id", delete(delete_tag))
+        .route("/", delete(delete_tag))
         .route("/search", get(search_tag))
 }

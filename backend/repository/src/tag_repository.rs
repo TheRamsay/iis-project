@@ -22,13 +22,13 @@ impl DbTagRepository {
 }
 
 pub trait TagRepository {
-    async fn create(&self, tag: PostTag) -> Result<String, DbErr>;
-    async fn delete_by_id(&self, id: Id<PostTag>) -> Result<(), DbErr>;
+    async fn create(&self, tag: PostTag) -> Result<(String, Uuid), DbErr>;
+    async fn delete_by_id(&self, id: Id<PostTag>, tag: &str) -> Result<(), DbErr>;
     async fn search(&self, query: String) -> Result<Option<Vec<PostTag>>, DbErr>;
 }
 
 impl TagRepository for DbTagRepository {
-    async fn create(&self, tag: PostTag) -> Result<String, DbErr> {
+    async fn create(&self, tag: PostTag) -> Result<(String, Uuid), DbErr> {
         let post_tag_model: models::schema::post_tag::Model = tag.into();
         let active_model: models::schema::post_tag::ActiveModel = post_tag_model.into();
 
@@ -39,8 +39,8 @@ impl TagRepository for DbTagRepository {
         Ok(inserted.last_insert_id)
     }
 
-    async fn delete_by_id(&self, id: Id<PostTag>) -> Result<(), DbErr> {
-        models::schema::post_tag::Entity::delete_by_id(id.id)
+    async fn delete_by_id(&self, id: Id<PostTag>, tag: &str) -> Result<(), DbErr> {
+        models::schema::post_tag::Entity::delete_by_id::<(String, Uuid)>((tag.into(), id.id))
             .exec(self.db.as_ref())
             .await?;
 
