@@ -19,6 +19,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { FormTags, formTagsSchema } from '../../_ui/form-tags'
 import { FormLabelError } from '@/app/_ui/form/form-label-error'
 import { FormServerError } from '@/app/_ui/form/form-server-error'
+import { backendFetch, checkResponse } from '@/app/_lib/backend-fetch'
+import { useRouter } from 'next/navigation'
 
 const submitPostFromSchema: ZodType<PostForm> = z
 	.object({
@@ -32,7 +34,7 @@ const submitPostFromSchema: ZodType<PostForm> = z
 
 type Post = Pick<typeof schema.post.$inferSelect, 'description' | 'title'> & {
 	visibility: 'public' | 'private'
-	image: globalThis.File | null
+	image: string | null
 	location: {
 		lat: string
 		lng: string
@@ -45,16 +47,31 @@ type Post = Pick<typeof schema.post.$inferSelect, 'description' | 'title'> & {
 export type PostForm = Post
 
 export function SubmitPostForm() {
+	const { push } = useRouter()
+
 	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['submit-post'],
-		mutationFn: async (data: PostForm) => {
-			// TODO: endpoint
-			await new Promise((resolve) => setTimeout(resolve, 1000))
+		mutationFn: async (formData: PostForm) => {
+			// TODO: upload image
+			const imageUrl = ''
 
-			throw new Error('Failed to submit post')
+			const response = await backendFetch('/api/posts', {
+				method: 'POST',
+				body: JSON.stringify({
+					title: formData.title,
+					description: formData.description,
+					post_type: 'photo',
+					visibility: formData.visibility,
+					content_url: imageUrl,
+					// TODO: author_id ?
+				}),
+			})
+
+			await checkResponse(response)
+			return response.json() as Promise<{ id: string }>
 		},
-		onSuccess: () => {
-			// TODO: goto profile?
+		onSuccess: (res) => {
+			push(`/post/${res.id}`)
 		},
 		onError: () => {
 			scroll?.({ top: 0, behavior: 'smooth' })
@@ -73,17 +90,7 @@ export function SubmitPostForm() {
 			tags: [],
 			image: null,
 			allowedGroups: [],
-			allowedUsers: [
-				{
-					avatar: {
-						src: 'https://avatars.githubusercontent.com/u/7655549?v=4',
-						width: 128,
-						height: 128,
-					},
-					id: '1',
-					username: 'John Doe',
-				},
-			],
+			allowedUsers: [],
 		},
 		resolver: zodResolver(submitPostFromSchema),
 	})

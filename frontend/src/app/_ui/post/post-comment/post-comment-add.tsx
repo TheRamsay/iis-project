@@ -17,10 +17,19 @@ export function PostCommentAdd({ postId }: PostCommentAdd) {
 	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['add-comment', postId],
 		mutationFn: async () => {
-			// TODO: endpoint
-			await new Promise((resolve) => setTimeout(resolve, 1000))
+			const response = await fetch(`/api/posts/${postId}/comment`, {
+				method: 'POST',
+				credentials: 'include',
+				body: JSON.stringify({ content: comment }),
+			})
+
+			if (!response.ok) {
+				throw new Error('Failed to add comment')
+			}
+
+			return response.json()
 		},
-		onSettled: () => {
+		onSuccess: () => {
 			setComment('')
 		},
 	})

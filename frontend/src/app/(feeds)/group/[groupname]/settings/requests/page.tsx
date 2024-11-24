@@ -1,20 +1,16 @@
 'use client'
 
+import { backendFetch, checkResponse } from '@/app/_lib/backend-fetch'
 import type { schema } from '@/app/_lib/db'
 import { ErrorTooltip } from '@/app/_ui/error-tooltip'
 import { Pagination } from '@/app/_ui/pagination'
 import { DataTable, Loader, TextField } from '@/components/components'
-import { useInfiniteQuery, useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import type { ColumnDef } from '@tanstack/react-table'
 import classNames from 'classnames'
-import {
-	CheckIcon,
-	ChevronLeftIcon,
-	ChevronRightIcon,
-	SearchIcon,
-	XIcon,
-} from 'lucide-react'
+import { CheckIcon, SearchIcon, XIcon } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
+import { fetchGroupByUsername } from '../../../_lib/fetch-groups-by-username'
 
 type Entry = Pick<typeof schema.user.$inferSelect, 'id' | 'username'>
 
@@ -32,10 +28,15 @@ const columns = [
 			const { mutate, error, isPending } = useMutation({
 				mutationKey: ['group-handle-user-request', row.original.id],
 				mutationFn: async (accept: boolean) => {
-					// TODO: endpoint
-					await new Promise((resolve) => setTimeout(resolve, 1000))
+					const response = await backendFetch(
+						`/api/group-join-requests/${row.original.id}/${accept ? 'approve' : 'reject'}`,
+						{
+							method: 'POST',
+						},
+					)
 
-					throw new Error('Failed to handle request')
+					await checkResponse(response)
+					return response.json()
 				},
 				onSuccess: () => setHandled(true),
 			})
@@ -74,29 +75,6 @@ const columns = [
 	},
 ] as ColumnDef<Entry, unknown>[]
 
-const Adata: Entry[] = [
-	{
-		id: '1',
-		username: 'fitstagram',
-	},
-	{
-		id: '2',
-		username: 'remzak.pepak',
-	},
-	{
-		id: '3',
-		username: 'padi142',
-	},
-	{
-		id: '4',
-		username: 'verka',
-	},
-	{
-		id: '5',
-		username: 'oliverova.knizka',
-	},
-]
-
 const PAGE_SIZE = 10
 
 type Filters = {
@@ -109,24 +87,56 @@ export default function Page({
 	const [pageIndex, setPageIndex] = useState<number>(0)
 	const [filters, setFilters] = useState<Filters>({})
 
-	const { data, isLoading } = useInfiniteQuery({
-		queryKey: ['group-requests', groupname],
-		queryFn: ({ pageParam }) => {
-			// TODO: endpoint
-			return Adata
-		},
-		initialPageParam: 0,
-		getNextPageParam: (_1, _2, lastPageParam) => {
-			// if(!hasNextPage) {
-			//   return undefined
-			// }
+	const { data: groupId } = useQuery({
+		queryKey: ['group-id', groupname],
+		queryFn: async () => {
+			const group = await fetchGroupByUsername(groupname)
 
-			return lastPageParam + 1
+			return group.id
 		},
 	})
 
+	const { data, isLoading } = useQuery({
+		queryKey: ['group-requests', groupId, filters],
+		queryFn: async () => {
+			const response = await backendFetch(`/api/groups/${groupId}`)
+
+			await checkResponse(response)
+
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			const data: any[] = await response.json()
+
+			const mapped = data.map((entry) => ({
+				id: entry.id,
+				username: entry.user.username,
+				// user: {
+				// 	id: entry.user_id,
+				// 	username: entry.username,
+				// 	displayName: entry.display_name,
+				// 	avatar: {
+				// 		src: entry.avatar_url,
+				// 		width: 32,
+				// 		height: 32,
+				// 	},
+				// 	role: entry.user_type,
+				// 	isBlocked: entry.is_blocked,
+				// },
+			}))
+
+			const filtered = mapped.filter((entry) => {
+				if (filters.search) {
+					return entry.username.includes(filters.search)
+				}
+				return true
+			})
+
+			return filtered
+		},
+		enabled: !!groupId,
+	})
+
 	const currentData = useMemo(() => {
-		return data?.pages[pageIndex] || []
+		return data?.slice(pageIndex * PAGE_SIZE, (pageIndex + 1) * PAGE_SIZE) || []
 	}, [data, pageIndex])
 
 	const [canGoPrevious, canGoNext] = useMemo(() => {

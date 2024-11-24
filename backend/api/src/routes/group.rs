@@ -371,6 +371,7 @@ pub fn group_routes() -> axum::Router<crate::AppState> {
         .route("/", get(search_group))
         .route("/", post(create_group))
         .route("/:id", get(get_group))
+        // .route("/:id", delete(get_group)) // TODO: Delete group
         .route("/:id/members", get(get_group_members))
         .route("/:id/requests", get(get_group_requests))
         .route("/:id/status", get(check_user_status_in_group))

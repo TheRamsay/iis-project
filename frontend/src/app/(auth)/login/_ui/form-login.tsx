@@ -143,7 +143,7 @@ export function FormLogin() {
 					)}
 				/>
 
-				<div className="flex flex-row w-full justify-between items-center">
+				<div className="flex flex-row w-full justify-between items-center space-x-3">
 					<Link href="/register">
 						<Button variant="outline">Register</Button>
 					</Link>

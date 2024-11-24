@@ -4,8 +4,9 @@ import { Heart } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import classNames from 'classnames'
 import { useSession } from '@/app/_lib/auth/auth-provider'
-import type { Post } from '@/app/_types/post'
 import { ErrorTooltip } from '../error-tooltip'
+import { backendFetch } from '@/app/_lib/backend-fetch'
+import type { Post } from '@/app/post/_lib/fetch-post'
 
 type PostLikeButton = { post: Pick<Post, 'id' | 'likeCount'> }
 
@@ -38,8 +39,15 @@ export function PostLikeButton({ post }: PostLikeButton) {
 	const { mutate, error } = useMutation({
 		mutationKey: ['like', post.id],
 		mutationFn: async () => {
-			// TODO: endpoint
-			throw new Error('Failed to like post')
+			const response = await backendFetch(`/api/posts/${post.id}/like`, {
+				method: data?.isLiked ? 'DELETE' : 'POST',
+			})
+
+			if (!response.ok) {
+				throw new Error('Failed to like post')
+			}
+
+			return response.json()
 		},
 		onMutate: async () => {
 			await queryClient.cancelQueries({

@@ -14,6 +14,8 @@ import { FormImage } from '@/app/_ui/form/form-image'
 import { FormLabelError } from '@/app/_ui/form/form-label-error'
 import { TextArea } from '@/components/components'
 import { FormServerError } from '@/app/_ui/form/form-server-error'
+import { fetchUserByUsername } from '@/app/_lib/user/fetch-user'
+import { backendFetch, checkResponse } from '@/app/_lib/backend-fetch'
 
 // TODO: validation
 
@@ -23,35 +25,47 @@ interface UserFormProps {
 
 type User = Pick<
 	typeof schema.user.$inferSelect,
-	'id' | 'displayName' | 'avatarUrl' | 'email' | 'username'
-> & { image: globalThis.File | null; description: string }
+	'id' | 'displayName' | 'email' | 'username'
+> & { image: string | null; description: string }
 
 export type UserForm = Pick<User, 'id'> & Partial<User>
 
 export function UserForm({ userId }: UserFormProps) {
-	const { data, isFetching, refetch } = useQuery<User>({
-		queryKey: ['admin-user', userId],
+	const { data, isFetching, refetch } = useQuery({
+		queryKey: ['edit-user', userId],
 		queryFn: async () => {
-			// TODO: endpoint
-			await new Promise((resolve) => setTimeout(resolve, 1000))
+			const user = await fetchUserByUsername(userId)
 
 			return {
-				id: Math.random().toString(),
-				displayName: 'John Doe',
-				avatarUrl: 'https://example.com/favicon.ico',
-				email: 'asdas@goog.eoco',
-				username: 'johndoe',
-				description: 'BIO',
-				image: null,
+				...user,
+				image: user.avatar.src,
 			}
 		},
 	})
 
 	const { mutate, error, isPending } = useMutation({
-		mutationKey: ['admin-user', userId],
-		mutationFn: async (data: UserForm) => {
-			// TODO: endpoint
-			await new Promise((resolve) => setTimeout(resolve, 1000))
+		mutationKey: ['edit-user', userId],
+		mutationFn: async (formData: UserForm) => {
+			let imageUrl = formData.image
+			if (imageUrl?.startsWith('blob:')) {
+				// TODO: upload image
+				imageUrl = formData.image
+			}
+
+			const response = await backendFetch(`/api/user/${userId}`, {
+				method: 'PUT',
+				body: JSON.stringify({
+					display_name: formData.displayName,
+					username: formData.username,
+					email: formData.email,
+					avatar_url: imageUrl || undefined,
+					user_type: data?.role || 'regular',
+				}),
+			})
+
+			await checkResponse(response, 'Failed to update user')
+
+			return response.json()
 		},
 		onSuccess: () => {
 			refetch()
@@ -62,7 +76,6 @@ export function UserForm({ userId }: UserFormProps) {
 
 	const form = useForm<UserForm>({
 		defaultValues: {
-			avatarUrl: '',
 			displayName: '',
 			email: '',
 			id: '',

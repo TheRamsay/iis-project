@@ -19,6 +19,7 @@ import {
 } from '@/components/components'
 import { FormLabelError } from '@/app/_ui/form/form-label-error'
 import { FormServerError } from '@/app/_ui/form/form-server-error'
+import { fetchGroupById } from '@/app/(feeds)/group/_lib/fetch-group-by-id'
 
 // TODO: validation
 
@@ -37,14 +38,13 @@ export function GroupSettingsForm({ groupId }: GroupSettingsFormProps) {
 	const { data, isFetching, refetch } = useQuery<Group>({
 		queryKey: ['group-settings', groupId],
 		queryFn: async () => {
-			// TODO: endpoint
-			await new Promise((resolve) => setTimeout(resolve, 1000))
+			const group = await fetchGroupById(groupId)
 
 			return {
-				id: Math.random().toString(),
-				name: 'groupdoe',
-				visibility: 'public',
-				description: 'BIO',
+				id: group.id,
+				name: group.groupname,
+				visibility: 'private',
+				description: '', // TODOL group.description,
 			}
 		},
 	})

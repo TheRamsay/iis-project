@@ -1,4 +1,4 @@
-import type { Comments } from "./comments";
+import type { Comment } from "./comments";
 import type { User } from "./user";
 
 export type Post = {
@@ -17,7 +17,7 @@ export type Post = {
   };
   user: User;
   likeCount: number;
-  comments: Comments[];
+  comments: Comment[];
 };
 
 export const dummyPosts: Post[] = Array(10)

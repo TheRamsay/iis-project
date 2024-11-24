@@ -6,7 +6,7 @@ import { PostDialog } from '@/app/_ui/post/post-dialog/post-dialog'
 import { PostComments } from '@/app/_ui/post/post-comment/post-comments'
 import { PostDeleteButton } from '@/app/_ui/post/post-delete-button'
 import { UserAvatarName } from '@/app/_ui/user/user-avatar-name'
-import type { Post as PostType } from '@/app/_types/post'
+import type { Post as PostType } from '@/app/post/_lib/fetch-post'
 import { PostShareButton } from '@/app/_ui/post/post-share-button'
 
 export function Post(post: PostType) {
@@ -30,14 +30,11 @@ export function Post(post: PostType) {
 			<div className="flex justify-between">
 				<div className="space-x-4 flex">
 					<PostLikeButton post={post} />
-					<PostCommentButton
-						postId={post.id}
-						commentCount={post.comments.length}
-					/>
+					<PostCommentButton post={post} />
 					<PostShareButton post={post} />
 				</div>
 				<div className="space-x-4 flex">
-					<PostDeleteButton postId={post.id} postAuthorId={post.user.id} />
+					<PostDeleteButton post={post} />
 				</div>
 			</div>
 			<PostComments post={post} size="small" />

@@ -7,3 +7,5 @@ export type User = {
     height: number;
   };
 };
+
+export type Role = "regular" | "administrator" | "moderator";

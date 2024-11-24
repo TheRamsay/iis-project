@@ -40,6 +40,7 @@ export function FormRegister() {
 		defaultValues: {
 			email: '',
 			password: '',
+			username: '',
 		},
 		resolver: zodResolver(registerSchema),
 	})

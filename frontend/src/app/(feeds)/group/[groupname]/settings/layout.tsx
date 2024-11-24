@@ -2,6 +2,7 @@ import { Container } from '@/components/components/container'
 import { redirect } from 'next/navigation'
 import { Sidebar, type SidebarItem } from '@/app/_ui/sidebar'
 import { getSession } from '@/app/_lib/auth/get-session'
+import { fetchGroupByUsername } from '../../_lib/fetch-groups-by-username'
 
 const sidebarItems = (id: string): SidebarItem[] => [
 	{ name: 'Settings', path: `/group/${id}/settings` },
@@ -20,7 +21,10 @@ export default async function Layout({
 }: { children: React.ReactNode; params: { groupname: string } }) {
 	const session = await getSession()
 
-	// TODO: endpoint (je moderator skupiny?)
+	const group = await fetchGroupByUsername(groupname)
+
+	// TODO: check if user is admin of group
+
 	if (!session) {
 		return redirect('/')
 	}

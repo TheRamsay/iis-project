@@ -1,13 +1,10 @@
+import { fetchGroupByUsername } from '../../../_lib/fetch-groups-by-username'
 import { GroupSettingsForm } from './_ui/group-settings-form'
 
 export default async function Page({
 	params,
 }: { params: { groupname: string } }) {
-	// TODO: endpoint
-	const group = {
-		id: '1',
-		name: 'Group 1',
-	}
+	const group = await fetchGroupByUsername(params.groupname)
 
 	return (
 		<div className="w-full space-y-8">

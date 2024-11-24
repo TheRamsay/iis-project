@@ -1,5 +1,7 @@
 'use client'
 
+import { fetchGroupsByUsername } from '@/app/(feeds)/group/_lib/fetch-groups-by-username'
+import { fetchAllUsers } from '@/app/_lib/user/fetch-all-users'
 import { InfoTooltip } from '@/app/_ui/info-tooltip'
 import {
 	SimpleSearch,
@@ -33,18 +35,29 @@ export function PickEntities({ type, list, onChange }: PickEntities) {
 	const { data, isLoading, isError } = useQuery<Entity[]>({
 		queryKey: ['query-followed', type, query],
 		queryFn: async () => {
-			// TODO: endpoint
-			return [
-				{
+			if (type === 'user') {
+				const data = await fetchAllUsers({
+					username: query,
+				})
+
+				return data
+			}
+
+			if (type === 'group') {
+				const data = await fetchGroupsByUsername(query)
+
+				return data.map((group) => ({
+					id: group.id,
+					username: group.groupname,
 					avatar: {
-						src: 'https://avatars.githubusercontent.com/u/7655549?v=4',
-						width: 128,
-						height: 128,
+						src: '/avatar-placeholder.png', // TODO: group avatar
+						width: 32,
+						height: 32,
 					},
-					id: '1',
-					username: 'fitstagram',
-				},
-			]
+				}))
+			}
+
+			return []
 		},
 	})
 

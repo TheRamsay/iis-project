@@ -83,6 +83,33 @@ struct GetUserResponse {
     is_blocked: bool,
 }
 
+async fn get_user_by_id(
+    state: State<AppState>,
+    Path(id): Path<Uuid>,
+) -> AppResult<Json<GetUserResponse>> {
+    let user_usercase = GetUserUseCase::new(state.user_repository.clone());
+
+    let user = user_usercase
+        .execute(GetUserInput { id })
+        .await?;
+
+    if let Some(user) = user {
+        anyhow::Result::Ok(Json(GetUserResponse {
+            id: user.id.id,
+            display_name: user.display_name,
+            username: user.username,
+            email: user.email,
+            avatar_url: user.avatar_url,
+            user_type: user.user_type.to_string(),
+            wall_id: user.wall_id.id,
+            is_blocked: user.is_blocked,
+        }))
+    } else {
+        Err(AppError::NotFound("User".into()))
+    }
+}
+
+
 async fn get_user_by_username(
     state: State<AppState>,
     Path(username): Path<String>,
@@ -328,6 +355,7 @@ pub fn user_routes() -> axum::Router<crate::AppState> {
         .route("/", post(create_user))
         .route("/me", get(me))
         .route("/:username", get(get_user_by_username))
+        .route("/id/:id", get(get_user_by_id))
         .route("/id/:id", delete(delete_user))
         .route("/id/:id", put(update_user))
         .route("/id/:id/block", get(block_user))

@@ -6,6 +6,7 @@ import { Suspense } from 'react'
 import { getTypedSearchParams } from '@/app/_lib/typed-search-params/get-typed-search-params'
 import { feedSearchSchema } from './feed-search/feed-search-schema'
 import { dummyPosts } from '@/app/_types/post'
+import { fetchGroupByUsername } from '@/app/(feeds)/group/_lib/fetch-groups-by-username'
 
 type MiniatureFeed = (
 	| {
@@ -45,9 +46,10 @@ async function fetchPosts(
 		const groupname = props.groupname
 		const posts = dummyPosts
 
-		const groupModeratorIdList = ['1', '2', '3']
+		const group = await fetchGroupByUsername(groupname)
+		const groupModeratorId = group.admin.id
 
-		return { posts, groupModeratorIdList }
+		return { posts, groupModeratorId }
 	}
 
 	if ('tag' in props) {
@@ -63,7 +65,7 @@ async function fetchPosts(
 async function _MiniatureFeed(props: MiniatureFeed) {
 	const filters = getTypedSearchParams(feedSearchSchema, props.searchParams)
 
-	const { posts, groupModeratorIdList } = await fetchPosts(props, filters)
+	const { posts, groupModeratorId } = await fetchPosts(props, filters)
 
 	return (
 		<FeedSearchProvider>
@@ -75,7 +77,7 @@ async function _MiniatureFeed(props: MiniatureFeed) {
 			<div className="grid grid-cols-3 gap-3">
 				{posts.map((post) => (
 					<div key={post.id} className="w-full h-full relative aspect-square">
-						<PostDialog post={post}>
+						<PostDialog post={post} groupModeratorId={groupModeratorId}>
 							<Image
 								src={post.image.src}
 								fill

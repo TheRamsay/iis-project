@@ -16,8 +16,16 @@ export default async function Page({
 	const filters = getTypedSearchParams(feedSearchSchema, searchParams)
 
 	const response = await backendFetch(
-		`/api/wall/feed?offset=${pageSize * filters.page}&limit=${pageSize}&sort=${filters.sorting}`,
+		`/api/walls/feed?offset=${pageSize * filters.page}&limit=${pageSize}&sort=${filters.sorting}`,
 	)
+
+	if (!response.ok) {
+		return <div>Failed to load feed</div>
+	}
+
+	const { posts: feed } = await response.json()
+
+	// TODO: Format
 
 	return (
 		<FeedSearchProvider>
@@ -27,8 +35,11 @@ export default async function Page({
 				</div>
 			</div>
 			<div className="space-y-8">
-				<Feed data={feed} />
-				<FeedPagination page={filters.page} hasMore={true} />
+				<Feed data={[]} />
+				<FeedPagination
+					page={filters.page}
+					hasMore={feed.length === pageSize}
+				/>
 			</div>
 		</FeedSearchProvider>
 	)

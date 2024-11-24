@@ -4,7 +4,8 @@ import { MiniatureFeed } from '@/app/_ui/feed/miniature-feed'
 import { Suspense } from 'react'
 import { getSession } from '@/app/_lib/auth/get-session'
 
-import type {} from 'next/app'
+import { fetchGroupStatus } from '../../_lib/fetch-group-status'
+import { fetchGroupByUsername } from '../../_lib/fetch-groups-by-username'
 
 export default function Page({
 	params: { groupname },
@@ -27,11 +28,20 @@ async function Feed({
 }: { groupname: string; searchParams: Record<string, string> }) {
 	const session = await getSession()
 
-	const isMember = await false
-	const isPublic = await false
-	// TODO: endpoint to check if user is a member of the group
+	const isPublic = false
 
-	if (!isMember && !isPublic) {
+	if (!session && !isPublic) {
+		return (
+			<div className="w-full flex justify-center text-xl">
+				You must be logged in to view groups
+			</div>
+		)
+	}
+
+	const group = await fetchGroupByUsername(groupname)
+	const { status } = await fetchGroupStatus({ groupId: group.id })
+
+	if (status !== 'joined' && !isPublic) {
 		return (
 			<div className="w-full flex justify-center text-xl">
 				This group is private and you are not a member

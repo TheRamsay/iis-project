@@ -16,51 +16,77 @@ import { Button } from '@/components/components/button'
 import { Loader } from '@/components/components/loader'
 import classNames from 'classnames'
 import { FormServerError } from '@/app/_ui/form/form-server-error'
+import { fetchUserByUsername } from '@/app/_lib/user/fetch-user'
+import type { Role } from '@/app/_types/user'
+import { z } from 'zod'
+import { myz } from '@/app/_types/zod'
+import { formImageSchema } from '@/app/_ui/form/form-image'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { backendFetch, checkResponse } from '@/app/_lib/backend-fetch'
 
-// TODO: validation
+const userModalSchema = z
+	.object({
+		id: z.string(),
+		displayName: myz.displayName,
+		email: z.string().email(),
+		isBlocked: z.boolean(),
+		role: z.string(),
+		username: myz.username,
+	})
+	.merge(formImageSchema(false))
 
 type UserModal = {
 	children?: React.ReactNode
 	open?: boolean
-} & Pick<typeof schema.user.$inferSelect, 'id'>
+} & Pick<typeof schema.user.$inferSelect, 'username'>
 
 type User = Pick<
 	typeof schema.user.$inferSelect,
-	'id' | 'displayName' | 'email' | 'isBlocked' | 'userType' | 'username'
+	'id' | 'displayName' | 'email' | 'isBlocked' | 'username'
 > & {
-	image: globalThis.File | null
+	image: string | null | undefined
+	role: Role
 }
 
 export type UserForm = Pick<User, 'id'> & Partial<User>
 
-export function UserModal({ children, id, open: _open }: UserModal) {
+export function UserModal({ children, username, open: _open }: UserModal) {
 	const [open, setOpen] = useState(_open)
 
 	const { data, isFetching, refetch } = useQuery<User>({
-		queryKey: ['admin-user', id],
+		queryKey: ['admin-user', username],
 		queryFn: async () => {
-			// TODO: Endpoint
-			await new Promise((resolve) => setTimeout(resolve, 1000))
+			const user = await fetchUserByUsername(username)
 
 			return {
-				id: Math.random().toString(),
-				displayName: 'John Doe',
-				avatarUrl: 'https://example.com/favicon.ico',
-				email: 'asdas@goog.eoco',
-				username: 'johndoe',
-				isBlocked: false,
-				userType: 'regular',
-				image: null,
+				...user,
+				image: user.avatar.src,
 			}
 		},
 		enabled: open,
 	})
 
 	const { mutate, error, isPending } = useMutation({
-		mutationKey: ['admin-user', id],
-		mutationFn: async (data: UserForm) => {
-			// TODO: Endpoint
-			await new Promise((resolve) => setTimeout(resolve, 1000))
+		mutationKey: ['admin-user', username],
+		mutationFn: async (formData: UserForm) => {
+			let imageUrl = formData.image
+			if (imageUrl?.startsWith('blob:')) {
+				// TODO: upload image
+				imageUrl = formData.image
+			}
+
+			const response = await backendFetch(`/api/user/${data?.id}`, {
+				method: 'PUT',
+				body: JSON.stringify({
+					display_name: formData.displayName,
+					username: formData.username,
+					email: formData.email,
+					avatar_url: imageUrl || undefined,
+					user_type: data?.role || 'regular',
+				}),
+			})
+
+			await checkResponse(response, 'Failed to update user')
 		},
 		onSuccess: () => {
 			refetch()
@@ -75,11 +101,12 @@ export function UserModal({ children, id, open: _open }: UserModal) {
 			displayName: '',
 			email: '',
 			isBlocked: false,
-			userType: 'regular',
+			role: 'regular',
 			username: '',
 			image: null,
 			id: '',
 		},
+		resolver: zodResolver(userModalSchema),
 	})
 
 	useEffect(() => {

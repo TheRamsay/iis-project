@@ -72,6 +72,6 @@ async fn reject(
 
 pub fn group_join_request_router() -> axum::Router<crate::AppState> {
     axum::Router::new()
-        .route("/:id/approve", get(accept))
-        .route("/:id/reject", get(reject))
+        .route("/:id/approve", post(accept))
+        .route("/:id/reject", post(reject))
 }

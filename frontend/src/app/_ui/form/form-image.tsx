@@ -12,25 +12,16 @@ import { XIcon } from 'lucide-react'
 
 export const formImageSchema = (required: boolean) =>
 	z.object({
-		image: z
-			.custom<globalThis.File>(
-				(data) => {
-					console.log(!!data && required)
-					return !!data && required
-				},
-				{ fatal: true, message: 'Image is required' },
-			)
-			.refine(
-				(data) => {
-					if (!data && !required) return true
-					return data.type.startsWith('image/')
-				},
-				{ message: 'File must be an image' },
-			),
+		image: z.string().refine(
+			(data) => {
+				return !!data && required
+			},
+			{ message: 'Image is required' },
+		),
 	})
 
 interface FormSubset {
-	image?: globalThis.File | null | undefined
+	image?: string | null | undefined
 }
 
 interface FormImage<T extends FormSubset> {
@@ -45,15 +36,11 @@ export function FormImage<T extends FormSubset>({
 	className,
 }: FormImage<T>) {
 	const form = _form as unknown as UseFormReturn<FormSubset>
-	const [initialPreview, setInitialPreview] = useState<string | undefined>()
-	const [preview, setPreview] = useState<string | undefined>()
 
 	const deleteImage = useCallback(() => {
-		// TODO: Test dirtying
 		form.setValue('image', null, {
 			shouldDirty: !form.control._defaultValues.image,
 		})
-		setPreview(undefined)
 	}, [form.setValue, form.control._defaultValues.image])
 
 	const { getRootProps, getInputProps } = useDropzone({
@@ -67,39 +54,14 @@ export function FormImage<T extends FormSubset>({
 
 			const newObjectURL = URL.createObjectURL(file)
 
-			if (initialPreview === newObjectURL) {
-				form.setValue('image', file, {
-					shouldDirty: false,
-					shouldValidate: true,
-				})
-			} else {
-				form.setValue('image', file, {
-					shouldDirty: true,
-					shouldValidate: true,
-				})
-			}
-
-			setPreview(() => {
-				if (preview) {
-					URL.revokeObjectURL(preview)
-				}
-				return newObjectURL
+			form.setValue('image', newObjectURL, {
+				shouldDirty: true,
+				shouldValidate: true,
 			})
 		},
 	})
 
-	useEffect(() => {
-		if (form.control._defaultValues.image) {
-			setInitialPreview(URL.createObjectURL(form.control._defaultValues.image))
-		}
-	}, [form.control._defaultValues.image])
-
-	const file = form.watch('image')
-	useEffect(() => {
-		if (file) {
-			setPreview(URL.createObjectURL(file))
-		}
-	}, [file])
+	const image = form.watch('image')
 
 	return (
 		<FormField
@@ -156,9 +118,9 @@ export function FormImage<T extends FormSubset>({
 									<img
 										className={classNames(
 											'absolute object-contain w-full h-full',
-											!preview && 'hidden',
+											!image && 'hidden',
 										)}
-										src={preview}
+										src={image || ''}
 										alt=""
 									/>
 								</div>

@@ -1,8 +1,7 @@
 'use client'
 
-import type { Post } from '@/app/_types/post'
+import type { Post } from '@/app/post/_lib/fetch-post'
 import { Share2 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { useMemo } from 'react'
 
 type PostShareButton = { post: Pick<Post, 'id'> }

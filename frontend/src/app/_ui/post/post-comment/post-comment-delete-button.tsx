@@ -4,31 +4,33 @@ import { useSession } from '@/app/_lib/auth/auth-provider'
 import { isMinModerator } from '@/app/_lib/get-permission-level'
 import { useMutation } from '@tanstack/react-query'
 import { Trash2Icon } from 'lucide-react'
-import { ErrorTooltip } from '../error-tooltip'
 import type { Post } from '@/app/post/_lib/fetch-post'
+import type { Comment } from '@/app/_types/comments'
+import { ErrorTooltip } from '../../error-tooltip'
 
-interface PostDeleteButton {
-	post: Pick<Post, 'id'> & {
-		user: Pick<Post['user'], 'id'>
-	}
-	groupModeratorId?: string
+interface PostCommentDeleteButton {
+	post: Pick<Post, 'id'>
+	comment: Comment
 	size?: 'small' | 'full'
 }
 
-export function PostDeleteButton({
+export function PostCommentDeleteButton({
 	post,
-	groupModeratorId,
+	comment,
 	size = 'full',
-}: PostDeleteButton) {
+}: PostCommentDeleteButton) {
 	const session = useSession()
 
 	const { mutate, error } = useMutation({
-		mutationKey: ['delete-post', post, groupModeratorId],
+		mutationKey: ['delete-comment', comment],
 		mutationFn: async () => {
-			const response = await fetch(`/api/posts/${post.id}`, {
-				method: 'DELETE',
-				credentials: 'include',
-			})
+			const response = await fetch(
+				`/api/posts/${post.id}/comment/${comment.id}`,
+				{
+					method: 'DELETE',
+					credentials: 'include',
+				},
+			)
 
 			if (!response.ok) {
 				throw new Error('Failed to delete post')
@@ -42,11 +44,7 @@ export function PostDeleteButton({
 		return null
 	}
 
-	if (
-		isMinModerator(session.role) ||
-		session.userId === post.user.id ||
-		groupModeratorId === session.userId
-	) {
+	if (isMinModerator(session.role) || session.userId === comment.user.id) {
 		const pix = size === 'small' ? 16 : 28
 
 		return (

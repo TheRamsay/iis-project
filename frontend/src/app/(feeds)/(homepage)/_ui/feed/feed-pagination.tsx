@@ -33,7 +33,7 @@ export function FeedPagination({ page, hasMore }: FeedPagination) {
 	return (
 		<Pagination
 			page={page}
-			canGoPrevious={page > 0}
+			canGoPrevious={page > 1}
 			canGoNext={hasMore}
 			onNext={() => {
 				push(`${urlWithoutPage}?page=${page + 1}`)

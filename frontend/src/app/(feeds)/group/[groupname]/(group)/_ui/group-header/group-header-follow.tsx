@@ -5,10 +5,12 @@ import { SkeletonText } from '@/components/components/skeleton'
 import { Button } from '@/components/components/button'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ErrorTooltip } from '@/app/_ui/error-tooltip'
+import { fetchGroupStatus } from '@/app/(feeds)/group/_lib/fetch-group-status'
+import { backendFetch, checkResponse } from '@/app/_lib/backend-fetch'
 
-enum GroupFollowState {
-	NotJoined = 'not-joined',
-	Requested = 'requested',
+export enum GroupFollowState {
+	NotJoined = 'notJoined',
+	Pending = 'pending',
 	Joined = 'joined',
 }
 
@@ -23,39 +25,45 @@ function changeState(currentState: GroupFollowState, groupType: GroupType) {
 			return GroupFollowState.Joined
 		}
 
-		return GroupFollowState.Requested
+		return GroupFollowState.Pending
 	}
 
 	return GroupFollowState.NotJoined
 }
 
 interface GroupHeaderFollow {
-	groupname: string
+	groupId: string
 	groupType: GroupType
 }
 
-export function GroupHeaderFollow({ groupname, groupType }: GroupHeaderFollow) {
+export function GroupHeaderFollow({ groupId, groupType }: GroupHeaderFollow) {
 	const session = useSession()
 
 	const queryClient = useQueryClient()
 
 	const { data, isLoading, refetch } = useQuery({
-		queryKey: ['group-follow', groupname, session?.userId],
+		queryKey: ['group-follow', groupId, session?.userId],
 		queryFn: async () => {
-			// TODO: endpoint
-			await new Promise((resolve) => setTimeout(resolve, 1000))
+			const data = await fetchGroupStatus({ groupId })
+
 			return {
-				followState: GroupFollowState.NotJoined,
+				followState: data.status,
 			}
 		},
 	})
 
 	const { mutate, error } = useMutation<void, Error, boolean>({
-		mutationKey: ['group-follow', groupname, session?.userId],
-		mutationFn: async (follow) => {
-			// TODO: endpoint
-			await new Promise((resolve) => setTimeout(resolve, 1000))
-			throw new Error('Failed to follow group')
+		mutationKey: ['group-follow', groupId, session?.userId],
+		mutationFn: async (join) => {
+			const response = await backendFetch(
+				`/api/groups/${groupId}/${join ? 'join' : 'leave'}`,
+				{
+					method: 'POST',
+				},
+			)
+
+			await checkResponse(response)
+			return response.json()
 		},
 		onMutate: async () => {
 			if (!data?.followState) {
@@ -63,11 +71,11 @@ export function GroupHeaderFollow({ groupname, groupType }: GroupHeaderFollow) {
 			}
 
 			await queryClient.cancelQueries({
-				queryKey: ['group-follow', groupname, session?.userId],
+				queryKey: ['group-follow', groupId, session?.userId],
 			})
 
 			queryClient.setQueryData(
-				['group-follow', groupname, session?.userId],
+				['group-follow', groupId, session?.userId],
 				(old: { followState: GroupFollowState }) => {
 					return {
 						followState: changeState(old.followState, groupType),
@@ -102,10 +110,10 @@ export function GroupHeaderFollow({ groupname, groupType }: GroupHeaderFollow) {
 		)
 	}
 
-	if (data.followState === GroupFollowState.Requested) {
+	if (data.followState === GroupFollowState.Pending) {
 		return (
 			<ErrorShell error={error}>
-				<Button variant="outline" onClick={() => mutate(false)}>
+				<Button variant="outline" onClick={() => mutate(false)} disabled>
 					Cancel
 				</Button>
 			</ErrorShell>

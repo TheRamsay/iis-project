@@ -4,23 +4,14 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ProfileHeaderFollow } from './profile-header-follow'
 import { getSession } from '@/app/_lib/auth/get-session'
+import { fetchUserByUsername } from '../../../../_lib/user/fetch-user'
 
 interface ProfileHeader {
 	username: string
 }
 
 export async function ProfileHeader({ username }: ProfileHeader) {
-	// TODO: endpoint
-	const profile = {
-		id: 'user_id',
-		username: 'johndoe',
-		description: 'I am a person.',
-		avatar: {
-			src: 'https://www.gravatar.com/avatar/',
-			width: 32,
-			height: 32,
-		},
-	}
+	const profile = await fetchUserByUsername(username)
 
 	const session = await getSession()
 

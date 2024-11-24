@@ -53,7 +53,7 @@ const columns = [
 		cell: ({ row }) => {
 			return (
 				<div className="justify-end flex w-full">
-					<UserModal id={row.original.id}>
+					<UserModal username={row.original.username}>
 						<Button variant="secondary">Manage</Button>
 					</UserModal>
 				</div>
@@ -153,7 +153,7 @@ export default function Page() {
 		})
 	}, [canGoNext])
 
-	const idFromUrl = searchParams.get('id')
+	const usernameFromUrl = searchParams.get('username')
 
 	return (
 		<>
@@ -207,7 +207,7 @@ export default function Page() {
 					</div>
 				</div>
 			</div>
-			{idFromUrl && <UserModal id={idFromUrl} open />}
+			{usernameFromUrl && <UserModal username={usernameFromUrl} open />}
 		</>
 	)
 }
