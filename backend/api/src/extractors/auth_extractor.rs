@@ -50,7 +50,7 @@ impl AuthUser {
         }
     }
 
-    pub fn to_jwt(&self) -> String {
+    pub fn to_jwt(&self, secret: &str) -> String {
         let exp = Utc::now().timestamp() as usize + DEFAULT_SESSION_DURATION.as_secs() as usize;
 
         let claims = AuthUserClaims {
@@ -63,19 +63,19 @@ impl AuthUser {
         jsonwebtoken::encode(
             &jsonwebtoken::Header::default(),
             &claims,
-            &jsonwebtoken::EncodingKey::from_secret("secret".as_ref()),
+            &jsonwebtoken::EncodingKey::from_secret(secret.as_ref()),
         )
         .expect("Error generating JWT token")
     }
 
-    pub fn from_jwt(token: &str) -> AppResult<Self> {
+    pub fn from_jwt(token: &str, secret: &str) -> AppResult<Self> {
         let mut validation = Validation::new(jsonwebtoken::Algorithm::HS256);
         validation.reject_tokens_expiring_in_less_than =
             time::Duration::from_secs(5).as_secs() as u64;
 
         let token_data = jsonwebtoken::decode::<AuthUserClaims>(
             token,
-            &DecodingKey::from_secret("secret".as_ref()),
+            &DecodingKey::from_secret(secret.as_ref()),
             &validation,
         )
         .map_err(|_| AppError::Unauthorized("Couldn't decode the JWT token".into()))?;
@@ -129,7 +129,7 @@ where
                     return Err(AppError::Unauthorized("Token is blacklisted".into()));
                 }
 
-                let auth_user = AuthUser::from_jwt(token)?;
+                let auth_user = AuthUser::from_jwt(token, &state.jwt_secret)?;
                 return Ok(Self(Some(auth_user)));
             }
         }
