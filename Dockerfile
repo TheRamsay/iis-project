@@ -31,7 +31,7 @@ WORKDIR /app
 COPY --from=builder /usr/src/app/target/release/api .
 
 # Expose the application's port (adjust as needed)
-EXPOSE 8080
+EXPOSE 8000
 
 # Run the application
-CMD ["./<your-app-binary>"]
+CMD ["./api"]
