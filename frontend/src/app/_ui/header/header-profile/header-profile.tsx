@@ -44,7 +44,7 @@ async function _HeaderProfile() {
 						<Image
 							unoptimized={true}
 							src={session.avatar.src}
-							alt={session.username}
+							alt="avatar"
 							width={24}
 							height={24}
 						/>
@@ -70,16 +70,16 @@ async function _HeaderProfile() {
 						</div>
 						<div className="flex flex-row justify-between space-x-3">
 							<HeaderProfileTheme />
-							<div className="rounded-full border p-2 border-accent hover:border-accent-foreground">
-								<Link href="/settings">
+							<Link href="/settings">
+								<div className="rounded-full border p-2 border-accent hover:border-accent-foreground">
 									<Settings width={20} height={20} />
-								</Link>
-							</div>
-							<div className="rounded-full border p-2 border-accent hover:border-accent-foreground">
-								<Link href="/logout">
+								</div>
+							</Link>
+							<a href="/logout">
+								<div className="rounded-full border p-2 border-accent hover:border-accent-foreground">
 									<LogOut width={20} height={20} />
-								</Link>
-							</div>
+								</div>
+							</a>
 						</div>
 					</div>
 				</PopoverContent>

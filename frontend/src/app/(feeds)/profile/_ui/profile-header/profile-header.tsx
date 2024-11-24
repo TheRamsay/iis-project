@@ -56,17 +56,18 @@ export async function ProfileHeader({ username }: ProfileHeader) {
 					</p>
 				</div>
 			</div>
-			<ProfileActions username={username} role={role} />
+			<ProfileActions id={profile.id} username={username} role={role} />
 		</div>
 	)
 }
 
 interface ProfileActions {
+	id: string
 	username: string
 	role: 'unregistered' | 'owner' | (typeof schema.userType.enumValues)[number]
 }
 
-function ProfileActions({ username, role }: ProfileActions) {
+function ProfileActions({ id, username, role }: ProfileActions) {
 	const actions: React.ReactNode[] = []
 
 	switch (role) {
@@ -88,7 +89,7 @@ function ProfileActions({ username, role }: ProfileActions) {
 		case 'administrator':
 			actions.push(<ProfileHeaderFollow key="follow" username={username} />)
 			actions.push(
-				<Link href="/admin/users">
+				<Link href={`/admin/users?id=${id}`}>
 					<Button key="edit" variant="outline">
 						Edit Profile
 					</Button>

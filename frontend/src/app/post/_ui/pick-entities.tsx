@@ -1,5 +1,6 @@
 'use client'
 
+import { InfoTooltip } from '@/app/_ui/info-tooltip'
 import {
 	SimpleSearch,
 	type SimpleSearchDataProps,
@@ -7,7 +8,7 @@ import {
 import { UserAvatarName } from '@/app/_ui/user/user-avatar-name'
 import { SkeletonText } from '@/components/components'
 import { useQuery } from '@tanstack/react-query'
-import { CheckIcon, MinusCircleIcon } from 'lucide-react'
+import { CheckIcon, Info, MinusCircleIcon } from 'lucide-react'
 import { useCallback, useState } from 'react'
 
 export type Entity = {
@@ -75,7 +76,12 @@ export function PickEntities({ type, list, onChange }: PickEntities) {
 	return (
 		<div className="space-y-2">
 			<div className="flex items-center space-x-2 justify-between">
-				<div className="capitalize">{type}s</div>
+				<div className="items-center flex space-x-1.5">
+					<div className="capitalize">{type}s</div>
+					<InfoTooltip
+						tooltip={`Search for and select the ${type}s you want to share this post with.`}
+					/>
+				</div>
 				<SimpleSearch
 					query={query}
 					setQuery={setQuery}

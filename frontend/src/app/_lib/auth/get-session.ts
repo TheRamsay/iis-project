@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import type { Session } from "./types";
 import { BACKEND_URL } from "../constants";
+import { backendFetch } from "../backend-fetch";
 
 export async function getSession(): Promise<Session | null> {
   const cookiez = cookies();
@@ -10,26 +11,24 @@ export async function getSession(): Promise<Session | null> {
     return null;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/users/me`, {
-    headers: {
-      cookie: `jwt=${session.value}`,
-    },
-    credentials: "include",
-  });
+  const response = await backendFetch("/api/users/me");
 
   if (!response.ok) {
     return null;
   }
 
+  const data = await response.json();
+
+  const avatar = data.avatar_url || {
+    src: "/avatar-placeholder.png",
+    width: 128,
+    height: 128,
+  };
+
   return {
-    userId: "1",
-    username: "fitstagram",
-    avatar: {
-      src: "https://avatars.githubusercontent.com/u/7655549?v=4",
-      width: 128,
-      height: 128,
-    },
-    role: "administrator",
-    expires: Date.now() + 1000 * 60 * 60 * 24,
+    userId: data.id,
+    username: data.username,
+    avatar: avatar,
+    role: data.user_type,
   };
 }

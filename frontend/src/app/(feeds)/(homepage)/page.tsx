@@ -4,7 +4,10 @@ import { FeedSortDropdown } from '../../_ui/feed/feed-sort'
 import { FeedSearchProvider } from '../../_ui/feed/feed-search/feed-search-provider'
 import { getTypedSearchParams } from '../../_lib/typed-search-params/get-typed-search-params'
 import { feedSearchSchema } from '../../_ui/feed/feed-search/feed-search-schema'
-import { dummyPosts } from '../../_types/post'
+import { backendFetch } from '@/app/_lib/backend-fetch'
+import { FeedPagination } from './_ui/feed/feed-pagination'
+
+const pageSize = 10
 
 export default async function Page({
 	searchParams,
@@ -12,8 +15,9 @@ export default async function Page({
 	const session = await getSession()
 	const filters = getTypedSearchParams(feedSearchSchema, searchParams)
 
-	// TODO: endpoint
-	const feed = dummyPosts
+	const response = await backendFetch(
+		`/api/wall/feed?offset=${pageSize * filters.page}&limit=${pageSize}&sort=${filters.sorting}`,
+	)
 
 	return (
 		<FeedSearchProvider>
@@ -22,7 +26,10 @@ export default async function Page({
 					<FeedSortDropdown />
 				</div>
 			</div>
-			<Feed data={feed} />
+			<div className="space-y-8">
+				<Feed data={feed} />
+				<FeedPagination page={filters.page} hasMore={true} />
+			</div>
 		</FeedSearchProvider>
 	)
 }

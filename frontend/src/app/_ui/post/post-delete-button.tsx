@@ -4,23 +4,25 @@ import { useSession } from '@/app/_lib/auth/auth-provider'
 import { isMinModerator } from '@/app/_lib/get-permission-level'
 import { useMutation } from '@tanstack/react-query'
 import { Trash2Icon } from 'lucide-react'
+import { ErrorTooltip } from '../error-tooltip'
 
 interface PostDeleteButton {
 	postId: number
 	postAuthorId: string
+	groupModeratorIdList?: string[]
 	size?: 'small' | 'full'
 }
 
 export function PostDeleteButton({
 	postId,
 	postAuthorId,
+	groupModeratorIdList,
 	size = 'full',
 }: PostDeleteButton) {
 	const session = useSession()
 
-	const { mutateAsync } = useMutation({
-		mutationKey: ['delete-post', postId],
-		// TODO: Implement the mutation function
+	const { mutate, error } = useMutation({
+		mutationKey: ['delete-post', postId, !!groupModeratorIdList],
 		mutationFn: async () => {
 			// TODO: endpoint
 		},
@@ -30,17 +32,24 @@ export function PostDeleteButton({
 		return null
 	}
 
-	if (isMinModerator(session.role) || session.userId === postAuthorId) {
+	if (
+		isMinModerator(session.role) ||
+		session.userId === postAuthorId ||
+		groupModeratorIdList?.includes(session.userId)
+	) {
 		const pix = size === 'small' ? 16 : 28
 
 		return (
-			<Trash2Icon
-				width={pix}
-				height={pix}
-				color="#BF0000"
-				className="cursor-pointer flex-shrink-0"
-				onClick={() => mutateAsync()}
-			/>
+			<div className="flex items-center space-x-2">
+				<ErrorTooltip error={error} size={size} />
+				<Trash2Icon
+					width={pix}
+					height={pix}
+					color="#9F0000"
+					className="cursor-pointer flex-shrink-0"
+					onClick={() => mutate()}
+				/>
+			</div>
 		)
 	}
 }

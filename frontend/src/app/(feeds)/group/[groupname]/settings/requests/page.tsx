@@ -1,6 +1,8 @@
 'use client'
 
 import type { schema } from '@/app/_lib/db'
+import { ErrorTooltip } from '@/app/_ui/error-tooltip'
+import { Pagination } from '@/app/_ui/pagination'
 import { DataTable, Loader, TextField } from '@/components/components'
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query'
 import type { ColumnDef } from '@tanstack/react-table'
@@ -27,11 +29,13 @@ const columns = [
 		cell: ({ row }) => {
 			const [handled, setHandled] = useState<boolean>(false)
 
-			const { mutate, isPending } = useMutation({
+			const { mutate, error, isPending } = useMutation({
 				mutationKey: ['group-handle-user-request', row.original.id],
 				mutationFn: async (accept: boolean) => {
 					// TODO: endpoint
 					await new Promise((resolve) => setTimeout(resolve, 1000))
+
+					throw new Error('Failed to handle request')
 				},
 				onSuccess: () => setHandled(true),
 			})
@@ -41,6 +45,7 @@ const columns = [
 					{!handled && (
 						<div className="flex space-x-2 items-center">
 							{isPending && <Loader />}
+							<ErrorTooltip error={error} size="small" />
 							<div
 								onClick={() => mutate(true)}
 								className={classNames(
@@ -160,25 +165,13 @@ export default function Page({
 				<DataTable columns={columns} data={currentData} loading={isLoading} />
 			</div>
 
-			<div className="w-full justify-between flex items-center">
-				<div>Page: {pageIndex + 1}</div>
-				<div className="flex space-x-2">
-					<div
-						onClick={onPrevious}
-						className={classNames(
-							canGoPrevious ? 'cursor-pointer' : 'opacity-50',
-						)}
-					>
-						<ChevronLeftIcon className="h-8 w-8" />
-					</div>
-					<div
-						onClick={onNext}
-						className={classNames(canGoNext ? 'cursor-pointer' : 'opacity-50')}
-					>
-						<ChevronRightIcon className="h-8 w-8" />
-					</div>
-				</div>
-			</div>
+			<Pagination
+				page={pageIndex}
+				canGoPrevious={canGoPrevious}
+				canGoNext={canGoNext}
+				onPrevious={onPrevious}
+				onNext={onNext}
+			/>
 		</div>
 	)
 }

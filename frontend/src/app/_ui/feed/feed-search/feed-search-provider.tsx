@@ -28,15 +28,16 @@ interface FeedSearchProvider {
 
 export const FeedSearchProvider: FC<FeedSearchProvider> = ({ children }) => {
 	const urlFilters = useTypedSearchParams(feedSearchSchema.partial())
-	const { sorting } = urlFilters
+	const { sorting, page } = urlFilters
 
 	return (
 		<FilterContext.Provider
 			value={useMemo(
 				() => ({
 					sorting: sorting || SortOption.New,
+					page: page || 1,
 				}),
-				[sorting],
+				[page, sorting],
 			)}
 		>
 			{children}

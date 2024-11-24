@@ -4,6 +4,7 @@ import { BACKEND_URL } from '@/app/_lib/constants'
 import { formClassnames } from '@/app/_lib/form-classnames'
 import { myz } from '@/app/_types/zod'
 import { FormLabelError } from '@/app/_ui/form/form-label-error'
+import { FormServerError } from '@/app/_ui/form/form-server-error'
 import {
 	Button,
 	FormControl,
@@ -31,7 +32,7 @@ type FormLogin = {
 }
 
 export function FormLogin() {
-	const { push } = useRouter()
+	const { refresh } = useRouter()
 
 	const form = useForm<FormLogin>({
 		mode: 'all',
@@ -42,7 +43,7 @@ export function FormLogin() {
 		resolver: zodResolver(loginSchema),
 	})
 
-	const { mutate, isPending } = useMutation({
+	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['login'],
 		mutationFn: async (formData: FormLogin) => {
 			const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
@@ -51,6 +52,7 @@ export function FormLogin() {
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify(formData),
+				credentials: 'include',
 			})
 
 			if (!response.ok) {
@@ -62,12 +64,9 @@ export function FormLogin() {
 
 				throw new Error('An unknown error has occurred.')
 			}
-
-			const data = await response.json()
-			document.cookie = data.jwt
 		},
 		onSuccess: () => {
-			push('/')
+			refresh()
 		},
 		onError: (error) => {
 			// TODO: Error handling
@@ -80,6 +79,7 @@ export function FormLogin() {
 
 	return (
 		<div className="space-y-4">
+			<FormServerError error={error} />
 			<FormProvider {...form}>
 				<FormField
 					name="username"

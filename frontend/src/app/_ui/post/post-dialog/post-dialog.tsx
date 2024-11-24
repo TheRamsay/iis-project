@@ -10,14 +10,22 @@ import type { Post } from '@/app/_types/post'
 export interface PostDialog {
 	children: React.ReactNode
 	post: Post
+	groupModeratorIdList?: string[]
 }
 
-export function PostDialog({ children, post }: PostDialog) {
+export function PostDialog({
+	children,
+	post,
+	groupModeratorIdList,
+}: PostDialog) {
 	return (
 		<Dialog>
 			<DialogTrigger className="w-full">{children}</DialogTrigger>
 			<DialogContent className="!p-0 !w-[90vw] !max-w-[90vw] h-full max-h-[90vh]">
-				<PostDialogContent post={post} />
+				<PostDialogContent
+					post={post}
+					groupModeratorIdList={groupModeratorIdList}
+				/>
 			</DialogContent>
 		</Dialog>
 	)

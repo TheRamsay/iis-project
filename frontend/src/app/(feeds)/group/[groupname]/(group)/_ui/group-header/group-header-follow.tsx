@@ -4,6 +4,7 @@ import { useSession } from '@/app/_lib/auth/auth-provider'
 import { SkeletonText } from '@/components/components/skeleton'
 import { Button } from '@/components/components/button'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { ErrorTooltip } from '@/app/_ui/error-tooltip'
 
 enum GroupFollowState {
 	NotJoined = 'not-joined',
@@ -49,11 +50,12 @@ export function GroupHeaderFollow({ groupname, groupType }: GroupHeaderFollow) {
 		},
 	})
 
-	const { mutate } = useMutation<void, void, boolean>({
+	const { mutate, error } = useMutation<void, Error, boolean>({
 		mutationKey: ['group-follow', groupname, session?.userId],
 		mutationFn: async (follow) => {
 			// TODO: endpoint
 			await new Promise((resolve) => setTimeout(resolve, 1000))
+			throw new Error('Failed to follow group')
 		},
 		onMutate: async () => {
 			if (!data?.followState) {
@@ -82,43 +84,65 @@ export function GroupHeaderFollow({ groupname, groupType }: GroupHeaderFollow) {
 
 	if (isLoading || !data) {
 		return (
-			<Button variant="outline">
-				<SkeletonText />
-			</Button>
+			<ErrorShell error={error}>
+				<Button variant="outline" fullWidth>
+					<SkeletonText />
+				</Button>
+			</ErrorShell>
 		)
 	}
 
 	if (data.followState === GroupFollowState.Joined) {
 		return (
-			<Button variant="outline" onClick={() => mutate(false)}>
-				Leave
-			</Button>
+			<ErrorShell error={error}>
+				<Button variant="outline" onClick={() => mutate(false)}>
+					Leave
+				</Button>
+			</ErrorShell>
 		)
 	}
 
 	if (data.followState === GroupFollowState.Requested) {
 		return (
-			<Button variant="outline" onClick={() => mutate(false)}>
-				Cancel
-			</Button>
+			<ErrorShell error={error}>
+				<Button variant="outline" onClick={() => mutate(false)}>
+					Cancel
+				</Button>
+			</ErrorShell>
 		)
 	}
 
 	if (data.followState === GroupFollowState.NotJoined) {
 		if (groupType === GroupType.Public) {
 			return (
-				<Button variant="outline" onClick={() => mutate(true)}>
-					Join
-				</Button>
+				<ErrorShell error={error}>
+					<Button variant="outline" onClick={() => mutate(true)}>
+						Join
+					</Button>
+				</ErrorShell>
 			)
 		}
 
 		if (groupType === GroupType.Private) {
 			return (
-				<Button variant="outline" onClick={() => mutate(true)}>
-					Request
-				</Button>
+				<ErrorShell error={error}>
+					<Button variant="outline" onClick={() => mutate(true)}>
+						Request
+					</Button>
+				</ErrorShell>
 			)
 		}
 	}
+}
+
+function ErrorShell({
+	error,
+	children,
+}: { error: Error | null; children: React.ReactNode }) {
+	return (
+		<div className="flex items-center space-x-2 w-full">
+			<ErrorTooltip error={error} />
+			{children}
+		</div>
+	)
 }

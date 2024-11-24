@@ -19,6 +19,7 @@ use usecase::wall::{
     get_feed_posts::{GetFeedPostsInput, GetFeedPostsUseCase},
     get_tag_posts::{GetTagPostsInput, GetTagPostsUseCase},
     get_wall_posts::{GetWallPostsInput, GetWallPostsUseCase},
+    types::SortBy,
 };
 use uuid::Uuid;
 
@@ -76,10 +77,16 @@ pub struct GetWallResponse {
     posts: Vec<PostItem>,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SortQuery {
+    sort_by: Option<SortBy>,
+}
+
 pub async fn get_wall(
     state: State<AppState>,
     Path(id): Path<Uuid>,
     Query(pagination): Query<PaginationParams>,
+    Query(sort_by): Query<SortQuery>,
 ) -> AppResult<Json<GetWallResponse>> {
     let get_wall_posts_usecase = GetWallPostsUseCase::new(state.wall_repository.clone());
     let pagination = pagination::Pagination::from(pagination);
@@ -87,6 +94,7 @@ pub async fn get_wall(
     let input = GetWallPostsInput {
         id: id.into(),
         pagination: (pagination.offset, pagination.limit),
+        sort_by: sort_by.sort_by.unwrap_or_default(),
     };
 
     let output = get_wall_posts_usecase.execute(input).await?;
@@ -149,6 +157,7 @@ pub async fn get_feed(
     state: State<AppState>,
     OptionalAuthUser(user): OptionalAuthUser,
     Query(pagination): Query<PaginationParams>,
+    Query(sort_by): Query<SortQuery>,
 ) -> AppResult<Json<GetWallResponse>> {
     let get_feed_usecase = GetFeedPostsUseCase::new(state.wall_repository.clone());
     let pagination = pagination::Pagination::from(pagination);
@@ -160,6 +169,7 @@ pub async fn get_feed(
             None
         },
         pagination: (pagination.offset, pagination.limit),
+        sort_by: sort_by.sort_by.unwrap_or_default(),
     };
 
     let output = get_feed_usecase.execute(input).await?;
@@ -223,6 +233,7 @@ pub async fn get_wall_by_tag(
     OptionalAuthUser(user): OptionalAuthUser,
     Path(tag_name): Path<String>,
     Query(pagination): Query<PaginationParams>,
+    Query(sort_by): Query<SortQuery>,
 ) -> AppResult<Json<GetWallResponse>> {
     let get_tag_usecase = GetTagPostsUseCase::new(state.wall_repository.clone());
 
@@ -236,6 +247,7 @@ pub async fn get_wall_by_tag(
         },
         tag: tag_name,
         pagination: (pagination.offset, pagination.limit),
+        sort_by: sort_by.sort_by.unwrap_or_default(),
     };
 
     let output = get_tag_usecase.execute(input).await?;

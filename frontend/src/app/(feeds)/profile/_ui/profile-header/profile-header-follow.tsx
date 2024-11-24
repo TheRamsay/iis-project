@@ -4,6 +4,7 @@ import { useSession } from '@/app/_lib/auth/auth-provider'
 import { SkeletonText } from '@/components/components/skeleton'
 import { Button } from '@/components/components/button'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { ErrorTooltip } from '@/app/_ui/error-tooltip'
 
 interface ProfileHeaderFollow {
 	username: string
@@ -25,7 +26,7 @@ export function ProfileHeaderFollow({ username }: ProfileHeaderFollow) {
 		},
 	})
 
-	const { mutate } = useMutation<void, void, boolean>({
+	const { mutate, error } = useMutation<void, Error, boolean>({
 		mutationKey: ['profile-follow', username, session?.userId],
 		mutationFn: async (follow) => {
 			// TODO: endpoint
@@ -54,23 +55,41 @@ export function ProfileHeaderFollow({ username }: ProfileHeaderFollow) {
 
 	if (isLoading || !data) {
 		return (
-			<Button variant="outline">
-				<SkeletonText />
-			</Button>
+			<ErrorShell error={error}>
+				<Button variant="outline">
+					<SkeletonText />
+				</Button>
+			</ErrorShell>
 		)
 	}
 
 	if (data.isFollowing) {
 		return (
-			<Button variant="outline" onClick={() => mutate(false)}>
-				Unfollow
-			</Button>
+			<ErrorShell error={error}>
+				<Button variant="outline" onClick={() => mutate(false)}>
+					Unfollow
+				</Button>
+			</ErrorShell>
 		)
 	}
 
 	return (
-		<Button variant="outline" onClick={() => mutate(true)}>
-			Follow
-		</Button>
+		<ErrorShell error={error}>
+			<Button variant="outline" onClick={() => mutate(true)}>
+				Follow
+			</Button>
+		</ErrorShell>
+	)
+}
+
+function ErrorShell({
+	error,
+	children,
+}: { error: Error | null; children: React.ReactNode }) {
+	return (
+		<div className="flex items-center space-x-2 w-full">
+			<ErrorTooltip error={error} />
+			{children}
+		</div>
 	)
 }

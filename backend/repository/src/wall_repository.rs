@@ -6,7 +6,10 @@ use models::{
     },
     schema,
 };
-use sea_orm::{DbBackend, DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter, Statement};
+use sea_orm::{
+    sea_query::enum_def, DbBackend, DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter,
+    Statement,
+};
 
 #[derive(Debug, Clone)]
 pub struct DbWallRepository {
@@ -19,7 +22,7 @@ impl DbWallRepository {
     }
 }
 
-type WallPostTuple = (Post, User, Vec<(PostComment, User)>, Vec<(PostLike, User)>);
+pub type WallPostTuple = (Post, User, Vec<(PostComment, User)>, Vec<(PostLike, User)>);
 
 pub trait WallRepository {
     async fn get_by_id(&self, id: Id<Wall>) -> Result<Option<Wall>, DbErr>;

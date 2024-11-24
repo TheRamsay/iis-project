@@ -15,6 +15,7 @@ export const formImageSchema = (required: boolean) =>
 		image: z
 			.custom<globalThis.File>(
 				(data) => {
+					console.log(!!data && required)
 					return !!data && required
 				},
 				{ fatal: true, message: 'Image is required' },
@@ -55,8 +56,6 @@ export function FormImage<T extends FormSubset>({
 		setPreview(undefined)
 	}, [form.setValue, form.control._defaultValues.image])
 
-	console.log(initialPreview)
-
 	const { getRootProps, getInputProps } = useDropzone({
 		accept: {
 			'image/*': [],
@@ -69,9 +68,15 @@ export function FormImage<T extends FormSubset>({
 			const newObjectURL = URL.createObjectURL(file)
 
 			if (initialPreview === newObjectURL) {
-				form.setValue('image', file, { shouldDirty: false })
+				form.setValue('image', file, {
+					shouldDirty: false,
+					shouldValidate: true,
+				})
 			} else {
-				form.setValue('image', file, { shouldDirty: true })
+				form.setValue('image', file, {
+					shouldDirty: true,
+					shouldValidate: true,
+				})
 			}
 
 			setPreview(() => {
@@ -113,7 +118,7 @@ export function FormImage<T extends FormSubset>({
 									htmlFor={name}
 									label={
 										<div className="space-x-2 items-center flex">
-											<span>{`Image${required ? '*' : ''}`}</span>
+											<span>{`Image${required ? ' (Required)' : ''}`}</span>
 											{isDirty && (
 												<div className="bg-blue-500 rounded-full w-3 h-3 mt-1" />
 											)}

@@ -15,9 +15,13 @@ import { UserModalForm } from './user-modal-form'
 import { Button } from '@/components/components/button'
 import { Loader } from '@/components/components/loader'
 import classNames from 'classnames'
+import { FormServerError } from '@/app/_ui/form/form-server-error'
+
+// TODO: validation
 
 type UserModal = {
-	children: React.ReactNode
+	children?: React.ReactNode
+	open?: boolean
 } & Pick<typeof schema.user.$inferSelect, 'id'>
 
 type User = Pick<
@@ -29,8 +33,8 @@ type User = Pick<
 
 export type UserForm = Pick<User, 'id'> & Partial<User>
 
-export function UserModal({ children, id }: UserModal) {
-	const [open, setOpen] = useState(false)
+export function UserModal({ children, id, open: _open }: UserModal) {
+	const [open, setOpen] = useState(_open)
 
 	const { data, isFetching, refetch } = useQuery<User>({
 		queryKey: ['admin-user', id],
@@ -52,7 +56,7 @@ export function UserModal({ children, id }: UserModal) {
 		enabled: open,
 	})
 
-	const { mutate, isPending } = useMutation({
+	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['admin-user', id],
 		mutationFn: async (data: UserForm) => {
 			// TODO: Endpoint
@@ -90,6 +94,7 @@ export function UserModal({ children, id }: UserModal) {
 			<DialogContent>
 				<FormProvider {...form}>
 					<DialogTitle>User Settings</DialogTitle>
+					<FormServerError error={error} />
 					<UserModalForm form={form} />
 					<DialogFooter>
 						<div className="flex flex-row w-full justify-between items-center">
