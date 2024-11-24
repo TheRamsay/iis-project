@@ -57,13 +57,19 @@ async function GroupActions({ groupname }: GroupActions) {
 	if (isManager) {
 		actions.push(
 			<Link href={`/group/${groupname}/settings`} key="settings">
-				<Button variant="outline">Settings</Button>
+				<Button variant="outline" fullWidth>
+					Settings
+				</Button>
 			</Link>,
 		)
 	}
 
 	if (isMinModerator(session?.role)) {
-		actions.push(<Button variant="destructive">Delete</Button>)
+		actions.push(
+			<Button variant="destructive" fullWidth>
+				Delete
+			</Button>,
+		)
 	}
 
 	return <div className="flex flex-col space-y-2">{actions}</div>

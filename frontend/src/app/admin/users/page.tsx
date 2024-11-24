@@ -18,6 +18,7 @@ import {
 	SelectValue,
 } from '@/components/components/select'
 import { TextField } from '@/components/components/text-field'
+import { useSearchParams } from 'next/navigation'
 
 type Entry = Pick<
 	typeof schema.user.$inferSelect,
@@ -109,6 +110,8 @@ export default function Page() {
 	const [pageIndex, setPageIndex] = useState<number>(0)
 	const [filters, setFilters] = useState<Filters>({})
 
+	const searchParams = useSearchParams()
+
 	const { data, isLoading } = useInfiniteQuery({
 		queryKey: ['admin-users'],
 		queryFn: ({ pageParam }) => {
@@ -150,55 +153,62 @@ export default function Page() {
 		})
 	}, [canGoNext])
 
-	return (
-		<div className="h-full flex justify-between flex-col">
-			<div className="space-y-4">
-				<div className="flex w-full justify-between items-center">
-					<h1 className="text-3xl font-medium">Users</h1>
-					<FilterSearch
-						value={filters.search || ''}
-						setValue={(value) => {
-							setFilters({ ...filters, search: value })
-						}}
-					/>
-				</div>
-				<div className="flex w-full justify-end space-x-8">
-					<FilterBlocked
-						value={filters.isBlocked}
-						setValue={(value) => {
-							setFilters({ ...filters, isBlocked: value })
-						}}
-					/>
-					<FilterRole
-						value={filters.role}
-						setValue={(value) => {
-							setFilters({ ...filters, role: value })
-						}}
-					/>
-				</div>
-				<DataTable columns={columns} data={currentData} loading={isLoading} />
-			</div>
+	const idFromUrl = searchParams.get('id')
 
-			<div className="w-full justify-between flex items-center">
-				<div>Page: {pageIndex + 1}</div>
-				<div className="flex space-x-2">
-					<div
-						onClick={onPrevious}
-						className={classNames(
-							canGoPrevious ? 'cursor-pointer' : 'opacity-50',
-						)}
-					>
-						<ChevronLeftIcon className="h-8 w-8" />
+	return (
+		<>
+			<div className="h-full flex justify-between flex-col">
+				<div className="space-y-4">
+					<div className="flex w-full justify-between items-center">
+						<h1 className="text-3xl font-medium">Users</h1>
+						<FilterSearch
+							value={filters.search || ''}
+							setValue={(value) => {
+								setFilters({ ...filters, search: value })
+							}}
+						/>
 					</div>
-					<div
-						onClick={onNext}
-						className={classNames(canGoNext ? 'cursor-pointer' : 'opacity-50')}
-					>
-						<ChevronRightIcon className="h-8 w-8" />
+					<div className="flex w-full justify-end space-x-8">
+						<FilterBlocked
+							value={filters.isBlocked}
+							setValue={(value) => {
+								setFilters({ ...filters, isBlocked: value })
+							}}
+						/>
+						<FilterRole
+							value={filters.role}
+							setValue={(value) => {
+								setFilters({ ...filters, role: value })
+							}}
+						/>
+					</div>
+					<DataTable columns={columns} data={currentData} loading={isLoading} />
+				</div>
+
+				<div className="w-full justify-between flex items-center">
+					<div>Page: {pageIndex + 1}</div>
+					<div className="flex space-x-2">
+						<div
+							onClick={onPrevious}
+							className={classNames(
+								canGoPrevious ? 'cursor-pointer' : 'opacity-50',
+							)}
+						>
+							<ChevronLeftIcon className="h-8 w-8" />
+						</div>
+						<div
+							onClick={onNext}
+							className={classNames(
+								canGoNext ? 'cursor-pointer' : 'opacity-50',
+							)}
+						>
+							<ChevronRightIcon className="h-8 w-8" />
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
+			{idFromUrl && <UserModal id={idFromUrl} open />}
+		</>
 	)
 }
 

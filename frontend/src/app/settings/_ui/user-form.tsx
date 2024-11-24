@@ -13,6 +13,9 @@ import classNames from 'classnames'
 import { FormImage } from '@/app/_ui/form/form-image'
 import { FormLabelError } from '@/app/_ui/form/form-label-error'
 import { TextArea } from '@/components/components'
+import { FormServerError } from '@/app/_ui/form/form-server-error'
+
+// TODO: validation
 
 interface UserFormProps {
 	userId: string
@@ -44,7 +47,7 @@ export function UserForm({ userId }: UserFormProps) {
 		},
 	})
 
-	const { mutate, isPending } = useMutation({
+	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['admin-user', userId],
 		mutationFn: async (data: UserForm) => {
 			// TODO: endpoint
@@ -77,6 +80,7 @@ export function UserForm({ userId }: UserFormProps) {
 
 	return (
 		<div className="space-y-4">
+			<FormServerError error={error} />
 			<FormProvider {...form}>
 				<div className="flex space-x-4 w-full">
 					<FormField

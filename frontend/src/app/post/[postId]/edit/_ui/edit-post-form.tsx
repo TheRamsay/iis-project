@@ -11,7 +11,6 @@ import { Loader } from '@/components/components/loader'
 import classNames from 'classnames'
 import { TextArea } from '@/components/components/text-area'
 import type { Entity } from '../../../_ui/pick-entities'
-import { ChipInput } from '@/components/components/chip-input'
 import {
 	FormVisibility,
 	formVisibilitySchema,
@@ -22,6 +21,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { FormTags, formTagsSchema } from '../../../_ui/form-tags'
 import { useEffect } from 'react'
 import { FormLabelError } from '@/app/_ui/form/form-label-error'
+import { FormServerError } from '@/app/_ui/form/form-server-error'
 
 const editPostFromSchema: ZodType<EditPostForm> = z
 	.object({
@@ -79,7 +79,7 @@ export function EditPostForm({ postId }: { postId: string }) {
 		},
 	})
 
-	const { mutate, isPending } = useMutation({
+	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['edit-post'],
 		mutationFn: async (data: EditPostForm) => {
 			// TODO: endpoint
@@ -114,6 +114,7 @@ export function EditPostForm({ postId }: { postId: string }) {
 
 	return (
 		<div className="space-y-4">
+			<FormServerError error={error} />
 			<FormProvider {...form}>
 				<FormField
 					name="title"

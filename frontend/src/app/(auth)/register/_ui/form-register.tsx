@@ -2,6 +2,7 @@
 
 import { formClassnames } from '@/app/_lib/form-classnames'
 import { FormLabelError } from '@/app/_ui/form/form-label-error'
+import { FormServerError } from '@/app/_ui/form/form-server-error'
 import {
 	Button,
 	FormControl,
@@ -16,6 +17,8 @@ import classNames from 'classnames'
 import { useRouter } from 'next/navigation'
 import { FormProvider, useForm } from 'react-hook-form'
 import { z, type ZodType } from 'zod'
+
+// TODO: validation sync
 
 const registerSchema: ZodType<FormRegister> = z.object({
 	email: z.string().email(),
@@ -61,6 +64,7 @@ export function FormRegister() {
 
 	return (
 		<div className="space-y-4">
+			<FormServerError error={error} />
 			<FormProvider {...form}>
 				<FormField
 					name="username"

@@ -18,10 +18,11 @@ import { z, type ZodType } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { FormTags, formTagsSchema } from '../../_ui/form-tags'
 import { FormLabelError } from '@/app/_ui/form/form-label-error'
+import { FormServerError } from '@/app/_ui/form/form-server-error'
 
 const submitPostFromSchema: ZodType<PostForm> = z
 	.object({
-		title: z.string().min(3).max(64),
+		title: z.string().min(3).max(64).or(z.literal('')),
 		description: z.string().max(255),
 	})
 	.merge(formImageSchema(true))
@@ -44,14 +45,19 @@ type Post = Pick<typeof schema.post.$inferSelect, 'description' | 'title'> & {
 export type PostForm = Post
 
 export function SubmitPostForm() {
-	const { mutate, isPending } = useMutation({
+	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['submit-post'],
 		mutationFn: async (data: PostForm) => {
 			// TODO: endpoint
 			await new Promise((resolve) => setTimeout(resolve, 1000))
+
+			throw new Error('Failed to submit post')
 		},
 		onSuccess: () => {
 			// TODO: goto profile?
+		},
+		onError: () => {
+			scroll?.({ top: 0, behavior: 'smooth' })
 		},
 	})
 
@@ -84,6 +90,7 @@ export function SubmitPostForm() {
 
 	return (
 		<div className="space-y-4">
+			<FormServerError error={error} />
 			<FormProvider {...form}>
 				<FormField
 					name="title"
@@ -97,7 +104,7 @@ export function SubmitPostForm() {
 								<>
 									<FormLabelError
 										htmlFor={name}
-										label="Title*"
+										label="Title"
 										error={error?.message}
 									/>
 									<TextField
@@ -152,10 +159,10 @@ export function SubmitPostForm() {
 				<FormImage form={form} />
 
 				<div className="flex flex-row w-full justify-between items-center">
-					<div className={classNames(!loading && 'hidden')}>
-						<Loader size={20} />
-					</div>
-					<div className="flex w-full justify-end space-x-4">
+					<div className="flex w-full justify-end space-x-4 items-center">
+						<div className={classNames(!loading && 'hidden')}>
+							<Loader size={20} />
+						</div>
 						<Button
 							onClick={form.handleSubmit((data) => {
 								mutate(data)

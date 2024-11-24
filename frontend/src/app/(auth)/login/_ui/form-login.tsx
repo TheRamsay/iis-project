@@ -2,6 +2,7 @@
 
 import { formClassnames } from '@/app/_lib/form-classnames'
 import { FormLabelError } from '@/app/_ui/form/form-label-error'
+import { FormServerError } from '@/app/_ui/form/form-server-error'
 import {
 	Button,
 	FormControl,
@@ -17,6 +18,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { FormProvider, useForm } from 'react-hook-form'
 import { z, type ZodType } from 'zod'
+
+// TODO: validation sync
 
 const loginSchema: ZodType<FormLogin> = z.object({
 	username: z.string().min(5),
@@ -40,7 +43,7 @@ export function FormLogin() {
 		resolver: zodResolver(loginSchema),
 	})
 
-	const { mutate, isPending } = useMutation({
+	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['login'],
 		mutationFn: async (data: FormLogin) => {
 			// TODO: endpoint
@@ -60,6 +63,7 @@ export function FormLogin() {
 
 	return (
 		<div className="space-y-4">
+			<FormServerError error={error} />
 			<FormProvider {...form}>
 				<FormField
 					name="username"
