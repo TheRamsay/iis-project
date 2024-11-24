@@ -7,6 +7,7 @@ use crate::schema::{self, group_join_request, post_comment};
 use super::{group::Group, post::Post, user::User, Id};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub enum GroupJoinRequestStatus {
     Pending,
     Accepted,
