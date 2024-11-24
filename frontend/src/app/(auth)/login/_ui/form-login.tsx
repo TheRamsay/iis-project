@@ -62,6 +62,9 @@ export function FormLogin() {
 
 				throw new Error('An unknown error has occurred.')
 			}
+
+			const data = await response.json()
+			document.cookie = data.jwt
 		},
 		onSuccess: () => {
 			push('/')

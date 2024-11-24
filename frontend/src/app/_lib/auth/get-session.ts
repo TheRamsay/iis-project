@@ -10,7 +10,12 @@ export async function getSession(): Promise<Session | null> {
     return null;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/user/me`);
+  const response = await fetch(`${BACKEND_URL}/api/users/me`, {
+    headers: {
+      cookie: `jwt=${session.value}`,
+    },
+    credentials: "include",
+  });
 
   if (!response.ok) {
     return null;
