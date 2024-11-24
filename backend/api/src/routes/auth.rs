@@ -61,13 +61,13 @@ pub async fn login(
         ))
         .secure(true);
 
-    let jar = CookieJar::new().add(cookie);
+    let jar = CookieJar::new().add(cookie.clone());
 
     Ok((
         jar,
         Json(LoginResponse {
             username: user.username.clone(),
-            jwt: token,
+            jwt: cookie.to_string(),
         }),
     ))
 }
@@ -126,9 +126,14 @@ async fn register(
         ))
         .secure(true);
 
-    let jar = CookieJar::new().add(cookie);
+    let jar = CookieJar::new().add(cookie.clone());
 
-    Ok((jar, Json(RegisterResponse { jwt: token })))
+    Ok((
+        jar,
+        Json(RegisterResponse {
+            jwt: cookie.to_string(),
+        }),
+    ))
 }
 
 pub fn auth_routes() -> axum::Router<crate::AppState> {
