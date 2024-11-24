@@ -29,12 +29,14 @@ pub enum Relation {
     Location,
     #[sea_orm(has_many = "super::post_comment::Entity")]
     PostComment,
+    #[sea_orm(has_many = "super::post_group_visibility::Entity")]
+    PostGroupVisibility,
     #[sea_orm(has_many = "super::post_like::Entity")]
     PostLike,
     #[sea_orm(has_many = "super::post_tag::Entity")]
     PostTag,
-    #[sea_orm(has_many = "super::post_visibility::Entity")]
-    PostVisibility,
+    #[sea_orm(has_many = "super::post_user_visibility::Entity")]
+    PostUserVisibility,
     #[sea_orm(
         belongs_to = "super::user::Entity",
         from = "Column::AuthorId",
@@ -59,6 +61,12 @@ impl Related<super::post_comment::Entity> for Entity {
     }
 }
 
+impl Related<super::post_group_visibility::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::PostGroupVisibility.def()
+    }
+}
+
 impl Related<super::post_like::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::PostLike.def()
@@ -71,9 +79,9 @@ impl Related<super::post_tag::Entity> for Entity {
     }
 }
 
-impl Related<super::post_visibility::Entity> for Entity {
+impl Related<super::post_user_visibility::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::PostVisibility.def()
+        Relation::PostUserVisibility.def()
     }
 }
 
@@ -86,6 +94,15 @@ impl Related<super::user::Entity> for Entity {
 impl Related<super::wall_post::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::WallPost.def()
+    }
+}
+
+impl Related<super::group::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::post_group_visibility::Relation::Group.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::post_group_visibility::Relation::Post.def().rev())
     }
 }
 

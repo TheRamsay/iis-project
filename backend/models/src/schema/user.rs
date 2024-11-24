@@ -35,8 +35,8 @@ pub enum Relation {
     PostComment,
     #[sea_orm(has_many = "super::post_like::Entity")]
     PostLike,
-    #[sea_orm(has_many = "super::post_visibility::Entity")]
-    PostVisibility,
+    #[sea_orm(has_many = "super::post_user_visibility::Entity")]
+    PostUserVisibility,
     #[sea_orm(
         belongs_to = "super::wall::Entity",
         from = "Column::WallId",
@@ -77,9 +77,9 @@ impl Related<super::post_like::Entity> for Entity {
     }
 }
 
-impl Related<super::post_visibility::Entity> for Entity {
+impl Related<super::post_user_visibility::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::PostVisibility.def()
+        Relation::PostUserVisibility.def()
     }
 }
 

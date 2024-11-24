@@ -1,7 +1,7 @@
 use models::{
     domain::{
         post::{Post, PostType, PostVisibilityType},
-        post_visibility::PostVisibility,
+        post_user_visibility::PostUserVisibility,
         Id,
     },
     errors::AppResult,

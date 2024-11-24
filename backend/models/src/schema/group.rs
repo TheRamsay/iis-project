@@ -19,6 +19,8 @@ pub enum Relation {
     GroupJoinRequest,
     #[sea_orm(has_many = "super::group_member::Entity")]
     GroupMember,
+    #[sea_orm(has_many = "super::post_group_visibility::Entity")]
+    PostGroupVisibility,
     #[sea_orm(
         belongs_to = "super::user::Entity",
         from = "Column::AdminId",
@@ -49,9 +51,24 @@ impl Related<super::group_member::Entity> for Entity {
     }
 }
 
+impl Related<super::post_group_visibility::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::PostGroupVisibility.def()
+    }
+}
+
 impl Related<super::wall::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Wall.def()
+    }
+}
+
+impl Related<super::post::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::post_group_visibility::Relation::Post.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::post_group_visibility::Relation::Group.def().rev())
     }
 }
 
