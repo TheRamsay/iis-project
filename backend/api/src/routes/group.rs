@@ -4,35 +4,22 @@ use axum::{
     routing::{delete, get, post},
 };
 use models::{
-    domain::{
-        group_join_request::{self, GroupJoinRequestStatus},
-        user::{User, UserType},
-    },
+    domain::{group_join_request::GroupJoinRequestStatus, user::UserType},
     errors::{AppError, AppResult},
-    schema::user,
 };
-use repository::{group_repository::GroupRepository, user_repository::UserRepository};
 use serde::{Deserialize, Serialize};
-use usecase::{
-    group::{
-        add_user_to_group,
-        create_group::{CreateGroupInput, CreateGroupUseCase},
-        delete_group::{DeleteGroupInput, DeleteGroupUseCase},
-        get_group::{GetGroupInput, GetGroupUseCase},
-        get_group_members::{GetGroupMembersInput, GetGroupMembersUseCase},
-        get_group_requests::{GetGroupRequestsInput, GetGroupRequestsUseCase},
-        group_member_status::{
-            GroupMemberStatus, GroupMemberStatusInput, GroupMemberStatusUseCase,
-        },
-        join_group::{JoinGroupInput, JoinGroupUseCase},
-        leave_group::{LeaveGroupInput, LeaveGroupUseCase},
-        remove_user_from_group,
-        search_group::{SearchGroupInput, SearchGroupOutput, SearchGroupUseCase},
-    },
-    user::{
-        get_user::{GetUserInput, GetUserUseCase},
-        register_user::{RegisterUserInput, RegisterUserUseCase},
-    },
+use usecase::group::{
+    add_user_to_group,
+    create_group::{CreateGroupInput, CreateGroupUseCase},
+    delete_group::{DeleteGroupInput, DeleteGroupUseCase},
+    get_group::{GetGroupInput, GetGroupUseCase},
+    get_group_members::{GetGroupMembersInput, GetGroupMembersUseCase},
+    get_group_requests::{GetGroupRequestsInput, GetGroupRequestsUseCase},
+    group_member_status::{GroupMemberStatus, GroupMemberStatusInput, GroupMemberStatusUseCase},
+    join_group::{JoinGroupInput, JoinGroupUseCase},
+    leave_group::{LeaveGroupInput, LeaveGroupUseCase},
+    remove_user_from_group,
+    search_group::{SearchGroupInput, SearchGroupUseCase},
 };
 use uuid::Uuid;
 

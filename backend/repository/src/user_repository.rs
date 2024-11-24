@@ -1,9 +1,6 @@
 use models::domain::{user::User, Id};
-use sea_orm::{
-    sea_query::{extension::postgres::PgExpr, ExprTrait},
-    DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter, RuntimeErr, Set, SqlxError,
-};
-use std::{future::Future, sync::Arc};
+use sea_orm::{DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter, Set};
+use std::sync::Arc;
 
 #[derive(Debug, Clone)]
 pub struct DbUserRepository {

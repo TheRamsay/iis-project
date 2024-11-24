@@ -1,6 +1,6 @@
 use crate::schema;
 
-use super::{group::Group, post::Post, user::User, Id};
+use super::{group::Group, post::Post, Id};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct PostGroupVisibility {

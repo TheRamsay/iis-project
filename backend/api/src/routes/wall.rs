@@ -5,12 +5,8 @@ use axum::{
 use chrono::{DateTime, Utc};
 use models::{
     domain::{
-        location::Location,
-        post::{Post, PostType, PostVisibilityType},
-        post_comment::PostComment,
-        post_like::PostLike,
-        user::{User, UserType},
-        Id,
+        post::{PostType, PostVisibilityType},
+        user::UserType,
     },
     errors::AppResult,
 };

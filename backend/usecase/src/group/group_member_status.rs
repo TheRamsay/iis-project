@@ -1,18 +1,11 @@
 use models::{
-    domain::{
-        group::Group,
-        user::{User, UserType},
-        Id,
-    },
+    domain::{group::Group, user::User, Id},
     errors::{AppError, AppResult},
 };
 use repository::{
-    group_join_request_repository::{self, GroupJoinRequestRepository},
-    group_repository::GroupRepository,
-    user_repository::UserRepository,
+    group_join_request_repository::GroupJoinRequestRepository, group_repository::GroupRepository,
 };
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 #[derive(Debug)]
 pub struct GroupMemberStatusInput {

@@ -1,27 +1,12 @@
 use axum::{
     extract::{Path, State},
-    routing::{get, post},
+    routing::get,
 };
-use models::{
-    domain::{
-        group_join_request::{self, GroupJoinRequestStatus},
-        group_member::GroupMember,
-    },
-    errors::{AppError, AppResult},
-    tests::post,
-};
-use repository::{
-    group_join_request_repository::GroupJoinRequestRepository,
-    group_member_repository::GroupMemberRepository,
-};
-use serde::{Deserialize, Serialize};
+use models::{domain::group_join_request::GroupJoinRequestStatus, errors::AppResult};
 use usecase::group::resolve_group_join_request::{self, ResolveGroupJoinRequestInput};
 use uuid::Uuid;
 
-use crate::{
-    extractors::{auth_extractor::AuthUser, json_extractor::Json},
-    AppState,
-};
+use crate::{extractors::auth_extractor::AuthUser, AppState};
 
 async fn accept(
     state: State<AppState>,

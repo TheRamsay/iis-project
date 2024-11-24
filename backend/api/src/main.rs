@@ -1,14 +1,11 @@
 use std::sync::Arc;
 
-use ::serde::{Deserialize, Serialize};
 use axum::http::header::CONTENT_TYPE;
 use axum::http::{HeaderValue, Method};
-use axum::routing::post;
-use axum::{extract::State, routing::get, Json, Router};
-use axum_extra::headers::Allow;
+use axum::Router;
 use dotenv::dotenv;
 use migration::{Migrator, MigratorTrait};
-use repository::cloudinary_repository::{CloudinaryRepository, GenericRepository};
+use repository::cloudinary_repository::GenericRepository;
 use repository::group_join_request_repository::DbGroupJoinRequestRepository;
 use repository::group_member_repository::DbGroupMemberRepository;
 use repository::group_repository::DbGroupRepository;
@@ -16,7 +13,7 @@ use repository::location_repository::DbLocationRepository;
 use repository::post_comments_repository::DbPostCommentsRepository;
 use repository::post_likes_repository::DbPostLikesRepository;
 use repository::post_repository::DbPostRepository;
-use repository::user_repository::{DbUserRepository, UserRepository};
+use repository::user_repository::DbUserRepository;
 use repository::wall_post_repository::DbWallPostRepository;
 use repository::wall_repository::DbWallRepository;
 use routes::auth::auth_routes;
@@ -26,13 +23,9 @@ use routes::location::location_routes;
 use routes::post::post_routes;
 use routes::user::user_routes;
 use routes::wall::wall_routes;
-use sea_orm::*;
 use sea_orm::{Database, DatabaseConnection};
-use shuttle_axum::AxumService;
 use tower::ServiceBuilder;
 use tower_http::cors::{AllowOrigin, CorsLayer};
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-use uuid::{serde, Uuid};
 
 pub mod auth;
 mod extractors;
@@ -127,7 +120,7 @@ async fn main() -> shuttle_axum::ShuttleAxum {
     Ok(router.into())
 }
 
-#[cfg(feature = "tokio")]
+#[cfg(not(any(feature = "shuttle")))]
 #[tokio::main]
 async fn main() {
     let app_state = create_app_state().await;

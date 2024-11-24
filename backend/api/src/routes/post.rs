@@ -1,4 +1,3 @@
-use anyhow::Ok;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use usecase::post::{
@@ -6,7 +5,7 @@ use usecase::post::{
     create_post::{CreatePostInput, CreatePostUseCase},
     delete_post::{DeletePostInput, DeletePostUseCase},
     get_comment::{GetCommentInput, GetCommentUseCase},
-    get_post::{self, GetPostInput, GetPostUseCase},
+    get_post::{GetPostInput, GetPostUseCase},
     get_post_comments::{GetPostCommentsInput, GetPostCommentsUseCase},
     get_post_likes::{self, GetPostLikesInput},
     like_post::{LikePostInput, LikePostUseCase},
@@ -25,17 +24,14 @@ use crate::{
 
 use axum::{
     extract::{Path, State},
-    response::IntoResponse,
     routing::{delete, get, post, put},
 };
 use models::{
     domain::{
         post::{Post, PostType, PostVisibilityType},
-        post_comment::PostComment,
         user::UserType,
     },
     errors::{AppError, AppResult},
-    schema::post,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

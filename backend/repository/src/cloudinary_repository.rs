@@ -1,8 +1,5 @@
 use cloudinary::upload::{result::UploadResult, Source, Upload, UploadOptions};
-use dotenvy::dotenv;
 use md5;
-use models::domain::{user::User, Id};
-use uuid::Uuid;
 
 #[derive(Debug, Clone)]
 pub struct GenericRepository {}

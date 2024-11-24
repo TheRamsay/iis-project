@@ -1,15 +1,10 @@
-use anyhow::anyhow;
-use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
-    Argon2,
-};
 use models::{
     domain::{
         user::{User, UserType},
         wall::Wall,
         Id,
     },
-    errors::{AppError, AppResult},
+    errors::AppResult,
 };
 
 use repository::{user_repository::UserRepository, wall_repository::WallRepository};

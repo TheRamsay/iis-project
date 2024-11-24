@@ -1,12 +1,8 @@
 use models::{
-    domain::{
-        post::{Post, PostType, PostVisibilityType},
-        post_like::PostLike,
-        Id,
-    },
+    domain::Id,
     errors::AppResult,
 };
-use repository::{post_likes_repository::PostLikesRepository, post_repository::PostRepository};
+use repository::post_likes_repository::PostLikesRepository;
 use uuid::Uuid;
 
 #[derive(Debug)]

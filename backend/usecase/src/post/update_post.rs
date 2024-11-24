@@ -1,13 +1,8 @@
 use models::{
-    domain::{
-        post::Post,
-        user::{User, UserType},
-        Id,
-    },
+    domain::post::Post,
     errors::{AppError, AppResult},
 };
 use repository::post_repository::PostRepository;
-use uuid::Uuid;
 
 #[derive(Debug)]
 pub struct UpdatePostInput {

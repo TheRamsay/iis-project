@@ -1,8 +1,5 @@
 use models::{
-    domain::{
-        email::Email,
-        user::{User, UserType},
-    },
+    domain::user::{User, UserType},
     errors::{AppError, AppResult},
 };
 use repository::user_repository::UserRepository;

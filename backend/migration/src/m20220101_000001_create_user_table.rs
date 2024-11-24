@@ -1,5 +1,5 @@
 use extension::postgres::Type;
-use sea_orm::{sqlx::Column, EnumIter, Iterable};
+use sea_orm::{EnumIter, Iterable};
 use sea_orm_migration::{prelude::*, schema::*};
 
 #[derive(DeriveMigrationName)]

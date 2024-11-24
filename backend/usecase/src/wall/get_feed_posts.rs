@@ -2,8 +2,7 @@ use models::{
     domain::{post::Post, post_comment::PostComment, post_like::PostLike, user::User, Id},
     errors::AppResult,
 };
-use repository::{post_repository::PostRepository, wall_repository::WallRepository};
-use uuid::Uuid;
+use repository::wall_repository::WallRepository;
 
 use super::types::SortBy;
 

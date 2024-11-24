@@ -2,12 +2,11 @@ use std::fmt::Display;
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 use validator::{Validate, ValidationErrors};
 
 use crate::schema;
 
-use super::{email::Email, user::User, wall::Wall, Id};
+use super::{user::User, wall::Wall, Id};
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub enum PostType {

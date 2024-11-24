@@ -3,15 +3,11 @@ use models::{
         post::Post,
         post_comment::PostComment,
         post_like::PostLike,
-        user::{User, UserType},
-        wall,
+        user::User,
     },
-    errors::{AppError, AppResult},
+    errors::AppResult,
 };
-use repository::{
-    post_repository::PostRepository, user_repository::UserRepository,
-    wall_repository::WallRepository,
-};
+use repository::wall_repository::WallRepository;
 use uuid::Uuid;
 
 use super::types::SortBy;

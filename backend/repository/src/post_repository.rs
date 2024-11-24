@@ -1,26 +1,11 @@
-use std::{
-    future::{self, Future},
-    sync::Arc,
-};
+use std::sync::Arc;
 
-use models::{
-    domain::{
-        post::{self, Post, PostVisibilityType},
-        post_comment::PostComment,
-        post_like::PostLike,
-        post_tag,
-        user::{self, User},
-        wall::Wall,
-        wall_post::{self, WallPost},
+use models::domain::{
+        post::{Post, PostVisibilityType},
         Id,
-    },
-    errors::AppError,
-    schema::{self},
-};
+    };
 use sea_orm::{
-    sea_query::{extension::postgres::PgExpr, ExprTrait},
-    DbBackend, DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter, QuerySelect, Set,
-    Statement,
+    DbConn, DbErr, EntityTrait, Set,
 };
 
 #[derive(Debug, Clone)]

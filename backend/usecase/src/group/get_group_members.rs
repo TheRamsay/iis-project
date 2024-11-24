@@ -1,18 +1,11 @@
 use chrono::{DateTime, Utc};
 use models::{
-    domain::{
-        group::Group,
-        group_member,
-        user::{User, UserType},
-        Id,
-    },
+    domain::{group::Group, user::User, Id},
     errors::{AppError, AppResult},
 };
 use repository::{
     group_member_repository::GroupMemberRepository, group_repository::GroupRepository,
-    user_repository::UserRepository,
 };
-use uuid::Uuid;
 
 #[derive(Debug)]
 pub struct GetGroupMembersInput {
