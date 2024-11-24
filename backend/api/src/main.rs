@@ -23,6 +23,8 @@ use routes::user::user_routes;
 use routes::wall::wall_routes;
 use sea_orm::*;
 use sea_orm::{Database, DatabaseConnection};
+use tower::ServiceBuilder;
+use tower_http::cors::{AllowOrigin, CorsLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use uuid::{serde, Uuid};
 
@@ -84,6 +86,7 @@ async fn main() -> shuttle_axum::ShuttleAxum {
         .nest("/api/group-join-requests", group_join_request_router())
         .nest("/api/posts", post_routes())
         .nest("/api/walls", wall_routes())
+        .layer(ServiceBuilder::new().layer(CorsLayer::new().allow_origin(AllowOrigin::any())))
         .with_state(app_state);
 
     Ok(router.into())
