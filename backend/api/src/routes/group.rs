@@ -290,6 +290,7 @@ struct GetGroupMembersResponse {
     avatar_url: Option<String>,
     user_type: UserType,
     is_blocked: bool,
+    joined_at: chrono::DateTime<chrono::Utc>,
 }
 
 async fn get_group_members(
@@ -306,13 +307,14 @@ async fn get_group_members(
         output
             .members
             .into_iter()
-            .map(|member| GetGroupMembersResponse {
+            .map(|(joined_at, member)| GetGroupMembersResponse {
                 id: member.id.into(),
                 username: member.username,
                 display_name: member.display_name,
                 avatar_url: member.avatar_url,
                 user_type: member.user_type,
                 is_blocked: member.is_blocked,
+                joined_at,
             })
             .collect(),
     ))
@@ -321,8 +323,18 @@ async fn get_group_members(
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct GetGroupRequestsResponse {
     id: Uuid,
-    user: User,
+    user: GetGroupRequestUser,
     status: GroupJoinRequestStatus,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct GetGroupRequestUser {
+    id: Uuid,
+    username: String,
+    display_name: String,
+    avatar_url: Option<String>,
+    user_type: UserType,
+    is_blocked: bool,
 }
 
 async fn get_group_requests(
@@ -340,7 +352,14 @@ async fn get_group_requests(
             .into_iter()
             .map(|request| GetGroupRequestsResponse {
                 id: request.id.into(),
-                user: request.user,
+                user: GetGroupRequestUser {
+                    id: request.user.id.into(),
+                    username: request.user.username,
+                    display_name: request.user.display_name,
+                    avatar_url: request.user.avatar_url,
+                    user_type: request.user.user_type,
+                    is_blocked: request.user.is_blocked,
+                },
                 status: request.status,
             })
             .collect(),

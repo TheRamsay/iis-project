@@ -326,9 +326,9 @@ pub fn user_routes() -> axum::Router<crate::AppState> {
     axum::Router::new()
         .route("/", get(get_all_users))
         .route("/", post(create_user))
-        .route("/:username", get(get_user_by_username))
         .route("/me", get(me))
-        .route("/:id/block", get(block_user))
-        .route("/:id", delete(delete_user))
-        .route("/:id", put(update_user))
+        .route("/:username", get(get_user_by_username))
+        .route("/id/:id", delete(delete_user))
+        .route("/id/:id", put(update_user))
+        .route("/id/:id/block", get(block_user))
 }

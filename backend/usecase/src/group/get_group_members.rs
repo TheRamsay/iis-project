@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use models::{
     domain::{
         group::Group,
@@ -19,7 +20,7 @@ pub struct GetGroupMembersInput {
 }
 
 pub struct GetGroupMembersOutput {
-    pub members: Vec<User>,
+    pub members: Vec<(DateTime<Utc>, User)>,
 }
 
 pub struct GetGroupMembersUseCase<T>

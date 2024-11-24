@@ -4,7 +4,10 @@ use models::{
     domain::{group::Group, group_member::GroupMember, user::User, Id},
     schema,
 };
-use sea_orm::{DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter};
+use sea_orm::{
+    sqlx::types::chrono::{self, Utc},
+    DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter,
+};
 
 #[derive(Debug, Clone)]
 pub struct DbGroupMemberRepository {
@@ -25,7 +28,10 @@ pub trait GroupMemberRepository {
     ) -> Result<Option<GroupMember>, DbErr>;
     async fn create(&self, group_member: GroupMember) -> Result<(), DbErr>;
     async fn delete(&self, group_member: GroupMember) -> Result<(), DbErr>;
-    async fn get_by_group_id(&self, group_id: Id<Group>) -> Result<Vec<User>, DbErr>;
+    async fn get_by_group_id(
+        &self,
+        group_id: Id<Group>,
+    ) -> Result<Vec<(chrono::DateTime<Utc>, User)>, DbErr>;
 }
 
 impl GroupMemberRepository for DbGroupMemberRepository {
@@ -63,7 +69,10 @@ impl GroupMemberRepository for DbGroupMemberRepository {
         Ok(())
     }
 
-    async fn get_by_group_id(&self, group_id: Id<Group>) -> Result<Vec<User>, DbErr> {
+    async fn get_by_group_id(
+        &self,
+        group_id: Id<Group>,
+    ) -> Result<Vec<(chrono::DateTime<Utc>, User)>, DbErr> {
         let result = models::schema::group_member::Entity::find()
             .filter(
                 schema::group_member::Column::GroupId
@@ -76,7 +85,12 @@ impl GroupMemberRepository for DbGroupMemberRepository {
 
         Ok(result
             .into_iter()
-            .map(|(_, user)| User::from(user.expect("User not found")))
+            .map(|(gm, user)| {
+                (
+                    gm.joined_at.and_utc(),
+                    User::from(user.expect("User not found")),
+                )
+            })
             .collect())
     }
 }
