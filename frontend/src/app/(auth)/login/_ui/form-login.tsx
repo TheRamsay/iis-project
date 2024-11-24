@@ -1,6 +1,8 @@
 'use client'
 
+import { BACKEND_URL } from '@/app/_lib/constants'
 import { formClassnames } from '@/app/_lib/form-classnames'
+import { myz } from '@/app/_types/zod'
 import { FormLabelError } from '@/app/_ui/form/form-label-error'
 import { FormServerError } from '@/app/_ui/form/form-server-error'
 import {
@@ -19,11 +21,9 @@ import { useRouter } from 'next/navigation'
 import { FormProvider, useForm } from 'react-hook-form'
 import { z, type ZodType } from 'zod'
 
-// TODO: validation sync
-
 const loginSchema: ZodType<FormLogin> = z.object({
-	username: z.string().min(5),
-	password: z.string().min(8),
+	username: myz.username,
+	password: myz.password,
 })
 
 type FormLogin = {
@@ -45,9 +45,24 @@ export function FormLogin() {
 
 	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['login'],
-		mutationFn: async (data: FormLogin) => {
-			// TODO: endpoint
-			await new Promise((resolve) => setTimeout(resolve, 1000))
+		mutationFn: async (formData: FormLogin) => {
+			const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(formData),
+			})
+
+			if (!response.ok) {
+				const data = await response.json()
+
+				if (data.error) {
+					throw new Error(data.error)
+				}
+
+				throw new Error('An unknown error has occurred.')
+			}
 		},
 		onSuccess: () => {
 			push('/')

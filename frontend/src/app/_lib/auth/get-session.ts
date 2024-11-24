@@ -1,15 +1,20 @@
 import { cookies } from "next/headers";
 import type { Session } from "./types";
+import { BACKEND_URL } from "../constants";
 
 export async function getSession(): Promise<Session | null> {
   const cookiez = cookies();
-  const session = cookiez.get("session");
+  const session = cookiez.get("jwt");
 
-  // TODO: endpoint
+  if (!session) {
+    return null;
+  }
 
-  // if (!session) {
-  // 	return null
-  // }
+  const response = await fetch(`${BACKEND_URL}/api/user/me`);
+
+  if (!response.ok) {
+    return null;
+  }
 
   return {
     userId: "1",
