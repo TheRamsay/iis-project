@@ -51,11 +51,15 @@ impl MigrationTrait for Migration {
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         manager
-            .drop_table(Table::drop().table(PostUserVisibility::Table).to_owned())
+            .drop_table(Table::drop().table(PostGroupVisibility::Table).to_owned())
             .await?;
 
         manager
-            .drop_table(Table::drop().table(PostGroupVisibility::Table).to_owned())
+            .rename_table(
+                Table::rename()
+                    .table(PostUserVisibility::Table, PostVisibility::Table)
+                    .to_owned(),
+            )
             .await
     }
 }
@@ -63,8 +67,6 @@ impl MigrationTrait for Migration {
 #[derive(DeriveIden)]
 enum PostUserVisibility {
     Table,
-    PostId,
-    UserId,
 }
 
 #[derive(DeriveIden)]

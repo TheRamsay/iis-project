@@ -68,6 +68,12 @@ pub struct Post {
         message = "Description must be between 3 and 500 characters"
     ))]
     pub description: String,
+    #[validate(length(
+        min = 3,
+        max = 15,
+        message = "Title must be between 3 and 15 characters"
+    ))]
+    pub title: String,
     pub author_id: Id<User>,
     pub post_type: PostType,
     #[validate(url)]
@@ -79,6 +85,7 @@ pub struct Post {
 
 impl Post {
     pub fn new(
+        title: String,
         description: String,
         author_id: Id<User>,
         post_type: PostType,
@@ -90,6 +97,7 @@ impl Post {
             id: Id::gen(),
             description,
             author_id,
+            title,
             post_type,
             content_url,
             visibility,
@@ -109,6 +117,7 @@ impl From<schema::post::Model> for Post {
             id: Id::new(model.id),
             description: model.description,
             author_id: Id::new(model.author_id),
+            title: model.title,
             visibility: match model.visibility.as_str() {
                 "public" => PostVisibilityType::Public,
                 "private" => PostVisibilityType::Private,
@@ -129,6 +138,7 @@ impl From<Post> for schema::post::Model {
     fn from(value: Post) -> Self {
         Self {
             id: value.id.id,
+            title: value.title,
             description: value.description,
             author_id: value.author_id.id,
             visibility: match value.visibility {

@@ -40,6 +40,7 @@ use models::{
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct CreatePostRequest {
+    title: String,
     description: String,
     author_id: Uuid,
     post_type: String,
@@ -64,6 +65,7 @@ async fn create_post(
     );
 
     let input = CreatePostInput {
+        title: payload.title,
         description: payload.description,
         author_id: payload.author_id,
         post_type: match payload.post_type.as_str() {
@@ -239,6 +241,7 @@ async fn update_post(
 
     let input = Post {
         id: id.into(),
+        title: unwraped_post.post.title,
         description: payload.description,
         author_id: unwraped_post.post.author_id.into(),
         post_type: match payload.post_type.as_str() {
