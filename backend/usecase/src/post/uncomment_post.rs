@@ -3,7 +3,6 @@ use models::{
         post::{Post, PostType, PostVisibilityType},
         post_comment::PostComment,
         post_like::PostLike,
-        post_visibility::PostVisibility,
         Id,
     },
     errors::AppResult,

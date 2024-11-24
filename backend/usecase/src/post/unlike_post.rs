@@ -2,7 +2,6 @@ use models::{
     domain::{
         post::{Post, PostType, PostVisibilityType},
         post_like::PostLike,
-        post_visibility::PostVisibility,
         Id,
     },
     errors::AppResult,
