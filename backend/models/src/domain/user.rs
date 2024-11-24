@@ -85,14 +85,14 @@ pub struct User {
     pub id: Id<User>,
     #[validate(length(
         min = 3,
-        max = 255,
-        message = "Display name must be between 3 and 255 characters"
+        max = 15,
+        message = "Display name must be between 3 and 15 characters"
     ))]
     pub display_name: String,
     #[validate(length(
         min = 3,
-        max = 255,
-        message = "Username must be between 3 and 255 characters"
+        max = 15,
+        message = "Username must be between 3 and 15 characters"
     ))]
     pub username: String,
     #[validate(email)]
