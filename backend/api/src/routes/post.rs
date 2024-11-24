@@ -90,6 +90,7 @@ async fn create_post(
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct GetPostResponse {
     id: Uuid,
+    title: String,
     description: String,
     post_type: String,
     author_id: Uuid,
@@ -130,6 +131,7 @@ async fn get_post(
     if let Some(post) = post {
         anyhow::Result::Ok(Json(GetPostResponse {
             id: post.post.id.into(),
+            title: post.post.title,
             description: post.post.description,
             post_type: match post.post.post_type {
                 PostType::Photo => "Photo".into(),
