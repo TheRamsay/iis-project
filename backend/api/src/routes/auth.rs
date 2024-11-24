@@ -14,7 +14,6 @@ use usecase::user::{
 };
 
 use crate::{
-    auth,
     extractors::{auth_extractor::AuthUser, json_extractor::Json},
     AppState,
 };
@@ -28,7 +27,6 @@ pub struct LoginRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LoginResponse {
     username: String,
-    jwt: String,
 }
 
 pub async fn login(
@@ -61,13 +59,12 @@ pub async fn login(
         ))
         .secure(true);
 
-    let jar = CookieJar::new().add(cookie);
+    let jar = CookieJar::new().add(cookie.clone());
 
     Ok((
         jar,
         Json(LoginResponse {
             username: user.username.clone(),
-            jwt: token,
         }),
     ))
 }
@@ -86,15 +83,10 @@ pub struct RegisterRequest {
     avatar_url: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct RegisterResponse {
-    jwt: String,
-}
-
 async fn register(
     state: State<AppState>,
     Json(payload): Json<RegisterRequest>,
-) -> AppResult<(CookieJar, Json<RegisterResponse>)> {
+) -> AppResult<(CookieJar, ())> {
     let register_user_usecase =
         RegisterUserUseCase::new(state.user_repository.clone(), state.wall_repository.clone());
 
@@ -126,9 +118,9 @@ async fn register(
         ))
         .secure(true);
 
-    let jar = CookieJar::new().add(cookie);
+    let jar = CookieJar::new().add(cookie.clone());
 
-    Ok((jar, Json(RegisterResponse { jwt: token })))
+    Ok((jar, ()))
 }
 
 pub fn auth_routes() -> axum::Router<crate::AppState> {

@@ -5,6 +5,7 @@ use axum::http::header::CONTENT_TYPE;
 use axum::http::{HeaderValue, Method};
 use axum::routing::post;
 use axum::{extract::State, routing::get, Json, Router};
+use axum_extra::headers::Allow;
 use dotenv::dotenv;
 use migration::{Migrator, MigratorTrait};
 use repository::cloudinary_repository::{CloudinaryRepository, GenericRepository};
@@ -57,6 +58,7 @@ async fn main() -> shuttle_axum::ShuttleAxum {
     dotenv().ok();
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL is not set");
     let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET is not set");
+    let frontend_url = std::env::var("FRONTEND_URL").expect("FRONTEND_URL is not set");
 
     let conn = Database::connect(db_url)
         .await
@@ -92,9 +94,9 @@ async fn main() -> shuttle_axum::ShuttleAxum {
             ServiceBuilder::new()
                 .layer(
                     CorsLayer::new()
-                        .allow_origin(AllowOrigin::exact(HeaderValue::from_static(
-                            "http://localhost:3000",
-                        )))
+                        .allow_origin(AllowOrigin::exact(
+                            HeaderValue::from_str(&frontend_url).expect("Invalid frontend URL"),
+                        ))
                         .allow_headers(vec![CONTENT_TYPE])
                         .allow_credentials(true)
                         .allow_methods(vec![
