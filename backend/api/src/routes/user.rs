@@ -18,6 +18,7 @@ use usecase::user::{
     block_user::{BlockUserInput, BlockUserUseCase},
     get_all_users::GetAllUsersUseCase,
     get_user::{GetUserInput, GetUserUseCase},
+    get_user_by_username::{GetUserByUsernameInput, GetUserByUsernameUseCase},
     register_user::{RegisterUserInput, RegisterUserUseCase},
     update_user::{UpdateUserInput, UpdateUserUseCase},
 };
@@ -84,11 +85,13 @@ struct GetUserResponse {
 
 async fn get_user(
     state: State<AppState>,
-    Path(id): Path<Uuid>,
+    Path(username): Path<String>,
 ) -> AppResult<Json<GetUserResponse>> {
-    let user_usercase = GetUserUseCase::new(state.user_repository.clone());
+    let user_usercase = GetUserByUsernameUseCase::new(state.user_repository.clone());
 
-    let user = user_usercase.execute(GetUserInput { id }).await?;
+    let user = user_usercase
+        .execute(GetUserByUsernameInput { username })
+        .await?;
 
     if let Some(user) = user {
         anyhow::Result::Ok(Json(GetUserResponse {
@@ -323,7 +326,7 @@ pub fn user_routes() -> axum::Router<crate::AppState> {
     axum::Router::new()
         .route("/", get(get_all_users))
         .route("/", post(create_user))
-        .route("/:id", get(get_user))
+        .route("/:username", get(get_user_by_username))
         .route("/me", get(me))
         .route("/:id/block", get(block_user))
         .route("/:id", delete(delete_user))
