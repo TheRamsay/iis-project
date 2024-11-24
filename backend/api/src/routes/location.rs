@@ -1,6 +1,6 @@
 use axum::{
-    extract::{Path, State},
-    routing::{delete, post},
+    extract::{Path, Query, State},
+    routing::{delete, get, post},
 };
 use models::errors::AppResult;
 use serde::{Deserialize, Serialize};
@@ -8,10 +8,7 @@ use serde::{Deserialize, Serialize};
 use usecase::location::create_location::CreateLocationUseCase;
 use uuid::Uuid;
 
-use crate::{
-    extractors::json_extractor::Json,
-    AppState,
-};
+use crate::{extractors::json_extractor::Json, AppState};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct CreateLocationResponse {
     id: Uuid,

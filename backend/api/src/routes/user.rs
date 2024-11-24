@@ -72,15 +72,15 @@ async fn create_user(
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
-struct GetUserResponse {
-    id: Uuid,
-    display_name: Option<String>,
-    username: String,
-    email: Option<String>,
-    avatar_url: Option<String>,
-    user_type: String,
-    wall_id: Uuid,
-    is_blocked: bool,
+pub struct GetUserResponse {
+    pub id: Uuid,
+    pub display_name: Option<String>,
+    pub username: String,
+    pub email: Option<String>,
+    pub avatar_url: Option<String>,
+    pub user_type: String,
+    pub wall_id: Uuid,
+    pub is_blocked: bool,
 }
 
 async fn get_user_by_username(

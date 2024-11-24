@@ -84,6 +84,7 @@ async fn search(
                 avatar_url: user.avatar_url,
                 user_type: user.user_type.to_string(),
                 wall_id: user.wall_id.into(),
+                is_blocked: user.is_blocked,
             })
             .collect(),
         groups: groups
