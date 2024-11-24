@@ -125,9 +125,10 @@ async fn me(state: State<AppState>, user: AuthUser) -> AppResult<Json<GetUserRes
 
 async fn block_user(
     state: State<AppState>,
-    admin: AuthUser,
+    mut jar: CookieJar,
+    actor: AuthUser,
     Path(id): Path<Uuid>,
-) -> AppResult<()> {
+) -> AppResult<(CookieJar, ())> {
     let get_user_usercase = GetUserUseCase::new(state.user_repository.clone());
     let block_user_usecase = BlockUserUseCase::new(state.user_repository.clone());
 
@@ -143,9 +144,9 @@ async fn block_user(
         return Err(AppError::BadRequest("User is already blocked".into()));
     }
 
-    let self_block = admin.id == user.id.into();
-    if admin.role.is_regular()
-        || admin.role.has_lower_or_same_privilege_as(&user.user_type)
+    let self_block = actor.id == user.id.into();
+    if actor.role.is_regular()
+        || actor.role.has_lower_or_same_privilege_as(&user.user_type)
         || self_block
     {
         return Err(AppError::Unauthorized(
@@ -157,15 +158,26 @@ async fn block_user(
         .execute(BlockUserInput { user_id: id })
         .await?;
 
-    Ok(())
+    let old_jwt_str = jar
+        .get("jwt")
+        .map(|cookie| cookie.value().to_string())
+        .expect("JWT cookie not found");
+
+    blacklist_token(&state.redis_client, &old_jwt_str, actor.exp)
+        .map_err(|e| AppError::Anyhow(anyhow!(e)))?;
+
+    jar = jar.remove(Cookie::from("jwt"));
+
+    Ok((jar, ()))
 }
 
 async fn delete_user(
     state: State<AppState>,
-    admin: AuthUser,
+    mut jar: CookieJar,
+    actor: AuthUser,
     Path(id): Path<Uuid>,
-) -> AppResult<()> {
-    if admin.role != models::domain::user::UserType::Administrator {
+) -> AppResult<(CookieJar, ())> {
+    if actor.role != models::domain::user::UserType::Administrator {
         return Err(AppError::Unauthorized("You can't delete this user".into()));
     }
 
@@ -179,13 +191,23 @@ async fn delete_user(
 
     let user = user.unwrap();
 
-    if admin.id == user.id.clone().into() {
+    if actor.id == user.id.clone().into() {
         return Err(AppError::Unauthorized("You can't delete yourself".into()));
     }
 
     state.user_repository.delete(user.id).await?;
 
-    Ok(())
+    let old_jwt_str = jar
+        .get("jwt")
+        .map(|cookie| cookie.value().to_string())
+        .expect("JWT cookie not found");
+
+    blacklist_token(&state.redis_client, &old_jwt_str, actor.exp)
+        .map_err(|e| AppError::Anyhow(anyhow!(e)))?;
+
+    jar = jar.remove(Cookie::from("jwt"));
+
+    Ok((jar, ()))
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -270,6 +292,7 @@ async fn update_user(
 
     std::result::Result::Ok((jar, ()))
 }
+
 pub fn user_routes() -> axum::Router<crate::AppState> {
     axum::Router::new()
         .route("/", post(create_user))

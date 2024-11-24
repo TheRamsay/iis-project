@@ -40,13 +40,12 @@ pub async fn login(
 
     let user = user_repository
         .get_by_username(payload.username.clone())
-        .await?;
+        .await?
+        .ok_or_else(|| AppError::Unauthorized("Invalid username".into()))?;
 
-    if user.is_none() {
-        return Err(AppError::Unauthorized("Invalid username".to_string()));
+    if user.is_blocked {
+        return Err(AppError::Unauthorized("User is blocked".into()));
     }
-
-    let user = user.unwrap();
 
     verify_password(payload.password, user.password_hash).await?;
 
