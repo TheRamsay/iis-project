@@ -60,13 +60,13 @@ async fn create_group(
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct Admin {
-    id: Uuid,
-    display_name: Option<String>,
-    username: String,
-    email: Option<String>,
-    avatar_url: Option<String>,
-    user_type: UserType,
+pub struct Admin {
+    pub id: Uuid,
+    pub display_name: Option<String>,
+    pub username: String,
+    pub email: Option<String>,
+    pub avatar_url: Option<String>,
+    pub user_type: UserType,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

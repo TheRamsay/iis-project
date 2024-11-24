@@ -15,7 +15,6 @@ use repository::post_likes_repository::DbPostLikesRepository;
 use repository::post_repository::DbPostRepository;
 use repository::tag_repository::DbTagRepository;
 use repository::user_repository::DbUserRepository;
-use repository::user_repository::{DbUserRepository, UserRepository};
 use repository::wall_post_repository::DbWallPostRepository;
 use repository::wall_repository::DbWallRepository;
 use routes::auth::auth_routes;
