@@ -73,21 +73,21 @@ async fn create_group(
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct Admin {
-    id: Uuid,
-    display_name: String,
-    username: String,
-    email: String,
-    avatar_url: Option<String>,
-    user_type: UserType,
+pub struct Admin {
+    pub id: Uuid,
+    pub display_name: String,
+    pub username: String,
+    pub email: String,
+    pub avatar_url: Option<String>,
+    pub user_type: UserType,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct GetGroupResponse {
-    id: Uuid,
-    name: String,
-    admin: Admin,
-    wall_id: Uuid,
+pub struct GetGroupResponse {
+    pub id: Uuid,
+    pub name: String,
+    pub admin: Admin,
+    pub wall_id: Uuid,
 }
 
 async fn get_group(

@@ -76,9 +76,9 @@ struct SearchPostTagResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct SearchPostTag {
-    post_id: Uuid,
-    tag: String,
+pub struct SearchPostTag {
+    pub post_id: Uuid,
+    pub tag: String,
 }
 
 async fn search_tag(

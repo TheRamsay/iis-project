@@ -20,6 +20,7 @@ pub trait UserRepository {
     async fn get_all(&self) -> Result<Vec<User>, DbErr>;
     async fn get_by_id(&self, id: Id<User>) -> Result<Option<User>, DbErr>;
     async fn get_by_username(&self, username: String) -> Result<Option<User>, DbErr>;
+    async fn search_user_by_username(&self, username: String) -> Result<Option<Vec<User>>, DbErr>;
     async fn get_by_email(&self, email: String) -> Result<Option<User>, DbErr>;
     async fn create(&self, user: User) -> Result<Id<User>, DbErr>;
     async fn update(&self, user: User) -> Result<User, DbErr>;
@@ -65,6 +66,19 @@ impl UserRepository for DbUserRepository {
             .await?;
 
         Ok(user.map(User::from))
+    }
+
+    async fn search_user_by_username(&self, username: String) -> Result<Option<Vec<User>>, DbErr> {
+        let users = models::schema::user::Entity::find()
+            .filter(
+                models::schema::user::Column::Username
+                    .into_simple_expr()
+                    .ilike(format!("%{}%", username)),
+            )
+            .all(self.db.as_ref())
+            .await?;
+
+        Ok(Some(users.into_iter().map(User::from).collect()))
     }
 
     async fn get_by_email(&self, email: String) -> Result<Option<User>, DbErr> {
