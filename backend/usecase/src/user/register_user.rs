@@ -15,9 +15,9 @@ use super::auth_utils::hash_password;
 
 #[derive(Debug)]
 pub struct RegisterUserInput {
-    pub email: String,
+    pub email: Option<String>,
+    pub display_name: Option<String>,
     pub username: String,
-    pub display_name: String,
     pub avatar_url: Option<String>,
     pub user_type: UserType,
     pub password: String,
@@ -51,49 +51,45 @@ where
     pub async fn execute(&self, input: RegisterUserInput) -> AppResult<RegisterUserOutput> {
         let wall_id = self.wall_repository.create(Wall { id: Id::gen() }).await?;
 
-        let model = User::new(
-            input.display_name,
-            input.username,
-            input.email,
+        let model_result = User::new(
+            None,
+            input.username.clone(),
+            input.email.clone(),
             input.avatar_url,
             input.user_type,
             wall_id,
             hash_password(&input.password)?,
-        )?;
+        );
 
         let mut validation_errors = ValidationErrors::new();
 
         // Validate the model for domain rules
-        match model.validate() {
+        match model_result {
             Ok(_) => (),
-            Err(e) => {
-                validation_errors = e;
-            }
+            Err(ref e) => validation_errors = e.clone(),
         }
 
         // Check for unique constraints
         if let Some(u) = self
             .user_repository
-            .get_by_username(model.username.clone())
+            .get_by_username(input.username.clone())
             .await?
         {
-            if u.id != model.id {
-                let mut validation_error = ValidationError::new("username");
-                validation_error = validation_error.with_message("Username already exists".into());
-                validation_error.add_param("value".into(), &model.username);
-                validation_errors.add("username", validation_error);
-            }
+            let mut validation_error = ValidationError::new("username");
+            validation_error = validation_error.with_message("Username already exists".into());
+            validation_error.add_param("value".into(), &input.username);
+            validation_errors.add("username", validation_error);
         }
 
-        if let Some(u) = self
-            .user_repository
-            .get_by_email(model.email.clone())
-            .await?
-        {
-            if u.id != model.id {
+        if input.email.is_some() {
+            if let Some(u) = self
+                .user_repository
+                .get_by_email(input.email.unwrap().clone())
+                .await?
+            {
                 let mut validation_error = ValidationError::new("email");
                 validation_error = validation_error.with_message("Email already exists".into());
-                validation_error.add_param("value".into(), &model.username);
+                validation_error.add_param("value".into(), &input.username);
                 validation_errors.add("email", validation_error);
             }
         }
@@ -109,8 +105,9 @@ where
         if !validation_errors.is_empty() {
             return Err(validation_errors.into());
         }
+
         Ok(RegisterUserOutput {
-            id: self.user_repository.create(model).await?.id,
+            id: self.user_repository.create(model_result.unwrap()).await?.id,
         })
     }
 }

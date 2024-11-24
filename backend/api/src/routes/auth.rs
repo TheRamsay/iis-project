@@ -78,7 +78,7 @@ async fn logout(jar: CookieJar) -> AppResult<()> {
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct RegisterRequest {
     username: String,
-    email: String,
+    email: Option<String>,
     password: String,
     avatar_url: Option<String>,
 }
@@ -92,7 +92,7 @@ async fn register(
 
     let inserted = register_user_usecase
         .execute(RegisterUserInput {
-            display_name: payload.username.clone(),
+            display_name: None,
             username: payload.username.clone(),
             email: payload.email.clone(),
             avatar_url: payload.avatar_url.clone(),

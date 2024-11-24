@@ -62,9 +62,9 @@ async fn create_group(
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct Admin {
     id: Uuid,
-    display_name: String,
+    display_name: Option<String>,
     username: String,
-    email: String,
+    email: Option<String>,
     avatar_url: Option<String>,
     user_type: UserType,
 }
@@ -277,7 +277,7 @@ async fn check_user_status_in_group(
 struct GetGroupMembersResponse {
     id: Uuid,
     username: String,
-    display_name: String,
+    display_name: Option<String>,
     avatar_url: Option<String>,
     user_type: UserType,
     is_blocked: bool,
@@ -325,7 +325,7 @@ struct GetGroupRequestsResponse {
 struct GetGroupRequestUser {
     id: Uuid,
     username: String,
-    display_name: String,
+    display_name: Option<String>,
     avatar_url: Option<String>,
     user_type: UserType,
     is_blocked: bool,

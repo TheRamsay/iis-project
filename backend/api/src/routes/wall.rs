@@ -28,7 +28,7 @@ use crate::{
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetAuthorResponse {
     id: Uuid,
-    display_name: String,
+    display_name: Option<String>,
     username: String,
     avatar_url: Option<String>,
     user_type: UserType,

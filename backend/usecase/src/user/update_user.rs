@@ -12,9 +12,9 @@ use super::auth_utils::hash_password;
 #[derive(Debug)]
 pub struct UpdateUserInput {
     pub id: Uuid,
-    pub email: String,
+    pub email: Option<String>,
     pub username: String,
-    pub display_name: String,
+    pub display_name: Option<String>,
     pub avatar_url: Option<String>,
     pub user_type: UserType,
     pub password: String,
@@ -74,16 +74,18 @@ where
             }
         }
 
-        if let Some(u) = self
-            .user_repository
-            .get_by_email(input.email.clone())
-            .await?
-        {
-            if u.id != model.id {
-                let mut validation_error = ValidationError::new("email");
-                validation_error = validation_error.with_message("Email already exists".into());
-                validation_error.add_param("value".into(), &input.username);
-                validation_errors.add("email", validation_error);
+        if input.email.is_some() {
+            if let Some(u) = self
+                .user_repository
+                .get_by_email(input.email.unwrap().clone())
+                .await?
+            {
+                if u.id != model.id {
+                    let mut validation_error = ValidationError::new("email");
+                    validation_error = validation_error.with_message("Email already exists".into());
+                    validation_error.add_param("value".into(), &input.username);
+                    validation_errors.add("email", validation_error);
+                }
             }
         }
 

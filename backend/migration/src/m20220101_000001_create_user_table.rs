@@ -23,9 +23,9 @@ impl MigrationTrait for Migration {
                     .table(User::Table)
                     .if_not_exists()
                     .col(ColumnDef::new(User::Id).uuid().not_null().primary_key())
-                    .col(string(User::DisplayName))
+                    .col(string(User::DisplayName).null())
                     .col(string(User::Username))
-                    .col(string(User::Email))
+                    .col(string(User::Email).null())
                     .col(ColumnDef::new(User::AvatarUrl).string().null())
                     .col(
                         ColumnDef::new(User::UserType)
