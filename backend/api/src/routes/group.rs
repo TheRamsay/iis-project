@@ -70,11 +70,11 @@ struct Admin {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct GetGroupResponse {
-    id: Uuid,
-    name: String,
-    admin: Admin,
-    wall_id: Uuid,
+pub struct GetGroupResponse {
+    pub id: Uuid,
+    pub name: String,
+    pub admin: Admin,
+    pub wall_id: Uuid,
 }
 
 async fn get_group(

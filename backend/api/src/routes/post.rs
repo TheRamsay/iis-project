@@ -7,6 +7,7 @@ use usecase::post::{
     get_comment::{GetCommentInput, GetCommentUseCase},
     get_post::{GetPostInput, GetPostUseCase},
     get_post_comments::{GetPostCommentsInput, GetPostCommentsUseCase},
+    get_post_is_liked_by_user::{PostLikedByUserInput, PostLikedByUserUseCase},
     get_post_likes::{self, GetPostLikesInput},
     like_post::{LikePostInput, LikePostUseCase},
     uncomment_post::{UncommentPostInput, UncommentPostUseCase},
@@ -38,7 +39,6 @@ use models::{
 struct CreatePostRequest {
     title: String,
     description: String,
-    author_id: Uuid,
     post_type: String,
     content_url: String,
     visibility: String,
@@ -52,6 +52,7 @@ struct CreatePostResponse {
 
 async fn create_post(
     state: State<AppState>,
+    user: AuthUser,
     Json(payload): Json<CreatePostRequest>,
 ) -> AppResult<Json<CreatePostResponse>> {
     let post_usecase = CreatePostUseCase::new(
@@ -63,7 +64,7 @@ async fn create_post(
     let input = CreatePostInput {
         title: payload.title,
         description: payload.description,
-        author_id: payload.author_id,
+        author_id: user.id,
         post_type: match payload.post_type.as_str() {
             "photo" => PostType::Photo,
             _ => return Err(AppError::ValidationError(ValidationErrors::new())),
@@ -333,6 +334,46 @@ async fn unlike_post(
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+struct CheckLikeResponse {
+    liked: bool,
+    like_count: i32,
+}
+
+async fn check_like_post(
+    state: State<AppState>,
+    Path(id): Path<Uuid>,
+    user: AuthUser,
+) -> AppResult<Json<CheckLikeResponse>> {
+    let liked_by_user_use_case = PostLikedByUserUseCase::new(state.post_likes_repository.clone());
+    let get_post_likes_use_case =
+        get_post_likes::GetPostLikesUseCase::new(state.post_likes_repository.clone());
+
+    let liked_result = liked_by_user_use_case
+        .execute(PostLikedByUserInput {
+            post_id: id,
+            user_id: user.id,
+        })
+        .await?;
+
+    let likes_result = get_post_likes_use_case
+        .execute(GetPostLikesInput { id: id })
+        .await?;
+
+    if liked_result.is_none() {
+        return Err(AppError::NotFound("Post".into()));
+    }
+
+    if likes_result.is_none() {
+        return Err(AppError::NotFound("Post".into()));
+    }
+
+    anyhow::Result::Ok(Json(CheckLikeResponse {
+        like_count: likes_result.unwrap().like_count,
+        liked: liked_result.unwrap().liked,
+    }))
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 struct CommentPostRequest {
     content: String,
     parent_id: Option<Uuid>,
@@ -451,6 +492,7 @@ pub fn post_routes() -> axum::Router<crate::AppState> {
         .route("/:id", put(update_post))
         .route("/:id/comment", post(comment_post))
         .route("/:id/comment/:comment_id", delete(delete_post_comment))
+        .route("/:id/like/check", post(check_like_post))
         .route("/:id/like", post(like_post))
         .route("/:id/like", delete(unlike_post))
         .route("/upload_image", post(upload_image))

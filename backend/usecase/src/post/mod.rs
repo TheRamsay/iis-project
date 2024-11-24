@@ -4,6 +4,7 @@ pub mod delete_post;
 pub mod get_comment;
 pub mod get_post;
 pub mod get_post_comments;
+pub mod get_post_is_liked_by_user;
 pub mod get_post_likes;
 pub mod like_post;
 pub mod uncomment_post;

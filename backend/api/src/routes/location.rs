@@ -86,14 +86,14 @@ struct SearchLocation {
 
 async fn search_location(
     state: State<AppState>,
-    Json(payload): Json<SearchLocationRequest>,
+    Query(params): Query<SearchLocationRequest>,
 ) -> AppResult<Json<SearchLocationResponse>> {
     let search_location_use_case = usecase::location::search_location::SearchLocationUseCase::new(
         state.location_repository.clone(),
     );
 
     let input = usecase::location::search_location::SearchLocationInput {
-        query: payload.query,
+        query: params.query,
     };
 
     let result = search_location_use_case.execute(input).await?;
@@ -117,5 +117,5 @@ pub fn location_routes() -> axum::Router<crate::AppState> {
     axum::Router::new()
         .route("/", post(create_location))
         .route("/:id", delete(delete_location))
-        .route("/search", post(search_location))
+        .route("/search", get(search_location))
 }
