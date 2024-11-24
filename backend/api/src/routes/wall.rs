@@ -47,6 +47,7 @@ pub struct GetPostResponse {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetPostCommentResponse {
+    pub id: Uuid,
     pub post_id: Uuid,
     pub user: GetAuthorResponse,
     pub content: String,
@@ -118,6 +119,7 @@ pub async fn get_wall(
                 comments: comments
                     .into_iter()
                     .map(|(comment, user)| GetPostCommentResponse {
+                        id: comment.id.into(),
                         post_id: comment.post_id.into(),
                         content: comment.content,
                         user: GetAuthorResponse {
@@ -193,6 +195,7 @@ pub async fn get_feed(
                 comments: comments
                     .into_iter()
                     .map(|(comment, user)| GetPostCommentResponse {
+                        id: comment.id.into(),
                         post_id: comment.post_id.into(),
                         content: comment.content,
                         user: GetAuthorResponse {
@@ -271,6 +274,7 @@ pub async fn get_wall_by_tag(
                 comments: comments
                     .into_iter()
                     .map(|(comment, user)| GetPostCommentResponse {
+                        id: comment.id.into(),
                         post_id: comment.post_id.into(),
                         content: comment.content,
                         user: GetAuthorResponse {
