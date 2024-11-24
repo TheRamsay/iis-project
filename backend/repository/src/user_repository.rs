@@ -17,6 +17,7 @@ impl DbUserRepository {
 }
 
 pub trait UserRepository {
+    async fn get_all(&self) -> Result<Vec<User>, DbErr>;
     async fn get_by_id(&self, id: Id<User>) -> Result<Option<User>, DbErr>;
     async fn get_by_username(&self, username: String) -> Result<Option<User>, DbErr>;
     async fn get_by_email(&self, email: String) -> Result<Option<User>, DbErr>;
@@ -26,6 +27,14 @@ pub trait UserRepository {
 }
 
 impl UserRepository for DbUserRepository {
+    async fn get_all(&self) -> Result<Vec<User>, DbErr> {
+        let users = models::schema::user::Entity::find()
+            .all(self.db.as_ref())
+            .await?;
+
+        Ok(users.into_iter().map(User::from).collect())
+    }
+
     async fn get_by_id(&self, id: Id<User>) -> Result<Option<User>, DbErr> {
         let user = models::schema::user::Entity::find_by_id(id.id)
             .one(self.db.as_ref())

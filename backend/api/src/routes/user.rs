@@ -16,6 +16,7 @@ use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use usecase::user::{
     block_user::{BlockUserInput, BlockUserUseCase},
+    get_all_users::GetAllUsersUseCase,
     get_user::{GetUserInput, GetUserUseCase},
     register_user::{RegisterUserInput, RegisterUserUseCase},
     update_user::{UpdateUserInput, UpdateUserUseCase},
@@ -78,6 +79,7 @@ struct GetUserResponse {
     avatar_url: Option<String>,
     user_type: String,
     wall_id: Uuid,
+    is_blocked: bool,
 }
 
 async fn get_user(
@@ -97,6 +99,7 @@ async fn get_user(
             avatar_url: user.avatar_url,
             user_type: user.user_type.to_string(),
             wall_id: user.wall_id.id,
+            is_blocked: user.is_blocked,
         }))
     } else {
         Err(AppError::NotFound("User".into()))
@@ -117,6 +120,7 @@ async fn me(state: State<AppState>, user: AuthUser) -> AppResult<Json<GetUserRes
             avatar_url: user.avatar_url,
             user_type: user.user_type.to_string(),
             wall_id: user.wall_id.id,
+            is_blocked: user.is_blocked,
         }))
     } else {
         Err(AppError::NotFound("User".into()))
@@ -293,8 +297,31 @@ async fn update_user(
     std::result::Result::Ok((jar, ()))
 }
 
+async fn get_all_users(state: State<AppState>) -> AppResult<Json<Vec<GetUserResponse>>> {
+    let user_usercase = GetAllUsersUseCase::new(state.user_repository.clone());
+
+    let users = user_usercase.execute().await?;
+
+    let users = users
+        .into_iter()
+        .map(|user| GetUserResponse {
+            id: user.id.id,
+            display_name: user.display_name,
+            username: user.username,
+            email: user.email,
+            avatar_url: user.avatar_url,
+            user_type: user.user_type.to_string(),
+            is_blocked: user.is_blocked,
+            wall_id: user.wall_id.id,
+        })
+        .collect();
+
+    anyhow::Result::Ok(Json(users))
+}
+
 pub fn user_routes() -> axum::Router<crate::AppState> {
     axum::Router::new()
+        .route("/", get(get_all_users))
         .route("/", post(create_user))
         .route("/:id", get(get_user))
         .route("/me", get(me))
