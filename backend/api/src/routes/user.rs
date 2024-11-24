@@ -16,7 +16,9 @@ use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use usecase::user::{
     block_user::{BlockUserInput, BlockUserUseCase},
+    get_all_users::GetAllUsersUseCase,
     get_user::{GetUserInput, GetUserUseCase},
+    get_user_by_username::{GetUserByUsernameInput, GetUserByUsernameUseCase},
     register_user::{RegisterUserInput, RegisterUserUseCase},
     update_user::{UpdateUserInput, UpdateUserUseCase},
 };
@@ -30,9 +32,9 @@ use crate::{
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 struct CreateUserRequest {
-    display_name: String,
+    display_name: Option<String>,
     username: String,
-    email: String,
+    email: Option<String>,
     avatar_url: Option<String>,
     password: String,
     user_type: UserType,
@@ -72,21 +74,24 @@ async fn create_user(
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 struct GetUserResponse {
     id: Uuid,
-    display_name: String,
+    display_name: Option<String>,
     username: String,
-    email: String,
+    email: Option<String>,
     avatar_url: Option<String>,
     user_type: String,
     wall_id: Uuid,
+    is_blocked: bool,
 }
 
-async fn get_user(
+async fn get_user_by_username(
     state: State<AppState>,
-    Path(id): Path<Uuid>,
+    Path(username): Path<String>,
 ) -> AppResult<Json<GetUserResponse>> {
-    let user_usercase = GetUserUseCase::new(state.user_repository.clone());
+    let user_usercase = GetUserByUsernameUseCase::new(state.user_repository.clone());
 
-    let user = user_usercase.execute(GetUserInput { id }).await?;
+    let user = user_usercase
+        .execute(GetUserByUsernameInput { username })
+        .await?;
 
     if let Some(user) = user {
         anyhow::Result::Ok(Json(GetUserResponse {
@@ -97,6 +102,7 @@ async fn get_user(
             avatar_url: user.avatar_url,
             user_type: user.user_type.to_string(),
             wall_id: user.wall_id.id,
+            is_blocked: user.is_blocked,
         }))
     } else {
         Err(AppError::NotFound("User".into()))
@@ -117,6 +123,7 @@ async fn me(state: State<AppState>, user: AuthUser) -> AppResult<Json<GetUserRes
             avatar_url: user.avatar_url,
             user_type: user.user_type.to_string(),
             wall_id: user.wall_id.id,
+            is_blocked: user.is_blocked,
         }))
     } else {
         Err(AppError::NotFound("User".into()))
@@ -212,9 +219,9 @@ async fn delete_user(
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct UpdateUserRequest {
-    display_name: String,
+    display_name: Option<String>,
     username: String,
-    email: String,
+    email: Option<String>,
     avatar_url: Option<String>,
     password: String,
     user_type: UserType,
@@ -293,12 +300,35 @@ async fn update_user(
     std::result::Result::Ok((jar, ()))
 }
 
+async fn get_all_users(state: State<AppState>) -> AppResult<Json<Vec<GetUserResponse>>> {
+    let user_usercase = GetAllUsersUseCase::new(state.user_repository.clone());
+
+    let users = user_usercase.execute().await?;
+
+    let users = users
+        .into_iter()
+        .map(|user| GetUserResponse {
+            id: user.id.id,
+            display_name: user.display_name,
+            username: user.username,
+            email: user.email,
+            avatar_url: user.avatar_url,
+            user_type: user.user_type.to_string(),
+            is_blocked: user.is_blocked,
+            wall_id: user.wall_id.id,
+        })
+        .collect();
+
+    anyhow::Result::Ok(Json(users))
+}
+
 pub fn user_routes() -> axum::Router<crate::AppState> {
     axum::Router::new()
+        .route("/", get(get_all_users))
         .route("/", post(create_user))
-        .route("/:id", get(get_user))
         .route("/me", get(me))
-        .route("/:id/block", get(block_user))
-        .route("/:id", delete(delete_user))
-        .route("/:id", put(update_user))
+        .route("/:username", get(get_user_by_username))
+        .route("/id/:id", delete(delete_user))
+        .route("/id/:id", put(update_user))
+        .route("/id/:id/block", get(block_user))
 }

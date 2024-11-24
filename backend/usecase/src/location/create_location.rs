@@ -1,17 +1,5 @@
-use models::{
-    domain::{
-        location::Location,
-        post::{Post, PostType, PostVisibilityType},
-        post_user_visibility::PostUserVisibility,
-        wall_post::WallPost,
-        Id,
-    },
-    errors::{AppError, AppResult},
-};
-use repository::{
-    location_repository::LocationRepository, post_repository::PostRepository,
-    user_repository::UserRepository, wall_post_repository::WallPostRepository,
-};
+use models::{domain::location::Location, errors::AppResult};
+use repository::location_repository::LocationRepository;
 use uuid::Uuid;
 
 #[derive(Debug)]

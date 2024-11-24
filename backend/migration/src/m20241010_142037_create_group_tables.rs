@@ -1,8 +1,7 @@
 use sea_orm_migration::{prelude::*, schema::*};
 
 use crate::m20220101_000001_create_user_table::User;
-use crate::m20241009_204559_create_post_table::Post;
-use crate::m20241010_142036_create_wall_tables::{Wall, WallPost};
+use crate::m20241010_142036_create_wall_tables::Wall;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -23,6 +22,8 @@ impl MigrationTrait for Migration {
                         ForeignKey::create()
                             .name("fk_group_admin")
                             .from(Group::Table, Group::AdminId)
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade)
                             .to(User::Table, User::Id),
                     )
                     .foreign_key(
@@ -52,12 +53,16 @@ impl MigrationTrait for Migration {
                         ForeignKey::create()
                             .name("fk_group_member_user")
                             .from(GroupMember::Table, GroupMember::UserId)
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade)
                             .to(User::Table, User::Id),
                     )
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_group_member_group")
                             .from(GroupMember::Table, GroupMember::GroupId)
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade)
                             .to(Group::Table, Group::Id),
                     )
                     .to_owned(),

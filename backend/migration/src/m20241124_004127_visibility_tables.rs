@@ -36,12 +36,16 @@ impl MigrationTrait for Migration {
                         ForeignKey::create()
                             .name("fk_post_group_visibility_post")
                             .from(PostGroupVisibility::Table, PostGroupVisibility::PostId)
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade)
                             .to(Post::Table, Post::Id),
                     )
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_post_group_visibility_group")
                             .from(PostGroupVisibility::Table, PostGroupVisibility::GroupId)
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade)
                             .to(Group::Table, Group::Id),
                     )
                     .to_owned(),

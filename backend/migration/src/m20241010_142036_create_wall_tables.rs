@@ -29,12 +29,16 @@ impl MigrationTrait for Migration {
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_wall_post_wall")
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade)
                             .from(WallPost::Table, WallPost::WallId)
                             .to(Wall::Table, Wall::Id),
                     )
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_wall_post_post")
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade)
                             .from(WallPost::Table, WallPost::PostId)
                             .to(Post::Table, Post::Id),
                     )
@@ -51,7 +55,6 @@ impl MigrationTrait for Migration {
         manager
             .drop_table(Table::drop().table(Wall::Table).to_owned())
             .await
-
     }
 }
 

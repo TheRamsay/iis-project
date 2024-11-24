@@ -1,9 +1,8 @@
 use models::{
-    domain::user::{User, UserType},
+    domain::user::User,
     errors::AppResult,
 };
 use repository::user_repository::UserRepository;
-use uuid::Uuid;
 
 #[derive(Debug)]
 pub struct GetUserByUsernameInput {

@@ -1,10 +1,6 @@
-use anyhow::anyhow;
 use models::{
     domain::{
-        group::Group,
         group_join_request::{GroupJoinRequest, GroupJoinRequestStatus},
-        group_member::GroupMember,
-        user::{User, UserType},
         Id,
     },
     errors::AppResult,
@@ -12,9 +8,7 @@ use models::{
 use repository::{
     group_join_request_repository::GroupJoinRequestRepository,
     group_member_repository::GroupMemberRepository, group_repository::GroupRepository,
-    user_repository::UserRepository,
 };
-use sea_orm::{sqlx, ColIdx, DbErr};
 use uuid::Uuid;
 
 #[derive(Debug)]

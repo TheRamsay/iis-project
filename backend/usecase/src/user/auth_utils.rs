@@ -1,6 +1,6 @@
 use anyhow::anyhow;
 use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
+    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, SaltString},
     Argon2,
 };
 use models::errors::{AppError, AppResult};

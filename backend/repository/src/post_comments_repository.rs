@@ -1,16 +1,11 @@
-use std::{future::Future, sync::Arc};
+use std::sync::Arc;
 
-use models::{
-    domain::{
-        group::Group, post::Post, post_comment::PostComment, post_like::PostLike, user::User, Id,
-    },
-    schema,
-};
+use models::domain::{
+        post::Post, post_comment::PostComment, Id,
+    };
 use sea_orm::{
-    sea_query::extension::postgres::PgExpr, Condition, DbConn, DbErr, EntityTrait, IntoSimpleExpr,
-    PaginatorTrait, QueryFilter,
+    DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter,
 };
-use uuid::Uuid;
 
 #[derive(Debug, Clone)]
 pub struct DbPostCommentsRepository {

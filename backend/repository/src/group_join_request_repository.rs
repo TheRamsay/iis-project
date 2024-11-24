@@ -1,15 +1,15 @@
-use std::{future::Future, sync::Arc};
+use std::sync::Arc;
 
 use models::{
     domain::{
-        group::{self, Group},
+        group::Group,
         group_join_request::{GroupJoinRequest, GroupJoinRequestStatus},
         user::User,
         Id,
     },
     schema,
 };
-use sea_orm::{DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter, Set};
+use sea_orm::{DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter, QueryOrder, Set};
 
 #[derive(Debug, Clone)]
 pub struct DbGroupJoinRequestRepository {
@@ -35,6 +35,10 @@ pub trait GroupJoinRequestRepository {
         user_id: &Id<User>,
         group_id: &Id<Group>,
     ) -> Result<Vec<GroupJoinRequest>, DbErr>;
+    async fn find_by_group_id(
+        &self,
+        group_id: &Id<Group>,
+    ) -> Result<Vec<(Id<GroupJoinRequest>, User, GroupJoinRequestStatus)>, DbErr>;
 }
 
 impl GroupJoinRequestRepository for DbGroupJoinRequestRepository {
@@ -107,9 +111,36 @@ impl GroupJoinRequestRepository for DbGroupJoinRequestRepository {
                             .eq(group_id.id),
                     ),
             )
+            .order_by_desc(schema::group_join_request::Column::CreatedAt)
             .all(self.db.as_ref())
             .await?;
 
         Ok(result.into_iter().map(|x| x.into()).collect())
+    }
+
+    async fn find_by_group_id(
+        &self,
+        group_id: &Id<Group>,
+    ) -> Result<Vec<(Id<GroupJoinRequest>, User, GroupJoinRequestStatus)>, DbErr> {
+        let result = models::schema::group_join_request::Entity::find()
+            .filter(
+                schema::group_join_request::Column::GroupId
+                    .into_simple_expr()
+                    .eq(group_id.id),
+            )
+            .find_also_related(schema::user::Entity)
+            .all(self.db.as_ref())
+            .await?;
+
+        Ok(result
+            .into_iter()
+            .map(|(group_join_request, user)| {
+                (
+                    Id::new(group_join_request.id),
+                    User::from(user.expect("User not found")),
+                    group_join_request.status.into(),
+                )
+            })
+            .collect())
     }
 }

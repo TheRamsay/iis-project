@@ -1,6 +1,6 @@
-use std::{future::Future, sync::Arc};
+use std::sync::Arc;
 
-use models::domain::{wall_post::WallPost, Id};
+use models::domain::wall_post::WallPost;
 use sea_orm::{DbConn, DbErr, EntityTrait};
 
 #[derive(Debug, Clone)]

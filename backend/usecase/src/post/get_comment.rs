@@ -1,8 +1,6 @@
 use models::{
     domain::{
-        post::Post,
         post_comment::PostComment,
-        user::{User, UserType},
         Id,
     },
     errors::AppResult,

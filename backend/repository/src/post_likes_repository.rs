@@ -1,14 +1,10 @@
-use std::{future::Future, sync::Arc};
+use std::sync::Arc;
 
-use models::{
-    domain::{group::Group, post::Post, post_like::PostLike, user::User, Id},
-    schema,
-};
+use models::domain::{post::Post, post_like::PostLike, user::User, Id};
 use sea_orm::{
-    sea_query::extension::postgres::PgExpr, Condition, DbConn, DbErr, EntityTrait, IntoSimpleExpr,
+    DbConn, DbErr, EntityTrait, IntoSimpleExpr,
     PaginatorTrait, QueryFilter,
 };
-use uuid::Uuid;
 
 #[derive(Debug, Clone)]
 pub struct DbPostLikesRepository {
@@ -25,6 +21,11 @@ pub trait PostLikesRepository {
     async fn create(&self, like: PostLike) -> Result<Id<Post>, DbErr>;
     async fn delete(&self, post_id: Id<Post>, user_id: Id<User>) -> Result<(), DbErr>;
     async fn get_likes_by_id(&self, id: Id<Post>) -> Result<Option<i32>, DbErr>;
+    async fn get_is_liked_by_user(
+        &self,
+        post_id: Id<Post>,
+        user_id: Id<User>,
+    ) -> Result<bool, DbErr>;
 }
 
 impl PostLikesRepository for DbPostLikesRepository {
@@ -58,5 +59,27 @@ impl PostLikesRepository for DbPostLikesRepository {
             .await?;
 
         Ok(Some(likes as i32))
+    }
+
+    async fn get_is_liked_by_user(
+        &self,
+        post_id: Id<Post>,
+        user_id: Id<User>,
+    ) -> Result<bool, DbErr> {
+        let like = models::schema::post_like::Entity::find()
+            .filter(
+                models::schema::post_like::Column::PostId
+                    .into_simple_expr()
+                    .eq(post_id.id)
+                    .and(
+                        models::schema::post_like::Column::UserId
+                            .into_simple_expr()
+                            .eq(user_id.id),
+                    ),
+            )
+            .one(self.db.as_ref())
+            .await?;
+
+        Ok(like.is_some())
     }
 }

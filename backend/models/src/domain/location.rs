@@ -1,8 +1,8 @@
 use validator::{Validate, ValidationErrors};
 
-use crate::{errors::AppResult, schema};
+use crate::schema;
 
-use super::{post::Post, Id};
+use super::Id;
 
 #[derive(Clone, Debug, PartialEq, Validate)]
 pub struct Location {

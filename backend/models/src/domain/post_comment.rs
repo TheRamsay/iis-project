@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationErrors};
 
-use crate::schema::{self, post_comment};
+use crate::schema::{self};
 
 use super::{post::Post, user::User, Id};
 

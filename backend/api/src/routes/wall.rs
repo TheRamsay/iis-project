@@ -5,12 +5,8 @@ use axum::{
 use chrono::{DateTime, Utc};
 use models::{
     domain::{
-        location::Location,
-        post::{Post, PostType, PostVisibilityType},
-        post_comment::PostComment,
-        post_like::PostLike,
-        user::{User, UserType},
-        Id,
+        post::{PostType, PostVisibilityType},
+        user::UserType,
     },
     errors::AppResult,
 };
@@ -32,7 +28,7 @@ use crate::{
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetAuthorResponse {
     id: Uuid,
-    display_name: String,
+    display_name: Option<String>,
     username: String,
     avatar_url: Option<String>,
     user_type: UserType,
