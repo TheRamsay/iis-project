@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
 use ::serde::{Deserialize, Serialize};
+use axum::http::header::CONTENT_TYPE;
+use axum::http::Method;
 use axum::routing::post;
 use axum::{extract::State, routing::get, Json, Router};
 use dotenv::dotenv;
@@ -86,7 +88,22 @@ async fn main() -> shuttle_axum::ShuttleAxum {
         .nest("/api/group-join-requests", group_join_request_router())
         .nest("/api/posts", post_routes())
         .nest("/api/walls", wall_routes())
-        .layer(ServiceBuilder::new().layer(CorsLayer::new().allow_origin(AllowOrigin::any())))
+        .layer(
+            ServiceBuilder::new()
+                .layer(
+                    CorsLayer::new()
+                        .allow_origin(AllowOrigin::any())
+                        .allow_headers(vec![CONTENT_TYPE])
+                        .allow_credentials(true)
+                        .allow_methods(vec![
+                            Method::GET,
+                            Method::POST,
+                            Method::PUT,
+                            Method::DELETE,
+                        ]),
+                )
+                .into_inner(),
+        )
         .with_state(app_state);
 
     Ok(router.into())
