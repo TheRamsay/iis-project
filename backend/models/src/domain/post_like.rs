@@ -1,10 +1,11 @@
 use ::chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 
 use crate::schema;
 
 use super::{post::Post, user::User, Id};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct PostLike {
     pub post_id: Id<Post>,
     pub user_id: Id<User>,

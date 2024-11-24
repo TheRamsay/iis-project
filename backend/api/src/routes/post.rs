@@ -32,7 +32,6 @@ use models::{
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct CreatePostRequest {
-    title: String,
     description: String,
     author_id: Uuid,
     post_type: String,
@@ -50,10 +49,13 @@ async fn create_post(
     state: State<AppState>,
     Json(payload): Json<CreatePostRequest>,
 ) -> AppResult<Json<CreatePostResponse>> {
-    let post_usecase = CreatePostUseCase::new(state.post_repository.clone());
+    let post_usecase = CreatePostUseCase::new(
+        state.post_repository.clone(),
+        state.wall_post_repository.clone(),
+        state.user_repository.clone(),
+    );
 
     let input = CreatePostInput {
-        title: payload.title,
         description: payload.description,
         author_id: payload.author_id,
         post_type: match payload.post_type.as_str() {
@@ -77,7 +79,6 @@ async fn create_post(
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct GetPostResponse {
     id: Uuid,
-    title: String,
     description: String,
     post_type: String,
     author_id: Uuid,
@@ -98,7 +99,6 @@ async fn get_post(
     if let Some(post) = post {
         anyhow::Result::Ok(Json(GetPostResponse {
             id: post.post.id.into(),
-            title: post.post.title,
             description: post.post.description,
             post_type: match post.post.post_type {
                 PostType::Photo => "Photo".into(),
@@ -153,7 +153,6 @@ async fn delete_post(
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct UpdatePostRequest {
-    title: String,
     description: String,
     post_type: String,
     visibility: String,
@@ -163,7 +162,6 @@ struct UpdatePostRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct UpdatePostResponse {
     id: Uuid,
-    title: String,
     description: String,
     post_type: String,
     content_url: String,
@@ -198,7 +196,6 @@ async fn update_post(
 
     let input = Post {
         id: id.into(),
-        title: payload.title,
         description: payload.description,
         author_id: unwraped_post.post.author_id.into(),
         post_type: match payload.post_type.as_str() {
@@ -226,7 +223,6 @@ async fn update_post(
     let updated_post = result.unwrap();
     anyhow::Result::Ok(Json(UpdatePostResponse {
         id: updated_post.post.id.into(),
-        title: updated_post.post.title,
         description: updated_post.post.description,
         post_type: match updated_post.post.post_type {
             PostType::Photo => "photo".into(),

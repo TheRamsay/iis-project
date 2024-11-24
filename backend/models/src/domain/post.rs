@@ -1,4 +1,7 @@
+use std::fmt::Display;
+
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use validator::{Validate, ValidationErrors};
 
@@ -6,18 +9,57 @@ use crate::schema;
 
 use super::{email::Email, user::User, wall::Wall, Id};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub enum PostType {
+    #[serde(rename = "photo")]
     Photo,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+impl Display for PostType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            PostType::Photo => write!(f, "photo"),
+        }
+    }
+}
+
+impl From<String> for PostType {
+    fn from(post_type: String) -> Self {
+        match post_type.as_str() {
+            "photo" => Self::Photo,
+            _ => Self::Photo,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub enum PostVisibilityType {
+    #[serde(rename = "public")]
     Public,
+    #[serde(rename = "private")]
     Private,
 }
 
-#[derive(Clone, Debug, PartialEq, Validate)]
+impl Display for PostVisibilityType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            PostVisibilityType::Public => write!(f, "public"),
+            PostVisibilityType::Private => write!(f, "private"),
+        }
+    }
+}
+
+impl From<String> for PostVisibilityType {
+    fn from(visibility: String) -> Self {
+        match visibility.as_str() {
+            "public" => Self::Public,
+            "private" => Self::Private,
+            _ => Self::Public,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Validate, Deserialize, Serialize)]
 pub struct Post {
     pub id: Id<Post>,
     #[validate(length(
@@ -37,7 +79,6 @@ pub struct Post {
 
 impl Post {
     pub fn new(
-        title: String,
         description: String,
         author_id: Id<User>,
         post_type: PostType,

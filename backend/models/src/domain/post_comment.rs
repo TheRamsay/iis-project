@@ -1,10 +1,11 @@
+use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationErrors};
 
 use crate::schema::{self, post_comment};
 
 use super::{post::Post, user::User, Id};
 
-#[derive(Clone, Debug, PartialEq, Validate)]
+#[derive(Clone, Debug, PartialEq, Validate, Deserialize, Serialize)]
 pub struct PostComment {
     pub id: Id<PostComment>,
     pub post_id: Id<Post>,

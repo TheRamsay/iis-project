@@ -4,4 +4,5 @@ pub mod group_member_repository;
 pub mod group_repository;
 pub mod post_repository;
 pub mod user_repository;
+pub mod wall_post_repository;
 pub mod wall_repository;

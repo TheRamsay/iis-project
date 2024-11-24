@@ -1,12 +1,26 @@
-use std::{future::Future, sync::Arc};
+use std::{
+    future::{self, Future},
+    sync::Arc,
+};
 
-use models::domain::{
-    post::{Post, PostVisibilityType},
-    Id,
+use models::{
+    domain::{
+        post::{self, Post, PostVisibilityType},
+        post_comment::PostComment,
+        post_like::PostLike,
+        post_tag,
+        user::{self, User},
+        wall::Wall,
+        wall_post::{self, WallPost},
+        Id,
+    },
+    errors::AppError,
+    schema::{self},
 };
 use sea_orm::{
     sea_query::{extension::postgres::PgExpr, ExprTrait},
-    DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter, Set,
+    DbBackend, DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter, QuerySelect, Set,
+    Statement,
 };
 
 #[derive(Debug, Clone)]
@@ -41,7 +55,6 @@ impl PostRepository for DbPostRepository {
         let mut active_model: models::schema::post::ActiveModel = post_model.into();
 
         active_model.description = Set(post.description);
-        active_model.title = Set(post.title);
         active_model.visibility = Set(match post.visibility {
             PostVisibilityType::Public => "public".to_owned(),
             PostVisibilityType::Private => "private".to_owned(),
