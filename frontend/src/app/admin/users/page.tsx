@@ -2,8 +2,8 @@
 
 import { Button } from '@/components/components/button'
 import { DataTable } from '@/components/components/data-table/data-table'
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
-import type { ColumnDef, PaginationState } from '@tanstack/react-table'
+import { useInfiniteQuery } from '@tanstack/react-query'
+import type { ColumnDef } from '@tanstack/react-table'
 import classNames from 'classnames'
 import { ChevronLeftIcon, ChevronRightIcon, SearchIcon } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -11,14 +11,14 @@ import { UserModal } from './_ui/user-modal/user-modal'
 import type { schema } from '@/app/_lib/db'
 import { userType } from '../../../../drizzle/schema'
 import {
-	Checkbox,
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-	TextField,
-} from '@/components'
+} from '@/components/components/select'
+import { TextField } from '@/components/components/text-field'
+import { useSearchParams } from 'next/navigation'
 
 type Entry = Pick<
 	typeof schema.user.$inferSelect,
@@ -107,12 +107,15 @@ type Filters = {
 const PAGE_SIZE = 10
 
 export default function Page() {
-	const [page_index, set_page_index] = useState<number>(0)
+	const [pageIndex, setPageIndex] = useState<number>(0)
 	const [filters, setFilters] = useState<Filters>({})
+
+	const searchParams = useSearchParams()
 
 	const { data, isLoading } = useInfiniteQuery({
 		queryKey: ['admin-users'],
 		queryFn: ({ pageParam }) => {
+			// TODO: endpoint
 			return Adata
 		},
 		initialPageParam: 0,
@@ -125,82 +128,87 @@ export default function Page() {
 		},
 	})
 
-	const current_data = useMemo(() => {
-		return data?.pages[page_index] || []
-	}, [data, page_index])
+	const currentData = useMemo(() => {
+		return data?.pages[pageIndex] || []
+	}, [data, pageIndex])
 
-	const [can_go_previous, can_go_next] = useMemo(() => {
-		return [page_index > 0, current_data.length === PAGE_SIZE]
-	}, [page_index, current_data])
+	const [canGoPrevious, canGoNext] = useMemo(() => {
+		return [pageIndex > 0, currentData.length === PAGE_SIZE]
+	}, [pageIndex, currentData])
 
-	const on_previous = useCallback(() => {
-		set_page_index((old_page_index) => {
-			if (can_go_previous) {
-				return old_page_index - 1
+	const onPrevious = useCallback(() => {
+		setPageIndex((oldPageIndex) => {
+			if (canGoPrevious) {
+				return oldPageIndex - 1
 			}
-			return old_page_index
+			return oldPageIndex
 		})
-	}, [can_go_previous])
-	const on_next = useCallback(() => {
-		set_page_index((old_page_index) => {
-			if (can_go_next) {
-				return old_page_index + 1
+	}, [canGoPrevious])
+	const onNext = useCallback(() => {
+		setPageIndex((oldPageIndex) => {
+			if (canGoNext) {
+				return oldPageIndex + 1
 			}
-			return old_page_index
+			return oldPageIndex
 		})
-	}, [can_go_next])
+	}, [canGoNext])
+
+	const idFromUrl = searchParams.get('id')
 
 	return (
-		<div className="h-full flex justify-between flex-col">
-			<div className="space-y-4">
-				<div className="flex w-full justify-between items-center">
-					<h1 className="text-3xl font-medium">Users</h1>
-					<FilterSearch
-						value={filters.search || ''}
-						setValue={(value) => {
-							setFilters({ ...filters, search: value })
-						}}
-					/>
+		<>
+			<div className="h-full flex justify-between flex-col">
+				<div className="space-y-4">
+					<div className="flex w-full justify-between items-center">
+						<h1 className="text-3xl font-medium">Users</h1>
+						<FilterSearch
+							value={filters.search || ''}
+							setValue={(value) => {
+								setFilters({ ...filters, search: value })
+							}}
+						/>
+					</div>
+					<div className="flex w-full justify-end space-x-8">
+						<FilterBlocked
+							value={filters.isBlocked}
+							setValue={(value) => {
+								setFilters({ ...filters, isBlocked: value })
+							}}
+						/>
+						<FilterRole
+							value={filters.role}
+							setValue={(value) => {
+								setFilters({ ...filters, role: value })
+							}}
+						/>
+					</div>
+					<DataTable columns={columns} data={currentData} loading={isLoading} />
 				</div>
-				<div className="flex w-full justify-end space-x-8">
-					<FilterBlocked
-						value={filters.isBlocked}
-						setValue={(value) => {
-							setFilters({ ...filters, isBlocked: value })
-						}}
-					/>
-					<FilterRole
-						value={filters.role}
-						setValue={(value) => {
-							setFilters({ ...filters, role: value })
-						}}
-					/>
-				</div>
-				<DataTable columns={columns} data={current_data} loading={isLoading} />
-			</div>
 
-			<div className="w-full justify-between flex items-center">
-				<div>Page: {page_index + 1}</div>
-				<div className="flex space-x-2">
-					<div
-						onClick={on_previous}
-						className={classNames(
-							can_go_previous ? 'cursor-pointer' : 'opacity-50',
-						)}
-					>
-						<ChevronLeftIcon className="h-8 w-8" />
-					</div>
-					<div
-						onClick={on_next}
-						className={classNames(
-							can_go_next ? 'cursor-pointer' : 'opacity-50',
-						)}
-					>
-						<ChevronRightIcon className="h-8 w-8" />
+				<div className="w-full justify-between flex items-center">
+					<div>Page: {pageIndex + 1}</div>
+					<div className="flex space-x-2">
+						<div
+							onClick={onPrevious}
+							className={classNames(
+								canGoPrevious ? 'cursor-pointer' : 'opacity-50',
+							)}
+						>
+							<ChevronLeftIcon className="h-8 w-8" />
+						</div>
+						<div
+							onClick={onNext}
+							className={classNames(
+								canGoNext ? 'cursor-pointer' : 'opacity-50',
+							)}
+						>
+							<ChevronRightIcon className="h-8 w-8" />
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
+			{idFromUrl && <UserModal id={idFromUrl} open />}
+		</>
 	)
 }
 

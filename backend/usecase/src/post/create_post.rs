@@ -15,6 +15,7 @@ use uuid::Uuid;
 
 #[derive(Debug)]
 pub struct CreatePostInput {
+    pub title: String,
     pub description: String,
     pub author_id: Uuid,
     pub post_type: PostType,
@@ -60,6 +61,7 @@ where
             .ok_or_else(|| AppError::NotFound("Author".to_string()))?;
 
         let post = Post::new(
+            input.title,
             input.description,
             Id::new(input.author_id),
             input.post_type,

@@ -25,3 +25,7 @@ body {
     text-wrap: balance;
   }
 }
+
+body[data-scroll-locked][data-scroll-locked] {
+  overflow: auto !important;
+}

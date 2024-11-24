@@ -27,3 +27,5 @@ argon2 = "0.5.3"
 redis = "0.27.5"
 tracing-subscriber = "0.3.18"
 time = "0.3.36"
+tower = "0.5.1"
+tower-http = { version = "0.6.2", features = ["cors"] }

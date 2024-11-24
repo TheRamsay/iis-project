@@ -1,13 +1,11 @@
 use anyhow::anyhow;
-use argon2::{Argon2, PasswordHash};
 use axum::{extract::State, routing::post};
 use axum_extra::extract::{
     cookie::{Cookie, Expiration},
     CookieJar,
 };
-use chrono::Offset;
 use models::errors::{AppError, AppResult};
-use repository::user_repository::{self, DbUserRepository, UserRepository};
+use repository::user_repository::UserRepository;
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use usecase::user::{
@@ -16,7 +14,6 @@ use usecase::user::{
 };
 
 use crate::{
-    auth,
     extractors::{auth_extractor::AuthUser, json_extractor::Json},
     AppState,
 };
@@ -52,8 +49,8 @@ pub async fn login(
     let auth_user = AuthUser::new(user.id.into(), user.username.clone(), user.user_type);
     let token = auth_user.to_jwt(&state.jwt_secret);
 
-    let cookie = Cookie::build(("jwt", token))
-        .same_site(axum_extra::extract::cookie::SameSite::Strict)
+    let cookie = Cookie::build(("jwt", token.clone()))
+        .same_site(axum_extra::extract::cookie::SameSite::None)
         .http_only(true)
         .path("/")
         .expires(Expiration::DateTime(
@@ -62,7 +59,7 @@ pub async fn login(
         ))
         .secure(true);
 
-    let jar = CookieJar::new().add(cookie);
+    let jar = CookieJar::new().add(cookie.clone());
 
     Ok((
         jar,
@@ -86,11 +83,14 @@ pub struct RegisterRequest {
     avatar_url: Option<String>,
 }
 
-async fn register(state: State<AppState>, Json(payload): Json<RegisterRequest>) -> AppResult<()> {
+async fn register(
+    state: State<AppState>,
+    Json(payload): Json<RegisterRequest>,
+) -> AppResult<(CookieJar, ())> {
     let register_user_usecase =
         RegisterUserUseCase::new(state.user_repository.clone(), state.wall_repository.clone());
 
-    register_user_usecase
+    let inserted = register_user_usecase
         .execute(RegisterUserInput {
             display_name: payload.username.clone(),
             username: payload.username.clone(),
@@ -101,7 +101,26 @@ async fn register(state: State<AppState>, Json(payload): Json<RegisterRequest>) 
         })
         .await?;
 
-    Ok(())
+    let auth_user = AuthUser::new(
+        inserted.id,
+        payload.username,
+        models::domain::user::UserType::Regular,
+    );
+    let token = auth_user.to_jwt(&state.jwt_secret);
+
+    let cookie = Cookie::build(("jwt", token.clone()))
+        .same_site(axum_extra::extract::cookie::SameSite::None)
+        .http_only(true)
+        .path("/")
+        .expires(Expiration::DateTime(
+            OffsetDateTime::from_unix_timestamp(auth_user.exp as i64)
+                .map_err(|_| anyhow!("Failed to create expiration time"))?,
+        ))
+        .secure(true);
+
+    let jar = CookieJar::new().add(cookie.clone());
+
+    Ok((jar, ()))
 }
 
 pub fn auth_routes() -> axum::Router<crate::AppState> {

@@ -10,6 +10,12 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { Loader } from '@/components/components/loader'
 import classNames from 'classnames'
+import { FormImage } from '@/app/_ui/form/form-image'
+import { FormLabelError } from '@/app/_ui/form/form-label-error'
+import { TextArea } from '@/components/components'
+import { FormServerError } from '@/app/_ui/form/form-server-error'
+
+// TODO: validation
 
 interface UserFormProps {
 	userId: string
@@ -18,7 +24,7 @@ interface UserFormProps {
 type User = Pick<
 	typeof schema.user.$inferSelect,
 	'id' | 'displayName' | 'avatarUrl' | 'email' | 'username'
->
+> & { image: globalThis.File | null; description: string }
 
 export type UserForm = Pick<User, 'id'> & Partial<User>
 
@@ -26,6 +32,7 @@ export function UserForm({ userId }: UserFormProps) {
 	const { data, isFetching, refetch } = useQuery<User>({
 		queryKey: ['admin-user', userId],
 		queryFn: async () => {
+			// TODO: endpoint
 			await new Promise((resolve) => setTimeout(resolve, 1000))
 
 			return {
@@ -34,13 +41,16 @@ export function UserForm({ userId }: UserFormProps) {
 				avatarUrl: 'https://example.com/favicon.ico',
 				email: 'asdas@goog.eoco',
 				username: 'johndoe',
+				description: 'BIO',
+				image: null,
 			}
 		},
 	})
 
-	const { mutate, isPending } = useMutation({
+	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['admin-user', userId],
 		mutationFn: async (data: UserForm) => {
+			// TODO: endpoint
 			await new Promise((resolve) => setTimeout(resolve, 1000))
 		},
 		onSuccess: () => {
@@ -57,6 +67,8 @@ export function UserForm({ userId }: UserFormProps) {
 			email: '',
 			id: '',
 			username: '',
+			description: '',
+			image: null,
 		},
 	})
 
@@ -68,6 +80,7 @@ export function UserForm({ userId }: UserFormProps) {
 
 	return (
 		<div className="space-y-4">
+			<FormServerError error={error} />
 			<FormProvider {...form}>
 				<div className="flex space-x-4 w-full">
 					<FormField
@@ -75,7 +88,7 @@ export function UserForm({ userId }: UserFormProps) {
 						control={form.control}
 						render={({
 							field: { name, value, onChange, onBlur },
-							formState: { isDirty },
+							fieldState: { isDirty },
 						}) => (
 							<FormItem className="w-full">
 								<FormControl>
@@ -142,22 +155,27 @@ export function UserForm({ userId }: UserFormProps) {
 					)}
 				/>
 				<FormField
-					name="avatarUrl"
+					name="description"
 					control={form.control}
 					render={({
-						field: { name, value, onBlur, onChange },
-						fieldState: { isDirty },
+						field: { name, value, onChange, onBlur },
+						fieldState: { isDirty, invalid: isError, error },
 					}) => (
 						<FormItem className="w-full">
 							<FormControl>
 								<>
-									<label htmlFor={name}>Avatar</label>
-									<TextField
+									<FormLabelError
+										htmlFor={name}
+										label="Description"
+										error={error?.message}
+									/>
+									<TextArea
 										type="text"
-										value={value || ''}
+										placeholder="Description"
+										value={value}
 										onChange={(e) => onChange(e.target.value)}
 										onBlur={onBlur}
-										className={formClassnames({ isDirty })}
+										className={formClassnames({ isDirty, isError })}
 										disabled={loading}
 									/>
 								</>
@@ -165,14 +183,17 @@ export function UserForm({ userId }: UserFormProps) {
 						</FormItem>
 					)}
 				/>
+
+				<FormImage form={form} required={false} />
+
 				<div className="flex flex-row w-full justify-between items-center">
 					<div className={classNames(!loading && 'hidden')}>
 						<Loader size={20} />
 					</div>
 					<div className="flex w-full justify-end space-x-4">
 						<Button
-						// onClick={() => mutate(form.watch())}
-						// disabled={loading || !form.formState.isDirty}
+							onClick={() => mutate(form.watch())}
+							disabled={loading || !form.formState.isDirty}
 						>
 							Save
 						</Button>

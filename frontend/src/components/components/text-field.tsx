@@ -79,7 +79,7 @@ interface TextFieldDynamicProps<T extends InputType> {
 }
 
 export type TextFieldProps<T extends InputType> = TextFieldBaseProps &
-	TextFieldDynamicProps<T>
+	TextFieldDynamicProps<T> & { inputType?: TextFieldBaseProps['type'] }
 
 const isTypeText = (type: InputType): type is 'text' => type === 'text'
 const isTypeNumber = (type: InputType): type is 'number' => type === 'number'
@@ -98,6 +98,7 @@ const Component = <T extends InputType>(
 		size,
 		onValueChange,
 		isError,
+		inputType,
 		...props
 	}: TextFieldProps<T>,
 	ref: React.ForwardedRef<HTMLInputElement>,
@@ -171,6 +172,7 @@ const Component = <T extends InputType>(
 				autoCapitalize="none"
 				spellCheck="false"
 				autoComplete="off"
+				type={inputType}
 				{...(isTypeNumber(type) && numericInputProps)}
 				{...(isTypePercent(type) && percentInputProps)}
 				{...props}
