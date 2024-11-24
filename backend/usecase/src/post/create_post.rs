@@ -1,7 +1,6 @@
 use models::{
     domain::{
         post::{Post, PostType, PostVisibilityType},
-        post_user_visibility::PostUserVisibility,
         wall_post::WallPost,
         Id,
     },

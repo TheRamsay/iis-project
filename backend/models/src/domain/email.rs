@@ -1,6 +1,5 @@
-use sea_orm::{ColumnTrait, DbConn, EntityTrait, QueryFilter};
 use serde::{Deserialize, Serialize};
-use validator::{Validate, ValidateArgs, ValidationError, ValidationErrors};
+use validator::{Validate, ValidationErrors};
 
 #[derive(Debug, Validate, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Email {

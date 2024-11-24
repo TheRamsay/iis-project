@@ -1,9 +1,5 @@
 use models::{
-    domain::{
-        post::Post,
-        user::{User, UserType},
-        Id,
-    },
+    domain::{post::Post, Id},
     errors::AppResult,
 };
 use repository::post_repository::PostRepository;

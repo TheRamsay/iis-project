@@ -1,7 +1,6 @@
 use axum::{
-    extract::{Path, Query, State},
-    response::IntoResponse,
-    routing::{delete, get, post},
+    extract::{Path, State},
+    routing::{delete, post},
 };
 use models::errors::AppResult;
 use serde::{Deserialize, Serialize};
@@ -10,7 +9,7 @@ use usecase::location::create_location::CreateLocationUseCase;
 use uuid::Uuid;
 
 use crate::{
-    extractors::{auth_extractor::AuthUser, json_extractor::Json},
+    extractors::json_extractor::Json,
     AppState,
 };
 #[derive(Debug, Clone, Serialize, Deserialize)]

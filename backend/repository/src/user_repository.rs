@@ -1,9 +1,6 @@
 use models::domain::{user::User, Id};
-use sea_orm::{
-    sea_query::{extension::postgres::PgExpr, ExprTrait},
-    DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter, RuntimeErr, Set, SqlxError,
-};
-use std::{future::Future, sync::Arc};
+use sea_orm::{DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter, Set};
+use std::sync::Arc;
 
 #[derive(Debug, Clone)]
 pub struct DbUserRepository {
@@ -17,6 +14,7 @@ impl DbUserRepository {
 }
 
 pub trait UserRepository {
+    async fn get_all(&self) -> Result<Vec<User>, DbErr>;
     async fn get_by_id(&self, id: Id<User>) -> Result<Option<User>, DbErr>;
     async fn get_by_username(&self, username: String) -> Result<Option<User>, DbErr>;
     async fn search_user_by_username(&self, username: String) -> Result<Option<Vec<User>>, DbErr>;
@@ -27,6 +25,14 @@ pub trait UserRepository {
 }
 
 impl UserRepository for DbUserRepository {
+    async fn get_all(&self) -> Result<Vec<User>, DbErr> {
+        let users = models::schema::user::Entity::find()
+            .all(self.db.as_ref())
+            .await?;
+
+        Ok(users.into_iter().map(User::from).collect())
+    }
+
     async fn get_by_id(&self, id: Id<User>) -> Result<Option<User>, DbErr> {
         let user = models::schema::user::Entity::find_by_id(id.id)
             .one(self.db.as_ref())

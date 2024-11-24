@@ -1,10 +1,6 @@
-use std::{cmp::Ordering, default, fmt::Display, ops};
-
-use sea_orm::{ColumnTrait, DbConn, EntityTrait, QueryFilter};
 use serde::{Deserialize, Serialize};
-use tokio::runtime::Handle;
-use uuid::Uuid;
-use validator::{Validate, ValidateArgs, ValidationError, ValidationErrors};
+use std::fmt::Display;
+use validator::{Validate, ValidationErrors};
 
 use crate::schema;
 
@@ -88,7 +84,7 @@ pub struct User {
         max = 15,
         message = "Display name must be between 3 and 15 characters"
     ))]
-    pub display_name: String,
+    pub display_name: Option<String>,
     #[validate(length(
         min = 3,
         max = 15,
@@ -96,7 +92,7 @@ pub struct User {
     ))]
     pub username: String,
     #[validate(email)]
-    pub email: String,
+    pub email: Option<String>,
     #[validate(url)]
     pub avatar_url: Option<String>,
     pub user_type: UserType,
@@ -107,9 +103,9 @@ pub struct User {
 
 impl User {
     pub fn new(
-        display_name: String,
+        display_name: Option<String>,
         username: String,
-        email: String,
+        email: Option<String>,
         avatar_url: Option<String>,
         user_type: UserType,
         wall_id: Id<Wall>,

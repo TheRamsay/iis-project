@@ -1,32 +1,25 @@
 use axum::{
     extract::{Path, Query, State},
     response::IntoResponse,
-    routing::{get, post},
+    routing::{delete, get, post},
 };
 use models::{
-    domain::{
-        group_join_request,
-        user::{User, UserType},
-    },
+    domain::{group_join_request::GroupJoinRequestStatus, user::UserType},
     errors::{AppError, AppResult},
-    schema::user,
 };
-use repository::{group_repository::GroupRepository, user_repository::UserRepository};
 use serde::{Deserialize, Serialize};
-use usecase::{
-    group::{
-        add_user_to_group,
-        create_group::{CreateGroupInput, CreateGroupUseCase},
-        get_group::{GetGroupInput, GetGroupUseCase},
-        join_group::{JoinGroupInput, JoinGroupUseCase},
-        leave_group::{LeaveGroupInput, LeaveGroupUseCase},
-        remove_user_from_group,
-        search_group::{SearchGroupInput, SearchGroupOutput, SearchGroupUseCase},
-    },
-    user::{
-        get_user::{GetUserInput, GetUserUseCase},
-        register_user::{RegisterUserInput, RegisterUserUseCase},
-    },
+use usecase::group::{
+    add_user_to_group,
+    create_group::{CreateGroupInput, CreateGroupUseCase},
+    delete_group::{DeleteGroupInput, DeleteGroupUseCase},
+    get_group::{GetGroupInput, GetGroupUseCase},
+    get_group_members::{GetGroupMembersInput, GetGroupMembersUseCase},
+    get_group_requests::{GetGroupRequestsInput, GetGroupRequestsUseCase},
+    group_member_status::{GroupMemberStatus, GroupMemberStatusInput, GroupMemberStatusUseCase},
+    join_group::{JoinGroupInput, JoinGroupUseCase},
+    leave_group::{LeaveGroupInput, LeaveGroupUseCase},
+    remove_user_from_group,
+    search_group::{SearchGroupInput, SearchGroupUseCase},
 };
 use uuid::Uuid;
 
@@ -67,13 +60,13 @@ async fn create_group(
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Admin {
-    pub id: Uuid,
-    pub display_name: String,
-    pub username: String,
-    pub email: String,
-    pub avatar_url: Option<String>,
-    pub user_type: UserType,
+struct Admin {
+    id: Uuid,
+    display_name: Option<String>,
+    username: String,
+    email: Option<String>,
+    avatar_url: Option<String>,
+    user_type: UserType,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -253,11 +246,160 @@ async fn remove_user(
     Ok(())
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct CheckUserStatusInGroupResponse {
+    status: GroupMemberStatus,
+}
+
+async fn check_user_status_in_group(
+    state: State<AppState>,
+    user: AuthUser,
+    Path(group_id): Path<Uuid>,
+) -> AppResult<impl IntoResponse> {
+    let usecase = GroupMemberStatusUseCase::new(
+        state.group_join_request_repository.clone(),
+        state.group_repository.clone(),
+    );
+
+    let input = GroupMemberStatusInput {
+        user_id: user.id.into(),
+        group_id: group_id.into(),
+    };
+
+    let output = usecase.execute(input).await?;
+
+    Ok(Json(CheckUserStatusInGroupResponse {
+        status: output.status,
+    }))
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct GetGroupMembersResponse {
+    id: Uuid,
+    username: String,
+    display_name: Option<String>,
+    avatar_url: Option<String>,
+    user_type: UserType,
+    is_blocked: bool,
+    joined_at: chrono::DateTime<chrono::Utc>,
+}
+
+async fn get_group_members(
+    state: State<AppState>,
+    Path(group_id): Path<Uuid>,
+) -> AppResult<Json<Vec<GetGroupMembersResponse>>> {
+    let usecase = GetGroupMembersUseCase::new(
+        state.group_member_repository.clone(),
+        state.group_repository.clone(),
+    );
+
+    let input = models::domain::Id::from(group_id);
+
+    let output = usecase.execute(GetGroupMembersInput { id: input }).await?;
+
+    Ok(Json(
+        output
+            .members
+            .into_iter()
+            .map(|(joined_at, member)| GetGroupMembersResponse {
+                id: member.id.into(),
+                username: member.username,
+                display_name: member.display_name,
+                avatar_url: member.avatar_url,
+                user_type: member.user_type,
+                is_blocked: member.is_blocked,
+                joined_at,
+            })
+            .collect(),
+    ))
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct GetGroupRequestsResponse {
+    id: Uuid,
+    user: GetGroupRequestUser,
+    status: GroupJoinRequestStatus,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct GetGroupRequestUser {
+    id: Uuid,
+    username: String,
+    display_name: Option<String>,
+    avatar_url: Option<String>,
+    user_type: UserType,
+    is_blocked: bool,
+}
+
+async fn get_group_requests(
+    state: State<AppState>,
+    Path(group_id): Path<Uuid>,
+) -> AppResult<Json<Vec<GetGroupRequestsResponse>>> {
+    let usecase = GetGroupRequestsUseCase::new(
+        state.group_join_request_repository.clone(),
+        state.group_repository.clone(),
+    );
+
+    let input = models::domain::Id::from(group_id);
+
+    let output = usecase.execute(GetGroupRequestsInput { id: input }).await?;
+
+    Ok(Json(
+        output
+            .into_iter()
+            .map(|request| GetGroupRequestsResponse {
+                id: request.id.into(),
+                user: GetGroupRequestUser {
+                    id: request.user.id.into(),
+                    username: request.user.username,
+                    display_name: request.user.display_name,
+                    avatar_url: request.user.avatar_url,
+                    user_type: request.user.user_type,
+                    is_blocked: request.user.is_blocked,
+                },
+                status: request.status,
+            })
+            .collect(),
+    ))
+}
+
+async fn delete_group(
+    state: State<AppState>,
+    user: AuthUser,
+    Path(group_id): Path<Uuid>,
+) -> AppResult<()> {
+    let delete_use_case = DeleteGroupUseCase::new(state.group_repository.clone());
+    let get_use_case = GetGroupUseCase::new(state.group_repository.clone());
+
+    let group = get_use_case
+        .execute(GetGroupInput { id: group_id })
+        .await?
+        .ok_or(AppError::NotFound("Group".into()))?;
+
+    let is_group_admin = group.admin.id.id == user.id;
+
+    if !is_group_admin && user.role.is_regular() {
+        return Err(AppError::Unauthorized("Only admin can delete group".into()));
+    }
+
+    let input = DeleteGroupInput {
+        id: group_id.into(),
+    };
+
+    delete_use_case.execute(input).await?;
+
+    Ok(())
+}
+
 pub fn group_routes() -> axum::Router<crate::AppState> {
     axum::Router::new()
         .route("/", get(search_group))
         .route("/", post(create_group))
         .route("/:id", get(get_group))
+        .route("/:id", delete(delete_group))
+        .route("/:id/members", get(get_group_members))
+        .route("/:id/requests", get(get_group_requests))
+        .route("/:id/status", get(check_user_status_in_group))
         .route("/:id/join", get(join_group))
         .route("/:id/leave", get(leave_group))
         .route("/:id/remove_user", post(remove_user))

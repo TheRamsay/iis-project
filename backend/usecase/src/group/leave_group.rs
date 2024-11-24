@@ -5,7 +5,6 @@ use models::{
 use repository::{
     group_member_repository::GroupMemberRepository, group_repository::GroupRepository,
 };
-use sea_orm::{sqlx, ColIdx, DbErr};
 use uuid::Uuid;
 
 #[derive(Debug)]

@@ -1,4 +1,4 @@
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::{DateTime, Utc};
 use validator::{Validate, ValidationErrors};
 
 use crate::schema;

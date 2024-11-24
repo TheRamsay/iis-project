@@ -1,12 +1,13 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use validator::{Validate, ValidationErrors};
+use validator::Validate;
 
-use crate::schema::{self, group_join_request, post_comment};
+use crate::schema::{self};
 
-use super::{group::Group, post::Post, user::User, Id};
+use super::{group::Group, user::User, Id};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub enum GroupJoinRequestStatus {
     Pending,
     Accepted,

@@ -1,21 +1,7 @@
-use anyhow::anyhow;
-use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
-    Argon2,
-};
-use models::{
-    domain::{
-        user::{User, UserType},
-        wall::Wall,
-        Id,
-    },
-    errors::{AppError, AppResult},
-};
+use models::errors::{AppError, AppResult};
 
-use repository::{user_repository::UserRepository, wall_repository::WallRepository};
+use repository::user_repository::UserRepository;
 use uuid::Uuid;
-
-use super::auth_utils::hash_password;
 
 #[derive(Debug)]
 pub struct BlockUserInput {

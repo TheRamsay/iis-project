@@ -1,12 +1,8 @@
 use models::{
-    domain::{
-        group::Group,
-        user::{User, UserType},
-        Id,
-    },
+    domain::{group::Group, user::User, Id},
     errors::AppResult,
 };
-use repository::{group_repository::GroupRepository, user_repository::UserRepository};
+use repository::group_repository::GroupRepository;
 use uuid::Uuid;
 
 #[derive(Debug)]

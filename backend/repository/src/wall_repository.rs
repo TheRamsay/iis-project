@@ -1,4 +1,4 @@
-use std::{future::Future, sync::Arc};
+use std::sync::Arc;
 
 use models::{
     domain::{
@@ -7,7 +7,7 @@ use models::{
     schema,
 };
 use sea_orm::{
-    sea_query::enum_def, DbBackend, DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter,
+    DbBackend, DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter,
     Statement,
 };
 

@@ -9,8 +9,8 @@ pub struct Group {
     pub id: Id<Group>,
     #[validate(length(
         min = 3,
-        max = 255,
-        message = "Name must be between 3 and 255 characters"
+        max = 15,
+        message = "Name must be between 3 and 15 characters"
     ))]
     pub name: String,
     pub admin_id: Id<User>,
