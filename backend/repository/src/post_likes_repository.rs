@@ -25,6 +25,11 @@ pub trait PostLikesRepository {
     async fn create(&self, like: PostLike) -> Result<Id<Post>, DbErr>;
     async fn delete(&self, post_id: Id<Post>, user_id: Id<User>) -> Result<(), DbErr>;
     async fn get_likes_by_id(&self, id: Id<Post>) -> Result<Option<i32>, DbErr>;
+    async fn get_is_liked_by_user(
+        &self,
+        post_id: Id<Post>,
+        user_id: Id<User>,
+    ) -> Result<bool, DbErr>;
 }
 
 impl PostLikesRepository for DbPostLikesRepository {
@@ -58,5 +63,27 @@ impl PostLikesRepository for DbPostLikesRepository {
             .await?;
 
         Ok(Some(likes as i32))
+    }
+
+    async fn get_is_liked_by_user(
+        &self,
+        post_id: Id<Post>,
+        user_id: Id<User>,
+    ) -> Result<bool, DbErr> {
+        let like = models::schema::post_like::Entity::find()
+            .filter(
+                models::schema::post_like::Column::PostId
+                    .into_simple_expr()
+                    .eq(post_id.id)
+                    .and(
+                        models::schema::post_like::Column::UserId
+                            .into_simple_expr()
+                            .eq(user_id.id),
+                    ),
+            )
+            .one(self.db.as_ref())
+            .await?;
+
+        Ok(like.is_some())
     }
 }
