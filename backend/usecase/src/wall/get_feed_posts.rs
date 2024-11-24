@@ -13,7 +13,13 @@ pub struct GetFeedPostsInput {
     pub sort_by: SortBy,
 }
 
-pub type GetFeedPostsOutput = Vec<(Post, User, Vec<(PostComment, User)>, Vec<(PostLike, User)>)>;
+pub type GetFeedPostsOutput = Vec<(
+    Post,
+    User,
+    Vec<(PostComment, User)>,
+    Vec<(PostLike, User)>,
+    Vec<String>,
+)>;
 
 pub struct GetFeedPostsUseCase<P: WallRepository> {
     wall_repository: P,

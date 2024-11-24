@@ -6,10 +6,7 @@ use models::{
     },
     schema,
 };
-use sea_orm::{
-    DbBackend, DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter,
-    Statement,
-};
+use sea_orm::{DbBackend, DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter, Statement};
 
 #[derive(Debug, Clone)]
 pub struct DbWallRepository {
@@ -22,7 +19,13 @@ impl DbWallRepository {
     }
 }
 
-pub type WallPostTuple = (Post, User, Vec<(PostComment, User)>, Vec<(PostLike, User)>);
+pub type WallPostTuple = (
+    Post,
+    User,
+    Vec<(PostComment, User)>,
+    Vec<(PostLike, User)>,
+    Vec<String>,
+);
 
 pub trait WallRepository {
     async fn get_by_id(&self, id: Id<Wall>) -> Result<Option<Wall>, DbErr>;
@@ -124,7 +127,20 @@ impl WallRepository for DbWallRepository {
                     .map(|(like, user)| (like.into(), user.expect("Like without user").into()))
                     .collect::<Vec<(PostLike, User)>>();
 
-                let res: WallPostTuple = (Post::from(post), User::from(author), comments, likes);
+                let tags = models::schema::post_tag::Entity::find()
+                    .filter(
+                        models::schema::post_tag::Column::PostId
+                            .into_simple_expr()
+                            .eq(wall_post.post_id),
+                    )
+                    .all(db_ref.as_ref())
+                    .await?
+                    .into_iter()
+                    .map(|tag| tag.tag)
+                    .collect::<Vec<String>>();
+
+                let res: WallPostTuple =
+                    (Post::from(post), User::from(author), comments, likes, tags);
 
                 Ok(res)
             }
@@ -264,7 +280,19 @@ LIMIT $2 OFFSET $3;
                 .map(|(like, user)| (like.into(), user.expect("Like without user").into()))
                 .collect::<Vec<(PostLike, User)>>();
 
-            let res: WallPostTuple = (Post::from(post), User::from(author), comments, likes);
+            let tags = models::schema::post_tag::Entity::find()
+                .filter(
+                    models::schema::post_tag::Column::PostId
+                        .into_simple_expr()
+                        .eq(post_tag.post_id),
+                )
+                .all(db_ref.as_ref())
+                .await?
+                .into_iter()
+                .map(|tag| tag.tag)
+                .collect::<Vec<String>>();
+
+            let res: WallPostTuple = (Post::from(post), User::from(author), comments, likes, tags);
 
             Ok(Some(res))
         }
@@ -373,7 +401,19 @@ LIMIT $1 OFFSET $2;
                 .map(|(like, user)| (like.into(), user.expect("Like without user").into()))
                 .collect::<Vec<(PostLike, User)>>();
 
-            let res: WallPostTuple = (Post::from(post), User::from(author), comments, likes);
+            let tags = models::schema::post_tag::Entity::find()
+                .filter(
+                    models::schema::post_tag::Column::PostId
+                        .into_simple_expr()
+                        .eq(post.id),
+                )
+                .all(db_ref.as_ref())
+                .await?
+                .into_iter()
+                .map(|tag| tag.tag)
+                .collect::<Vec<String>>();
+
+            let res: WallPostTuple = (Post::from(post), User::from(author), comments, likes, tags);
 
             Ok(Some(res))
         }

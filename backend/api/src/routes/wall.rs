@@ -67,6 +67,7 @@ pub struct PostItem {
     author: GetAuthorResponse,
     comments: Vec<GetPostCommentResponse>,
     likes: Vec<GetPostLikeResponse>,
+    tags: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -99,7 +100,7 @@ pub async fn get_wall(
     Ok(Json(GetWallResponse {
         posts: output
             .into_iter()
-            .map(|(post, author, comments, likes)| PostItem {
+            .map(|(post, author, comments, likes, tags)| PostItem {
                 post: GetPostResponse {
                     id: post.id.into(),
                     title: post.title,
@@ -146,6 +147,7 @@ pub async fn get_wall(
                         created_at: like.created_at,
                     })
                     .collect(),
+                tags,
             })
             .collect(),
     }))
@@ -175,7 +177,7 @@ pub async fn get_feed(
     Ok(Json(GetWallResponse {
         posts: output
             .into_iter()
-            .map(|(post, author, comments, likes)| PostItem {
+            .map(|(post, author, comments, likes, tags)| PostItem {
                 post: GetPostResponse {
                     id: post.id.into(),
                     title: post.title,
@@ -222,6 +224,7 @@ pub async fn get_feed(
                         created_at: like.created_at,
                     })
                     .collect(),
+                tags,
             })
             .collect(),
     }))
@@ -254,7 +257,7 @@ pub async fn get_wall_by_tag(
     Ok(Json(GetWallResponse {
         posts: output
             .into_iter()
-            .map(|(post, author, comments, likes)| PostItem {
+            .map(|(post, author, comments, likes, tags)| PostItem {
                 post: GetPostResponse {
                     id: post.id.into(),
                     title: post.title,
@@ -301,6 +304,7 @@ pub async fn get_wall_by_tag(
                         created_at: like.created_at,
                     })
                     .collect(),
+                tags,
             })
             .collect(),
     }))

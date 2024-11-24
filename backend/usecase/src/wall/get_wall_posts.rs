@@ -1,10 +1,5 @@
 use models::{
-    domain::{
-        post::Post,
-        post_comment::PostComment,
-        post_like::PostLike,
-        user::User,
-    },
+    domain::{post::Post, post_comment::PostComment, post_like::PostLike, user::User},
     errors::AppResult,
 };
 use repository::wall_repository::WallRepository;
@@ -19,7 +14,13 @@ pub struct GetWallPostsInput {
     pub sort_by: SortBy,
 }
 
-pub type GetWallPostsOutput = Vec<(Post, User, Vec<(PostComment, User)>, Vec<(PostLike, User)>)>;
+pub type GetWallPostsOutput = Vec<(
+    Post,
+    User,
+    Vec<(PostComment, User)>,
+    Vec<(PostLike, User)>,
+    Vec<String>,
+)>;
 
 pub struct GetWallPostsUseCase<P: WallRepository> {
     wall_repository: P,
