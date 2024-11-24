@@ -1,26 +1,27 @@
-"use client";
+'use client'
 
-import classNames from "classnames";
-import { SearchIcon, XIcon } from "lucide-react";
-import { useRef, useState } from "react";
-import { useOnClickOutside } from "./use-on-click-outside";
-import { SkeletonText } from "@/components/components/skeleton";
+import classNames from 'classnames'
+import { SearchIcon, XIcon } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { useOnClickOutside } from './use-on-click-outside'
+import { SkeletonText } from '@/components/components/skeleton'
 
 // Inspired by https://github.com/sushi-labs/sushiswap/blob/feature/egn-677/apps/web/src/app/(cms)/faq/(root)/components/search-box.tsx
 
 export function HeaderSearch() {
-	const [query, setQuery] = useState<string>("");
-	const [open, setOpen] = useState<boolean>(false);
+	const [query, setQuery] = useState<string>('')
+	const [open, setOpen] = useState<boolean>(false)
 
-	const ref = useRef<HTMLDivElement>(null);
+	const ref = useRef<HTMLDivElement>(null)
 
-	useOnClickOutside(ref, () => setOpen(false));
+	useOnClickOutside(ref, () => setOpen(false))
 
+	// TODO: endpoint
 	const { data, isLoading, isError } = {
 		data: [],
 		isLoading: false,
 		isError: false,
-	};
+	}
 
 	return (
 		<div className="flex flex-col gap-3 relative justify-center">
@@ -28,7 +29,7 @@ export function HeaderSearch() {
 				<div
 					ref={ref}
 					onFocus={() => setOpen(true)}
-					className={classNames("rounded-md w-full border border-accent")}
+					className={classNames('rounded-md w-full border border-accent')}
 				>
 					<div className="flex items-center gap-2 pl-3 pr-3 h-10">
 						<div className="flex gap-4 items-center w-full">
@@ -44,14 +45,14 @@ export function HeaderSearch() {
 								onChange={(e) => setQuery(e.target.value)}
 								placeholder="Search profiles, groups, tags..."
 								className={classNames(
-									"w-full dark:placeholder:accent-foreground",
-									"p-0 bg-transparent border-none focus:outline-none focus:ring-0 w-full truncate font-medium text-left text-base md:text-sm placeholder:font-normal",
+									'w-full dark:placeholder:accent-foreground',
+									'p-0 bg-transparent border-none focus:outline-none focus:ring-0 w-full truncate font-medium text-left text-base md:text-sm placeholder:font-normal',
 								)}
 							/>
 						</div>
 						{query && (
 							<XIcon
-								onClick={() => setQuery("")}
+								onClick={() => setQuery('')}
 								className="w-6 h-6 cursor-pointer dark:text-gray-500 text-neutral-950"
 							/>
 						)}
@@ -59,10 +60,10 @@ export function HeaderSearch() {
 					<div
 						className={classNames(
 							open
-								? "max-h-[335px] py-2 border-b border-l border-r -ml-[0.5px] scroll"
-								: "max-h-[0px]",
-							"z-[100]  rounded-b-xl flex flex-col gap-2 overflow-hidden transition-all absolute w-full -mt-1",
-							"bg-background border-accent",
+								? 'max-h-[335px] py-2 border-b border-l border-r -ml-[0.5px] scroll'
+								: 'max-h-[0px]',
+							'z-[100]  rounded-b-xl flex flex-col gap-2 overflow-hidden transition-all absolute w-full -mt-1',
+							'bg-background border-accent',
 						)}
 					>
 						<Results data={data} isError={isError} isLoading={isLoading} />
@@ -70,13 +71,13 @@ export function HeaderSearch() {
 				</div>
 			</div>
 		</div>
-	);
+	)
 }
 
 interface Results {
-	isLoading: boolean;
-	isError: boolean;
-	data: unknown[];
+	isLoading: boolean
+	isError: boolean
+	data: unknown[]
 }
 
 function Results({ data, isError, isLoading }: Results) {
@@ -85,7 +86,7 @@ function Results({ data, isError, isLoading }: Results) {
 			<div className="px-4 pt-4 pb-2 gap-2 flex justify-center w-full text-sm">
 				An unexpected error has occured.
 			</div>
-		);
+		)
 	}
 
 	if (isLoading) {
@@ -100,7 +101,7 @@ function Results({ data, isError, isLoading }: Results) {
 					<SkeletonText fontSize="sm" />
 				</div>
 			</div>
-		);
+		)
 	}
 
 	return (
@@ -110,5 +111,5 @@ function Results({ data, isError, isLoading }: Results) {
 				<div className="text-sm">data</div>
 			</div>
 		</div>
-	);
+	)
 }

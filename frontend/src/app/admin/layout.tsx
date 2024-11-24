@@ -2,21 +2,20 @@ import { Container } from '@/components/components/container'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { Sidebar } from '../_ui/sidebar'
+import { getSession } from '../_lib/auth/get-session'
+import { isMinModerator } from '../_lib/get-permission-level'
 
 const sidebarItems = [
 	{ name: 'Dashboard', path: '/admin' },
 	{ name: 'Users', path: '/admin/users' },
 ]
 
-export default function Layout({ children }: { children: React.ReactNode }) {
-	const cookiez = cookies()
+export default async function Layout({
+	children,
+}: { children: React.ReactNode }) {
+	const session = await getSession()
 
-	const userId = 1231
-	const user = {
-		isAdmin: true,
-	}
-
-	if (!user.isAdmin) {
+	if (!session || !isMinModerator(session.role)) {
 		return redirect('/')
 	}
 

@@ -15,30 +15,31 @@ import { UserModalForm } from './user-modal-form'
 import { Button } from '@/components/components/button'
 import { Loader } from '@/components/components/loader'
 import classNames from 'classnames'
+import { FormServerError } from '@/app/_ui/form/form-server-error'
+
+// TODO: validation
 
 type UserModal = {
-	children: React.ReactNode
+	children?: React.ReactNode
+	open?: boolean
 } & Pick<typeof schema.user.$inferSelect, 'id'>
 
 type User = Pick<
 	typeof schema.user.$inferSelect,
-	| 'id'
-	| 'displayName'
-	| 'avatarUrl'
-	| 'email'
-	| 'isBlocked'
-	| 'userType'
-	| 'username'
->
+	'id' | 'displayName' | 'email' | 'isBlocked' | 'userType' | 'username'
+> & {
+	image: globalThis.File | null
+}
 
 export type UserForm = Pick<User, 'id'> & Partial<User>
 
-export function UserModal({ children, id }: UserModal) {
-	const [open, setOpen] = useState(false)
+export function UserModal({ children, id, open: _open }: UserModal) {
+	const [open, setOpen] = useState(_open)
 
 	const { data, isFetching, refetch } = useQuery<User>({
 		queryKey: ['admin-user', id],
 		queryFn: async () => {
+			// TODO: Endpoint
 			await new Promise((resolve) => setTimeout(resolve, 1000))
 
 			return {
@@ -49,14 +50,16 @@ export function UserModal({ children, id }: UserModal) {
 				username: 'johndoe',
 				isBlocked: false,
 				userType: 'regular',
+				image: null,
 			}
 		},
 		enabled: open,
 	})
 
-	const { mutate, isPending } = useMutation({
+	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['admin-user', id],
 		mutationFn: async (data: UserForm) => {
+			// TODO: Endpoint
 			await new Promise((resolve) => setTimeout(resolve, 1000))
 		},
 		onSuccess: () => {
@@ -68,6 +71,15 @@ export function UserModal({ children, id }: UserModal) {
 
 	const form = useForm<UserForm>({
 		disabled: loading,
+		defaultValues: {
+			displayName: '',
+			email: '',
+			isBlocked: false,
+			userType: 'regular',
+			username: '',
+			image: null,
+			id: '',
+		},
 	})
 
 	useEffect(() => {
@@ -80,9 +92,10 @@ export function UserModal({ children, id }: UserModal) {
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger>{children}</DialogTrigger>
 			<DialogContent>
-				<DialogTitle>User Settings</DialogTitle>
 				<FormProvider {...form}>
-					<UserModalForm />
+					<DialogTitle>User Settings</DialogTitle>
+					<FormServerError error={error} />
+					<UserModalForm form={form} />
 					<DialogFooter>
 						<div className="flex flex-row w-full justify-between items-center">
 							<div className={classNames(!loading && 'hidden')}>

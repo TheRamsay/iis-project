@@ -11,6 +11,7 @@
   "dependencies": {
     "@headlessui/react": "^2.1.9",
     "@heroicons/react": "^2.1.5",
+    "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-avatar": "^1.0.3",
     "@radix-ui/react-checkbox": "1.0.4",
@@ -50,7 +51,9 @@
     "react-hook-form": "^7.53.0",
     "react-jazzicon": "^1.0.4",
     "react-spring": "^9.7.4",
-    "use-resize-observer": "^9.1.0"
+    "react-textarea-autosize": "^8.5.5",
+    "use-resize-observer": "^9.1.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.3",

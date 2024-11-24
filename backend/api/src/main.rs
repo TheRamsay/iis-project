@@ -1,8 +1,11 @@
 use std::sync::Arc;
 
 use ::serde::{Deserialize, Serialize};
+use axum::http::header::CONTENT_TYPE;
+use axum::http::{HeaderValue, Method};
 use axum::routing::post;
 use axum::{extract::State, routing::get, Json, Router};
+use axum_extra::headers::Allow;
 use dotenv::dotenv;
 use migration::{Migrator, MigratorTrait};
 use repository::cloudinary_repository::{CloudinaryRepository, GenericRepository};
@@ -27,6 +30,8 @@ use routes::user::user_routes;
 use routes::wall::wall_routes;
 use sea_orm::*;
 use sea_orm::{Database, DatabaseConnection};
+use tower::ServiceBuilder;
+use tower_http::cors::{AllowOrigin, CorsLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use uuid::{serde, Uuid};
 
@@ -59,6 +64,7 @@ async fn main() -> shuttle_axum::ShuttleAxum {
     dotenv().ok();
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL is not set");
     let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET is not set");
+    let frontend_url = std::env::var("FRONTEND_URL").expect("FRONTEND_URL is not set");
 
     let conn = Database::connect(db_url)
         .await
@@ -94,6 +100,24 @@ async fn main() -> shuttle_axum::ShuttleAxum {
         .nest("/api/walls", wall_routes())
         .nest("/api/locations", location_routes())
         .nest("/api/tags", post_tag_routes())
+        .layer(
+            ServiceBuilder::new()
+                .layer(
+                    CorsLayer::new()
+                        .allow_origin(AllowOrigin::exact(
+                            HeaderValue::from_str(&frontend_url).expect("Invalid frontend URL"),
+                        ))
+                        .allow_headers(vec![CONTENT_TYPE])
+                        .allow_credentials(true)
+                        .allow_methods(vec![
+                            Method::GET,
+                            Method::POST,
+                            Method::PUT,
+                            Method::DELETE,
+                        ]),
+                )
+                .into_inner(),
+        )
         .with_state(app_state);
 
     Ok(router.into())

@@ -41,6 +41,7 @@ pub struct GetAuthorResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetPostResponse {
     pub id: Uuid,
+    pub title: String,
     pub description: String,
     pub post_type: PostType,
     pub content_url: String,
@@ -104,6 +105,7 @@ pub async fn get_wall(
             .map(|(post, author, comments, likes)| PostItem {
                 post: GetPostResponse {
                     id: post.id.into(),
+                    title: post.title,
                     description: post.description,
                     post_type: post.post_type,
                     content_url: post.content_url,
@@ -178,6 +180,7 @@ pub async fn get_feed(
             .map(|(post, author, comments, likes)| PostItem {
                 post: GetPostResponse {
                     id: post.id.into(),
+                    title: post.title,
                     description: post.description,
                     post_type: post.post_type,
                     content_url: post.content_url,
@@ -255,6 +258,7 @@ pub async fn get_wall_by_tag(
             .map(|(post, author, comments, likes)| PostItem {
                 post: GetPostResponse {
                     id: post.id.into(),
+                    title: post.title,
                     description: post.description,
                     post_type: post.post_type,
                     content_url: post.content_url,

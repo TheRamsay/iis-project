@@ -278,7 +278,7 @@ async fn update_user(
         let new_jwt_str = new_jwt.to_jwt(&state.jwt_secret);
 
         let cookie = Cookie::build(("jwt", new_jwt_str))
-            .same_site(axum_extra::extract::cookie::SameSite::Strict)
+            .same_site(axum_extra::extract::cookie::SameSite::None)
             .path("/")
             .http_only(true)
             .expires(Expiration::DateTime(

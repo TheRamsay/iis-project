@@ -1,7 +1,7 @@
 'use client'
 
 import { FormControl, FormField, FormItem } from '@/components/components/form'
-import { useFormContext } from 'react-hook-form'
+import type { UseFormReturn } from 'react-hook-form'
 import type { UserForm } from './user-modal'
 import { TextField } from '@/components/components/text-field'
 import { Checkbox } from '@/components/components/checkbox'
@@ -14,14 +14,13 @@ import {
 } from '@/components/components/select'
 import { userType } from '../../../../../../drizzle/schema'
 import { formClassnames } from '@/app/_lib/form-classnames'
+import { FormImage } from '@/app/_ui/form/form-image'
 
-export function UserModalForm() {
-	const { control } = useFormContext<UserForm>()
-
+export function UserModalForm({ form }: { form: UseFormReturn<UserForm> }) {
 	return (
 		<>
 			<FormField
-				control={control}
+				control={form.control}
 				name="id"
 				render={({ field: { name, value } }) => (
 					<FormItem>
@@ -41,11 +40,11 @@ export function UserModalForm() {
 			/>
 			<div className="flex space-x-4 w-full">
 				<FormField
-					control={control}
+					control={form.control}
 					name="username"
 					render={({
 						field: { name, value, onChange, onBlur },
-						formState: { isDirty },
+						fieldState: { isDirty },
 						formState: { disabled },
 					}) => (
 						<FormItem className="w-full">
@@ -66,7 +65,7 @@ export function UserModalForm() {
 					)}
 				/>
 				<FormField
-					control={control}
+					control={form.control}
 					name="displayName"
 					render={({
 						field: { name, value, onChange, onBlur },
@@ -92,7 +91,7 @@ export function UserModalForm() {
 				/>
 			</div>
 			<FormField
-				control={control}
+				control={form.control}
 				name="email"
 				render={({
 					field: { name, value, onBlur, onChange },
@@ -116,34 +115,10 @@ export function UserModalForm() {
 					</FormItem>
 				)}
 			/>
-			<FormField
-				control={control}
-				name="avatarUrl"
-				render={({
-					field: { name, value, onBlur, onChange },
-					fieldState: { isDirty },
-					formState: { disabled },
-				}) => (
-					<FormItem className="w-full">
-						<FormControl>
-							<>
-								<label htmlFor={name}>Avatar</label>
-								<TextField
-									type="text"
-									value={value || ''}
-									onChange={onChange}
-									onBlur={onBlur}
-									className={formClassnames({ isDirty })}
-									disabled={disabled}
-								/>
-							</>
-						</FormControl>
-					</FormItem>
-				)}
-			/>
+			<FormImage form={form} required={false} />
 			<div className="flex flex-row justify-between items-center">
 				<FormField
-					control={control}
+					control={form.control}
 					name="isBlocked"
 					render={({
 						field: { name, value, onBlur, onChange },
@@ -171,7 +146,7 @@ export function UserModalForm() {
 					)}
 				/>
 				<FormField
-					control={control}
+					control={form.control}
 					name="userType"
 					render={({
 						field: { name, value, onChange },
