@@ -1,5 +1,6 @@
 pub mod add_user_to_group;
 pub mod create_group;
+pub mod delete_group;
 pub mod get_group;
 pub mod get_group_members;
 pub mod get_group_requests;

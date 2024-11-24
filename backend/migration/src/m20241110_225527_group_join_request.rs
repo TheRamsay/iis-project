@@ -45,12 +45,16 @@ impl MigrationTrait for Migration {
                     .foreign_key(
                         ForeignKey::create()
                             .name("group_join_request_group_id_fkey")
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade)
                             .from(GroupJoinRequest::Table, GroupJoinRequest::GroupId)
                             .to(Group::Table, Group::Id),
                     )
                     .foreign_key(
                         ForeignKey::create()
                             .name("group_join_request_user_id_fkey")
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade)
                             .from(GroupJoinRequest::Table, GroupJoinRequest::UserId)
                             .to(User::Table, User::Id),
                     )
