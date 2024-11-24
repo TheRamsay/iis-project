@@ -17,17 +17,31 @@ use super::{
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub enum UserType {
     #[default]
+    #[serde(rename = "regular")]
     Regular = 0,
+    #[serde(rename = "moderator")]
     Moderator = 1,
+    #[serde(rename = "administrator")]
     Administrator = 2,
 }
 
 impl Display for UserType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            UserType::Regular => write!(f, "Regular"),
-            UserType::Moderator => write!(f, "Moderator"),
-            UserType::Administrator => write!(f, "Administrator"),
+            UserType::Regular => write!(f, "regular"),
+            UserType::Moderator => write!(f, "moderator"),
+            UserType::Administrator => write!(f, "administrator"),
+        }
+    }
+}
+
+impl From<String> for UserType {
+    fn from(user_type: String) -> Self {
+        match user_type.as_str() {
+            "regular" => Self::Regular,
+            "moderator" => Self::Moderator,
+            "administrator" => Self::Administrator,
+            _ => Self::Regular,
         }
     }
 }
