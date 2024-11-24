@@ -161,7 +161,7 @@ enum PostTag {
 }
 
 #[derive(DeriveIden)]
-enum PostVisibility {
+pub enum PostVisibility {
     Table,
     PostId,
     UserId,

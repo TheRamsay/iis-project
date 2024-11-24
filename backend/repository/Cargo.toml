@@ -1,0 +1,14 @@
+[package]
+name = "repository"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.89"
+models = { path = "../models" }
+sea-orm = "1.1.0"
+cloudinary = "0.7.0"
+dotenvy = "0.15.7"
+uuid = "1.11.0"
+md5 = "0.7"
+futures = "0.3.31"

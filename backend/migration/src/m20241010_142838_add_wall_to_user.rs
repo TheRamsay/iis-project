@@ -13,7 +13,7 @@ impl MigrationTrait for Migration {
             .alter_table(
                 Table::alter()
                     .table(User::Table)
-                    .add_column(ColumnDef::new(User::WallId).uuid().null())
+                    .add_column(ColumnDef::new(User::WallId).uuid().not_null())
                     .to_owned(),
             )
             .await?;
