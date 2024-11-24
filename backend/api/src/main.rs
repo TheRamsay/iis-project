@@ -94,7 +94,6 @@ async fn main() -> shuttle_axum::ShuttleAxum {
                     CorsLayer::new()
                         .allow_origin(AllowOrigin::any())
                         .allow_headers(vec![CONTENT_TYPE])
-                        .allow_credentials(true)
                         .allow_methods(vec![
                             Method::GET,
                             Method::POST,
