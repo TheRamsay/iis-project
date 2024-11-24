@@ -3,5 +3,6 @@ pub mod group;
 pub mod group_join_request;
 pub mod location;
 pub mod post;
+pub mod post_tag;
 pub mod user;
 pub mod wall;

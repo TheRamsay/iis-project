@@ -13,6 +13,7 @@ use repository::location_repository::DbLocationRepository;
 use repository::post_comments_repository::DbPostCommentsRepository;
 use repository::post_likes_repository::DbPostLikesRepository;
 use repository::post_repository::DbPostRepository;
+use repository::tag_repository::DbTagRepository;
 use repository::user_repository::{DbUserRepository, UserRepository};
 use repository::wall_post_repository::DbWallPostRepository;
 use repository::wall_repository::DbWallRepository;
@@ -21,6 +22,7 @@ use routes::group::group_routes;
 use routes::group_join_request::group_join_request_router;
 use routes::location::location_routes;
 use routes::post::post_routes;
+use routes::post_tag::post_tag_routes;
 use routes::user::user_routes;
 use routes::wall::wall_routes;
 use sea_orm::*;
@@ -46,6 +48,7 @@ pub struct AppState {
     pub group_member_repository: DbGroupMemberRepository,
     pub group_join_request_repository: DbGroupJoinRequestRepository,
     pub location_repository: DbLocationRepository,
+    pub post_tag_repository: DbTagRepository,
     pub wall_post_repository: DbWallPostRepository,
     pub jwt_secret: String,
     pub redis_client: Arc<redis::Client>,
@@ -74,6 +77,7 @@ async fn main() -> shuttle_axum::ShuttleAxum {
         post_likes_repository: DbPostLikesRepository::new(Arc::new(conn.clone())),
         post_comments_repository: DbPostCommentsRepository::new(Arc::new(conn.clone())),
         location_repository: DbLocationRepository::new(Arc::new(conn.clone())),
+        post_tag_repository: DbTagRepository::new(Arc::new(conn.clone())),
         cloudinary_repository: GenericRepository {},
         conn: conn.clone(),
         jwt_secret,
@@ -89,6 +93,7 @@ async fn main() -> shuttle_axum::ShuttleAxum {
         .nest("/api/posts", post_routes())
         .nest("/api/walls", wall_routes())
         .nest("/api/locations", location_routes())
+        .nest("/api/tags", post_tag_routes())
         .with_state(app_state);
 
     Ok(router.into())
