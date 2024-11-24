@@ -5,7 +5,7 @@ use axum::{
 };
 use models::{
     domain::{
-        group_join_request,
+        group_join_request::{self, GroupJoinRequestStatus},
         user::{User, UserType},
     },
     errors::{AppError, AppResult},
@@ -19,6 +19,7 @@ use usecase::{
         create_group::{CreateGroupInput, CreateGroupUseCase},
         get_group::{GetGroupInput, GetGroupUseCase},
         get_group_members::{GetGroupMembersInput, GetGroupMembersUseCase},
+        get_group_requests::{GetGroupRequestsInput, GetGroupRequestsUseCase},
         group_member_status::{
             GroupMemberStatus, GroupMemberStatusInput, GroupMemberStatusUseCase,
         },
@@ -312,6 +313,35 @@ async fn get_group_members(
                 avatar_url: member.avatar_url,
                 user_type: member.user_type,
                 is_blocked: member.is_blocked,
+            })
+            .collect(),
+    ))
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct GetGroupRequestsResponse {
+    id: Uuid,
+    user: User,
+    status: GroupJoinRequestStatus,
+}
+
+async fn get_group_requests(
+    state: State<AppState>,
+    Path(group_id): Path<Uuid>,
+) -> AppResult<Json<Vec<GetGroupRequestsResponse>>> {
+    let usecase = GetGroupRequestsUseCase::new(state.group_join_request_repository.clone());
+
+    let input = models::domain::Id::from(group_id);
+
+    let output = usecase.execute(GetGroupRequestsInput { id: input }).await?;
+
+    Ok(Json(
+        output
+            .into_iter()
+            .map(|request| GetGroupRequestsResponse {
+                id: request.id.into(),
+                user: request.user,
+                status: request.status,
             })
             .collect(),
     ))
