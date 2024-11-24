@@ -103,6 +103,14 @@ where
             }
         }
 
+        if input.password.len() < 3 || input.password.len() > 15 {
+            let mut validation_error = ValidationError::new("password");
+            validation_error = validation_error
+                .with_message("Password must be between 3 and 15 characters".into());
+            validation_error.add_param("value".into(), &input.password);
+            validation_errors.add("password", validation_error);
+        }
+
         if !validation_errors.is_empty() {
             return Err(validation_errors.into());
         }
