@@ -1,0 +1,87 @@
+use models::{
+    domain::{
+        group::Group,
+        user::{User, UserType},
+        Id,
+    },
+    errors::AppResult,
+};
+use repository::{
+    group_join_request_repository::{self, GroupJoinRequestRepository},
+    group_repository::GroupRepository,
+    user_repository::UserRepository,
+};
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
+#[derive(Debug)]
+pub struct GroupMemberStatusInput {
+    pub user_id: Id<User>,
+    pub group_id: Id<Group>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum GroupMemberStatus {
+    Joined,
+    NotJoined,
+    Pending,
+}
+
+pub struct GroupMemberStatusOutput {
+    pub status: GroupMemberStatus,
+}
+
+pub struct GroupMemberStatusUseCase<T>
+where
+    T: GroupJoinRequestRepository,
+{
+    group_join_request_repository: T,
+}
+
+impl<T> GroupMemberStatusUseCase<T>
+where
+    T: GroupJoinRequestRepository,
+{
+    pub fn new(group_join_request_repository: T) -> Self {
+        Self {
+            group_join_request_repository,
+        }
+    }
+
+    pub async fn execute(
+        &self,
+        input: GroupMemberStatusInput,
+    ) -> AppResult<GroupMemberStatusOutput> {
+        let requests = self
+            .group_join_request_repository
+            .find_by_user_id_and_group_id(&input.user_id, &input.group_id)
+            .await?;
+
+        if requests.is_empty() {
+            return Ok(GroupMemberStatusOutput {
+                status: GroupMemberStatus::NotJoined,
+            });
+        }
+
+        let newest_request = requests.first().unwrap();
+
+        match newest_request.status {
+            models::domain::group_join_request::GroupJoinRequestStatus::Rejected => {
+                Ok(GroupMemberStatusOutput {
+                    status: GroupMemberStatus::NotJoined,
+                })
+            }
+            models::domain::group_join_request::GroupJoinRequestStatus::Accepted => {
+                Ok(GroupMemberStatusOutput {
+                    status: GroupMemberStatus::Joined,
+                })
+            }
+            models::domain::group_join_request::GroupJoinRequestStatus::Pending => {
+                Ok(GroupMemberStatusOutput {
+                    status: GroupMemberStatus::Pending,
+                })
+            }
+        }
+    }
+}

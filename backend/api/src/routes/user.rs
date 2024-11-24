@@ -83,7 +83,7 @@ struct GetUserResponse {
     is_blocked: bool,
 }
 
-async fn get_user(
+async fn get_user_by_username(
     state: State<AppState>,
     Path(username): Path<String>,
 ) -> AppResult<Json<GetUserResponse>> {

@@ -9,7 +9,7 @@ use models::{
     },
     schema,
 };
-use sea_orm::{DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter, Set};
+use sea_orm::{DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter, QueryOrder, Set};
 
 #[derive(Debug, Clone)]
 pub struct DbGroupJoinRequestRepository {
@@ -107,6 +107,7 @@ impl GroupJoinRequestRepository for DbGroupJoinRequestRepository {
                             .eq(group_id.id),
                     ),
             )
+            .order_by_desc(schema::group_join_request::Column::CreatedAt)
             .all(self.db.as_ref())
             .await?;
 

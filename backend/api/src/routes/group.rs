@@ -18,6 +18,9 @@ use usecase::{
         add_user_to_group,
         create_group::{CreateGroupInput, CreateGroupUseCase},
         get_group::{GetGroupInput, GetGroupUseCase},
+        group_member_status::{
+            GroupMemberStatus, GroupMemberStatusInput, GroupMemberStatusUseCase,
+        },
         join_group::{JoinGroupInput, JoinGroupUseCase},
         leave_group::{LeaveGroupInput, LeaveGroupUseCase},
         remove_user_from_group,
@@ -253,11 +256,36 @@ async fn remove_user(
     Ok(())
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct CheckUserStatusInGroupResponse {
+    status: GroupMemberStatus,
+}
+
+async fn check_user_status_in_group(
+    state: State<AppState>,
+    user: AuthUser,
+    Path(group_id): Path<Uuid>,
+) -> AppResult<impl IntoResponse> {
+    let usecase = GroupMemberStatusUseCase::new(state.group_join_request_repository.clone());
+
+    let input = GroupMemberStatusInput {
+        user_id: user.id.into(),
+        group_id: group_id.into(),
+    };
+
+    let output = usecase.execute(input).await?;
+
+    Ok(Json(CheckUserStatusInGroupResponse {
+        status: output.status,
+    }))
+}
+
 pub fn group_routes() -> axum::Router<crate::AppState> {
     axum::Router::new()
         .route("/", get(search_group))
         .route("/", post(create_group))
         .route("/:id", get(get_group))
+        .route("/:id/status", get(check_user_status_in_group))
         .route("/:id/join", get(join_group))
         .route("/:id/leave", get(leave_group))
         .route("/:id/remove_user", post(remove_user))
