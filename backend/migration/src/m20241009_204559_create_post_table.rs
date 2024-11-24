@@ -52,6 +52,8 @@ impl MigrationTrait for Migration {
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_post_author")
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade)
                             .from(Post::Table, Post::AuthorId)
                             .to(User::Table, User::Id),
                     )
