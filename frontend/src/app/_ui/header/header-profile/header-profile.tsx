@@ -24,8 +24,13 @@ async function _HeaderProfile() {
 
 	if (!session) {
 		return (
-			<div>
-				<Button variant="outline">Log In</Button>
+			<div className="space-x-2">
+				<Link href="/login">
+					<Button variant="outline">Log In</Button>
+				</Link>
+				<Link href="/register">
+					<Button variant="outline">Register</Button>
+				</Link>
 			</div>
 		)
 	}
