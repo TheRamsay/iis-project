@@ -5,6 +5,7 @@ import { FeedSearchProvider } from '../../_ui/feed/feed-search/feed-search-provi
 import { getTypedSearchParams } from '../../_lib/typed-search-params/get-typed-search-params'
 import { feedSearchSchema } from '../../_ui/feed/feed-search/feed-search-schema'
 import { backendFetch } from '@/app/_lib/backend-fetch'
+import { FeedPagination } from './_ui/feed/feed-pagination'
 
 const pageSize = 10
 
@@ -25,7 +26,10 @@ export default async function Page({
 					<FeedSortDropdown />
 				</div>
 			</div>
-			<Feed data={feed} />
+			<div className="space-y-8">
+				<Feed data={feed} />
+				<FeedPagination page={filters.page} hasMore={true} />
+			</div>
 		</FeedSearchProvider>
 	)
 }

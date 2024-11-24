@@ -4,6 +4,7 @@ import { BACKEND_URL } from '@/app/_lib/constants'
 import { formClassnames } from '@/app/_lib/form-classnames'
 import { myz } from '@/app/_types/zod'
 import { FormLabelError } from '@/app/_ui/form/form-label-error'
+import { FormServerError } from '@/app/_ui/form/form-server-error'
 import {
 	Button,
 	FormControl,
@@ -78,6 +79,7 @@ export function FormRegister() {
 
 	return (
 		<div className="space-y-4">
+			<FormServerError error={error} />
 			<FormProvider {...form}>
 				<FormField
 					name="username"

@@ -37,21 +37,24 @@ async function fetchPosts(
 		// TODO: endpoint
 		const username = props.username
 		const posts = dummyPosts
-		return posts
+		return { posts }
 	}
 
 	if ('groupname' in props) {
 		// TODO: endpoint
 		const groupname = props.groupname
 		const posts = dummyPosts
-		return posts
+
+		const groupModeratorIdList = ['1', '2', '3']
+
+		return { posts, groupModeratorIdList }
 	}
 
 	if ('tag' in props) {
 		// TODO: endpoint
 		const tag = props.tag
 		const posts = dummyPosts
-		return posts
+		return { posts }
 	}
 
 	throw new Error('Invalid props')
@@ -60,7 +63,7 @@ async function fetchPosts(
 async function _MiniatureFeed(props: MiniatureFeed) {
 	const filters = getTypedSearchParams(feedSearchSchema, props.searchParams)
 
-	const posts = await fetchPosts(props, filters)
+	const { posts, groupModeratorIdList } = await fetchPosts(props, filters)
 
 	return (
 		<FeedSearchProvider>

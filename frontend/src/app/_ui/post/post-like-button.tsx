@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import classNames from 'classnames'
 import { useSession } from '@/app/_lib/auth/auth-provider'
 import type { Post } from '@/app/_types/post'
+import { ErrorTooltip } from '../error-tooltip'
 
 type PostLikeButton = { post: Pick<Post, 'id' | 'likeCount'> }
 
@@ -34,10 +35,11 @@ export function PostLikeButton({ post }: PostLikeButton) {
 		},
 	})
 
-	const { mutateAsync } = useMutation({
+	const { mutate, error } = useMutation({
 		mutationKey: ['like', post.id],
 		mutationFn: async () => {
 			// TODO: endpoint
+			throw new Error('Failed to like post')
 		},
 		onMutate: async () => {
 			await queryClient.cancelQueries({
@@ -72,17 +74,20 @@ export function PostLikeButton({ post }: PostLikeButton) {
 	})
 
 	return (
-		<div className="space-x-3 flex items-center">
-			<Heart
-				className={classNames(
-					data?.isLiked && 'fill-red-600 text-red-600',
-					session && 'cursor-pointer hover:text-accent-foreground',
-				)}
-				width={28}
-				height={28}
-				onClick={() => mutateAsync()}
-			/>
-			<span className="font-semibold">{data?.currentLikes}</span>
+		<div className="space-x-3 items-center flex">
+			<ErrorTooltip error={error} />
+			<div className="space-x-3 flex items-center">
+				<Heart
+					className={classNames(
+						data?.isLiked && 'fill-red-600 text-red-600',
+						session && 'cursor-pointer hover:text-accent-foreground',
+					)}
+					width={28}
+					height={28}
+					onClick={() => mutate()}
+				/>
+				<span className="font-semibold">{data?.currentLikes}</span>
+			</div>
 		</div>
 	)
 }

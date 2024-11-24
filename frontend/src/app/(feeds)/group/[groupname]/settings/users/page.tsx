@@ -1,6 +1,7 @@
 'use client'
 
 import type { schema } from '@/app/_lib/db'
+import { ErrorTooltip } from '@/app/_ui/error-tooltip'
 import { Button, DataTable, Loader, TextField } from '@/components/components'
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query'
 import type { ColumnDef } from '@tanstack/react-table'
@@ -35,10 +36,11 @@ const columns = [
 
 			const [kicked, setKicked] = useState<boolean>(false)
 
-			const { mutate, isPending } = useMutation({
+			const { mutate, error, isPending } = useMutation({
 				mutationKey: ['group-kick-user', row.original.id],
 				mutationFn: async () => {
 					await new Promise((resolve) => setTimeout(resolve, 1000))
+					throw new Error('Failed to kick user')
 				},
 				onSuccess: () => setKicked(true),
 			})
@@ -49,6 +51,7 @@ const columns = [
 						{!kicked && (
 							<div className="flex items-center space-x-2">
 								{isPending && <Loader />}
+								<ErrorTooltip error={error} size="small" />
 								<Button variant="outline" onClick={() => mutate()}>
 									Kick
 								</Button>

@@ -18,6 +18,9 @@ import {
 	TextArea,
 } from '@/components/components'
 import { FormLabelError } from '@/app/_ui/form/form-label-error'
+import { FormServerError } from '@/app/_ui/form/form-server-error'
+
+// TODO: validation
 
 interface GroupSettingsFormProps {
 	groupId: string
@@ -46,7 +49,7 @@ export function GroupSettingsForm({ groupId }: GroupSettingsFormProps) {
 		},
 	})
 
-	const { mutate, isPending } = useMutation({
+	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['group-settings', groupId],
 		mutationFn: async (data: GroupForm) => {
 			// TODO: endpoint
@@ -76,6 +79,7 @@ export function GroupSettingsForm({ groupId }: GroupSettingsFormProps) {
 
 	return (
 		<div className="space-y-4">
+			<FormServerError error={error} />
 			<FormProvider {...form}>
 				<FormField
 					name="name"

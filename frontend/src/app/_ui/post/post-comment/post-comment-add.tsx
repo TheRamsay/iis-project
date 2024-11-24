@@ -5,6 +5,7 @@ import { Button } from '@/components/components/button'
 import { TextField } from '@/components/components/text-field'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
+import { ErrorTooltip } from '../../error-tooltip'
 
 interface PostCommentAdd {
 	postId: number
@@ -13,7 +14,7 @@ interface PostCommentAdd {
 export function PostCommentAdd({ postId }: PostCommentAdd) {
 	const [comment, setComment] = useState('')
 
-	const { mutate, isPending } = useMutation({
+	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['add-comment', postId],
 		mutationFn: async () => {
 			// TODO: endpoint
@@ -39,6 +40,7 @@ export function PostCommentAdd({ postId }: PostCommentAdd) {
 			/>
 			<div className="flex flex-row space-x-2 items-center">
 				{isPending && <Loader />}
+				<ErrorTooltip error={error} />
 				<Button variant="ghost" disabled={disabled} onClick={() => mutate()}>
 					Post
 				</Button>
