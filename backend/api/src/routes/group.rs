@@ -18,6 +18,7 @@ use usecase::{
         add_user_to_group,
         create_group::{CreateGroupInput, CreateGroupUseCase},
         get_group::{GetGroupInput, GetGroupUseCase},
+        get_group_members::{GetGroupMembersInput, GetGroupMembersUseCase},
         group_member_status::{
             GroupMemberStatus, GroupMemberStatusInput, GroupMemberStatusUseCase,
         },
@@ -280,11 +281,49 @@ async fn check_user_status_in_group(
     }))
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct GetGroupMembersResponse {
+    id: Uuid,
+    username: String,
+    display_name: String,
+    avatar_url: Option<String>,
+    user_type: UserType,
+    is_blocked: bool,
+}
+
+async fn get_group_members(
+    state: State<AppState>,
+    Path(group_id): Path<Uuid>,
+) -> AppResult<Json<Vec<GetGroupMembersResponse>>> {
+    let usecase = GetGroupMembersUseCase::new(state.group_member_repository.clone());
+
+    let input = models::domain::Id::from(group_id);
+
+    let output = usecase.execute(GetGroupMembersInput { id: input }).await?;
+
+    Ok(Json(
+        output
+            .members
+            .into_iter()
+            .map(|member| GetGroupMembersResponse {
+                id: member.id.into(),
+                username: member.username,
+                display_name: member.display_name,
+                avatar_url: member.avatar_url,
+                user_type: member.user_type,
+                is_blocked: member.is_blocked,
+            })
+            .collect(),
+    ))
+}
+
 pub fn group_routes() -> axum::Router<crate::AppState> {
     axum::Router::new()
         .route("/", get(search_group))
         .route("/", post(create_group))
         .route("/:id", get(get_group))
+        .route("/:id/members", get(get_group_members))
+        .route("/:id/requests", get(get_group_requests))
         .route("/:id/status", get(check_user_status_in_group))
         .route("/:id/join", get(join_group))
         .route("/:id/leave", get(leave_group))
