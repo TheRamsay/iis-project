@@ -43,7 +43,6 @@ use models::{
 struct CreatePostRequest {
     title: String,
     description: String,
-    author_id: Uuid,
     post_type: String,
     content_url: String,
     visibility: String,
@@ -57,6 +56,7 @@ struct CreatePostResponse {
 
 async fn create_post(
     state: State<AppState>,
+    user: AuthUser,
     Json(payload): Json<CreatePostRequest>,
 ) -> AppResult<Json<CreatePostResponse>> {
     let post_usecase = CreatePostUseCase::new(
@@ -68,7 +68,7 @@ async fn create_post(
     let input = CreatePostInput {
         title: payload.title,
         description: payload.description,
-        author_id: payload.author_id,
+        author_id: user.id,
         post_type: match payload.post_type.as_str() {
             "photo" => PostType::Photo,
             _ => return Err(AppError::ValidationError(ValidationErrors::new())),
