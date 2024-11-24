@@ -13,10 +13,15 @@ import type { Post } from '@/app/_types/post'
 
 type PostDialogContent = {
 	post: Post
+	groupModeratorIdList?: string[]
 	dialog?: boolean
 }
 
-export function PostDialogContent({ post, dialog = true }: PostDialogContent) {
+export function PostDialogContent({
+	post,
+	groupModeratorIdList,
+	dialog = true,
+}: PostDialogContent) {
 	return (
 		<div className="flex flex-row w-full h-full">
 			<div className="relative border-accent border-r h-full w-full">
@@ -63,7 +68,11 @@ export function PostDialogContent({ post, dialog = true }: PostDialogContent) {
 						</div>
 						<div className="space-x-4 flex ">
 							<PostEditButton postId={post.id} postAuthorId={post.user.id} />
-							<PostDeleteButton postId={post.id} postAuthorId={post.user.id} />
+							<PostDeleteButton
+								postId={post.id}
+								groupModeratorIdList={groupModeratorIdList}
+								postAuthorId={post.user.id}
+							/>
 						</div>
 					</div>
 					<div className="px-4 py-2">

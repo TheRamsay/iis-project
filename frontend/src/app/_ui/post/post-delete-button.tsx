@@ -9,18 +9,20 @@ import { ErrorTooltip } from '../error-tooltip'
 interface PostDeleteButton {
 	postId: number
 	postAuthorId: string
+	groupModeratorIdList?: string[]
 	size?: 'small' | 'full'
 }
 
 export function PostDeleteButton({
 	postId,
 	postAuthorId,
+	groupModeratorIdList,
 	size = 'full',
 }: PostDeleteButton) {
 	const session = useSession()
 
 	const { mutate, error } = useMutation({
-		mutationKey: ['delete-post', postId],
+		mutationKey: ['delete-post', postId, !!groupModeratorIdList],
 		mutationFn: async () => {
 			// TODO: endpoint
 		},
@@ -30,7 +32,11 @@ export function PostDeleteButton({
 		return null
 	}
 
-	if (isMinModerator(session.role) || session.userId === postAuthorId) {
+	if (
+		isMinModerator(session.role) ||
+		session.userId === postAuthorId ||
+		groupModeratorIdList?.includes(session.userId)
+	) {
 		const pix = size === 'small' ? 16 : 28
 
 		return (
