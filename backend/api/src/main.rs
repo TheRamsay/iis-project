@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use ::serde::{Deserialize, Serialize};
 use axum::http::header::CONTENT_TYPE;
-use axum::http::Method;
+use axum::http::{HeaderValue, Method};
 use axum::routing::post;
 use axum::{extract::State, routing::get, Json, Router};
 use dotenv::dotenv;
@@ -92,8 +92,11 @@ async fn main() -> shuttle_axum::ShuttleAxum {
             ServiceBuilder::new()
                 .layer(
                     CorsLayer::new()
-                        .allow_origin(AllowOrigin::any())
+                        .allow_origin(AllowOrigin::exact(HeaderValue::from_static(
+                            "http://localhost:3000",
+                        )))
                         .allow_headers(vec![CONTENT_TYPE])
+                        .allow_credentials(true)
                         .allow_methods(vec![
                             Method::GET,
                             Method::POST,

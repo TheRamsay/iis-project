@@ -31,7 +31,7 @@ type FormLogin = {
 }
 
 export function FormLogin() {
-	const { push } = useRouter()
+	const { refresh } = useRouter()
 
 	const form = useForm<FormLogin>({
 		mode: 'all',
@@ -51,6 +51,7 @@ export function FormLogin() {
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify(formData),
+				credentials: 'include',
 			})
 
 			if (!response.ok) {
@@ -62,12 +63,9 @@ export function FormLogin() {
 
 				throw new Error('An unknown error has occurred.')
 			}
-
-			const data = await response.json()
-			document.cookie = data.jwt
 		},
 		onSuccess: () => {
-			push('/')
+			refresh()
 		},
 		onError: (error) => {
 			// TODO: Error handling
