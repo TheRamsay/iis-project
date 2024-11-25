@@ -56,6 +56,8 @@ export function HeaderSearch() {
 				tags: any[]
 			} = await response.json()
 
+			console.log(data)
+
 			return {
 				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				users: data.users.map((user: any) => ({

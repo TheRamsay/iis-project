@@ -14,6 +14,7 @@ import { fetchGroupMembers } from '../../../_lib/fetch-group-members'
 
 type Entry = Pick<typeof schema.user.$inferSelect, 'id' | 'username'> & {
 	role: 'manager' | 'member'
+	groupId: string
 }
 
 const columns = [
@@ -44,8 +45,15 @@ const columns = [
 			const { mutate, error, isPending } = useMutation({
 				mutationKey: ['group-kick-user', row.original.id],
 				mutationFn: async () => {
-					await new Promise((resolve) => setTimeout(resolve, 1000))
-					throw new Error('Failed to kick user')
+					const response = await backendFetch(
+						`/api/groups/${row.original.groupId}/remove_user`,
+						{
+							method: 'POST',
+							body: JSON.stringify({ user_id: row.original.id }),
+						},
+					)
+
+					await checkResponse(response)
 				},
 				onSuccess: () => setKicked(true),
 			})
@@ -110,6 +118,7 @@ export default function Page({
 						id: entry.id,
 						username: entry.username,
 						role: entry.id === group?.admin.id ? 'manager' : 'member',
+						groupId: group.id,
 					}) as const,
 			)
 		},

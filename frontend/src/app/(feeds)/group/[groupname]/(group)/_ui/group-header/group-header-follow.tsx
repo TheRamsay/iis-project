@@ -65,7 +65,6 @@ export function GroupHeaderFollow({ groupId, groupType }: GroupHeaderFollow) {
 			)
 
 			await checkResponse(response)
-			return response.json()
 		},
 		onMutate: async () => {
 			if (!data?.followState) {

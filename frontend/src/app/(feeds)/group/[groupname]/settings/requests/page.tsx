@@ -36,7 +36,6 @@ const columns = [
 					)
 
 					await checkResponse(response)
-					return response.json()
 				},
 				onSuccess: () => setHandled(true),
 			})
