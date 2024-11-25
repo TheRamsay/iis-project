@@ -12,6 +12,7 @@ pub struct GetTagPostsInput {
     pub user_id: Option<Id<User>>,
     pub pagination: (i64, i64),
     pub sort_by: SortBy,
+    pub is_mod: bool,
 }
 
 pub type GetTagPostsOutput = Vec<(
@@ -42,6 +43,7 @@ where
                 input.user_id,
                 input.pagination.0,
                 input.pagination.1,
+                input.is_mod,
             )
             .await?;
 

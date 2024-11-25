@@ -281,13 +281,17 @@ pub async fn get_wall_by_tag(
 
     let input = GetTagPostsInput {
         user_id: if user.is_some() {
-            Some(user.unwrap().id.into())
+            Some(user.as_ref().unwrap().id.into())
         } else {
             None
         },
         tag: tag_name,
         pagination: (pagination.offset, pagination.limit),
         sort_by: sort_by.sort_by.unwrap_or_default(),
+        is_mod: user
+            .as_ref()
+            .map(|u| u.role.has_higher_privilege_than(&UserType::Regular))
+            .unwrap_or_default(),
     };
 
     let output = get_tag_usecase.execute(input).await?;
