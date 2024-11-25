@@ -78,7 +78,7 @@ async fn search(
             .into_iter()
             .map(|user| GetUserResponse {
                 id: user.id.into(),
-                display_name: user.display_name,
+                description: user.description,
                 username: user.username,
                 email: user.email,
                 avatar_url: user.avatar_url,
@@ -95,7 +95,7 @@ async fn search(
                 name: group.0.name,
                 admin: Admin {
                     id: group.1.id.into(),
-                    display_name: group.1.display_name,
+                    description: group.1.description,
                     username: group.1.username,
                     email: group.1.email,
                     avatar_url: group.1.avatar_url,

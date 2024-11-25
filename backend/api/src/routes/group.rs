@@ -62,8 +62,8 @@ async fn create_group(
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Admin {
     pub id: Uuid,
-    pub display_name: Option<String>,
     pub username: String,
+    pub description: Option<String>,
     pub email: Option<String>,
     pub avatar_url: Option<String>,
     pub user_type: UserType,
@@ -91,9 +91,9 @@ async fn get_group(
             name: group.group.name,
             admin: Admin {
                 id: group.admin.id.into(),
-                display_name: group.admin.display_name,
                 username: group.admin.username,
                 email: group.admin.email,
+                description: group.admin.description,
                 avatar_url: group.admin.avatar_url,
                 user_type: group.admin.user_type,
             },
@@ -135,8 +135,8 @@ async fn search_group(
                 name: group.name,
                 admin: Admin {
                     id: admin.id.into(),
-                    display_name: admin.display_name,
                     username: admin.username,
+                    description: admin.description,
                     email: admin.email,
                     avatar_url: admin.avatar_url,
                     user_type: admin.user_type,
@@ -277,7 +277,7 @@ async fn check_user_status_in_group(
 struct GetGroupMembersResponse {
     id: Uuid,
     username: String,
-    display_name: Option<String>,
+    description: Option<String>,
     avatar_url: Option<String>,
     user_type: UserType,
     is_blocked: bool,
@@ -304,8 +304,8 @@ async fn get_group_members(
             .map(|(joined_at, member)| GetGroupMembersResponse {
                 id: member.id.into(),
                 username: member.username,
-                display_name: member.display_name,
                 avatar_url: member.avatar_url,
+                description: member.description,
                 user_type: member.user_type,
                 is_blocked: member.is_blocked,
                 joined_at,
@@ -325,7 +325,7 @@ struct GetGroupRequestsResponse {
 struct GetGroupRequestUser {
     id: Uuid,
     username: String,
-    display_name: Option<String>,
+    description: Option<String>,
     avatar_url: Option<String>,
     user_type: UserType,
     is_blocked: bool,
@@ -352,7 +352,7 @@ async fn get_group_requests(
                 user: GetGroupRequestUser {
                     id: request.user.id.into(),
                     username: request.user.username,
-                    display_name: request.user.display_name,
+                    description: request.user.description,
                     avatar_url: request.user.avatar_url,
                     user_type: request.user.user_type,
                     is_blocked: request.user.is_blocked,

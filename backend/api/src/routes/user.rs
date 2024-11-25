@@ -32,8 +32,8 @@ use crate::{
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 struct CreateUserRequest {
-    display_name: Option<String>,
     username: String,
+    description: Option<String>,
     email: Option<String>,
     avatar_url: Option<String>,
     password: String,
@@ -58,8 +58,8 @@ async fn create_user(
         RegisterUserUseCase::new(state.user_repository.clone(), state.wall_repository.clone());
 
     let input = RegisterUserInput {
-        display_name: payload.display_name,
         username: payload.username,
+        description: payload.description,
         email: payload.email,
         avatar_url: payload.avatar_url,
         user_type: payload.user_type,
@@ -74,8 +74,8 @@ async fn create_user(
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GetUserResponse {
     pub id: Uuid,
-    pub display_name: Option<String>,
     pub username: String,
+    pub description: Option<String>,
     pub email: Option<String>,
     pub avatar_url: Option<String>,
     pub user_type: String,
@@ -96,8 +96,8 @@ async fn get_user_by_username(
     if let Some(user) = user {
         anyhow::Result::Ok(Json(GetUserResponse {
             id: user.id.id,
-            display_name: user.display_name,
             username: user.username,
+            description: user.description,
             email: user.email,
             avatar_url: user.avatar_url,
             user_type: user.user_type.to_string(),
@@ -117,7 +117,7 @@ async fn me(state: State<AppState>, user: AuthUser) -> AppResult<Json<GetUserRes
     if let Some(user) = user {
         anyhow::Result::Ok(Json(GetUserResponse {
             id: user.id.id,
-            display_name: user.display_name,
+            description: user.description,
             username: user.username,
             email: user.email,
             avatar_url: user.avatar_url,
@@ -325,7 +325,7 @@ async fn get_all_users(
         .into_iter()
         .map(|user| GetUserResponse {
             id: user.id.id,
-            display_name: user.display_name,
+            description: user.description,
             username: user.username,
             email: user.email,
             avatar_url: user.avatar_url,

@@ -49,7 +49,7 @@ where
             id: input.id.into(),
             email: input.email.clone(),
             username: input.username.clone(),
-            display_name: input.display_name,
+            description: input.display_name.clone(),
             avatar_url: input.avatar_url,
             user_type: input.user_type,
             password_hash: if input.password.is_some() {
