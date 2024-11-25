@@ -1,8 +1,9 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use usecase::{
-    group::create_group,
+    group::{create_group, delete_group},
     post::{
+        add_post_to_wall::{AddPostToWallInput, AddPostToWallUseCase},
         comment_post::{CommentPostInput, CommentPostUseCase},
         create_post::{CreatePostInput, CreatePostUseCase},
         delete_post::{DeletePostInput, DeletePostUseCase},
@@ -10,7 +11,7 @@ use usecase::{
         get_post::{GetPostInput, GetPostUseCase},
         get_post_comments::{GetPostCommentsInput, GetPostCommentsUseCase},
         get_post_is_liked_by_user::{PostLikedByUserInput, PostLikedByUserUseCase},
-        get_post_likes::{self, GetPostLikesInput},
+        get_post_likes::{self, GetPostLikesInput, GetPostLikesUseCase},
         like_post::{LikePostInput, LikePostUseCase},
         uncomment_post::{UncommentPostInput, UncommentPostUseCase},
         unlike_post::{UnlikePostInput, UnlikePostUseCase},
@@ -22,11 +23,22 @@ use usecase::{
         delete_tag::{DeletePostTagInput, DeletePostTagUseCase},
         get_post_tags::{self, GetPostTagsInput, GetPostTagsUseCase},
     },
+    user::get_user,
     visibility::{
         create_post_group_visibility::{
             self, CreateGroupPostVisibilityInput, CreateGroupPostVisibilityUseCase,
         },
-        create_post_user_visibility::{self, CreateUserPostVisibilityUseCase},
+        create_post_user_visibility::{
+            self, CreateUserPostVisibilityInput, CreateUserPostVisibilityUseCase,
+        },
+        delete_post_group_visibility_use_case::{
+            DeleteGroupPostVisibilityInput, DeleteGroupPostVisibilityUseCase,
+        },
+        delete_post_user_visibility_use_case::{
+            DeleteUserPostVisibilityInput, DeleteUserPostVisibilityUseCase,
+        },
+        get_post_group_visibility::{GetGroupPostVisibilityInput, GetGroupPostVisibilityUseCase},
+        get_post_user_visibility::{GetUserPostVisibilityInput, GetUserPostVisibilityUseCase},
     },
 };
 use uuid::Uuid;
@@ -80,9 +92,12 @@ async fn create_post(
     let create_tag_use_case = usecase::post_tag::create_post_tag::CreatePostTagUseCase::new(
         state.post_tag_repository.clone(),
     );
-    let create_post_group_visibility_use_case =
-        CreateGroupPostVisibilityUseCase::new(state.post_visibility_repository.clone());
 
+    let create_post_group_visibility_use_case = CreateGroupPostVisibilityUseCase::new(
+        state.post_visibility_repository.clone(),
+        state.wall_post_repository.clone(),
+        state.group_repository.clone(),
+    );
     let create_post_user_visibility_use_case =
         CreateUserPostVisibilityUseCase::new(state.post_visibility_repository.clone());
 
@@ -117,7 +132,7 @@ async fn create_post(
     }
 
     if !payload.allowed_users.is_none() {
-        for user_id in payload.allowed_users.unwrap() {
+        for user_id in payload.allowed_users.clone().unwrap() {
             let user_visibility_input =
                 create_post_user_visibility::CreateUserPostVisibilityInput {
                     post_id: output.id,
@@ -131,7 +146,7 @@ async fn create_post(
     }
 
     if !payload.allowed_groups.is_none() {
-        for group_id in payload.allowed_groups.unwrap() {
+        for group_id in payload.allowed_groups.clone().unwrap() {
             let group_visibility_input = CreateGroupPostVisibilityInput {
                 post_id: output.id,
                 group_id,
@@ -160,6 +175,8 @@ struct GetPostResponse {
     location_id: Option<Uuid>,
     created_at: DateTime<Utc>,
     tags: Option<Vec<String>>,
+    allowed_users: Option<Vec<AllowedUserResponse>>,
+    allowed_groups: Option<Vec<AllowedGroupResponse>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -172,15 +189,32 @@ struct GetPostCommentResponse {
     parent_id: Option<Uuid>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct AllowedUserResponse {
+    id: Uuid,
+    username: String,
+    avatar_url: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct AllowedGroupResponse {
+    id: Uuid,
+    name: String,
+}
+
 async fn get_post(
     state: State<AppState>,
     Path(id): Path<Uuid>,
 ) -> AppResult<Json<GetPostResponse>> {
     let post_usecase = GetPostUseCase::new(state.post_repository.clone());
-    let get_post_likes_use_case =
-        get_post_likes::GetPostLikesUseCase::new(state.post_likes_repository.clone());
+    let get_post_likes_use_case = GetPostLikesUseCase::new(state.post_likes_repository.clone());
     let get_post_comments_use_case =
         GetPostCommentsUseCase::new(state.post_comments_repository.clone());
+
+    let get_group_post_visibility_use_case =
+        GetGroupPostVisibilityUseCase::new(state.post_visibility_repository.clone());
+    let get_user_post_visibility_use_case =
+        GetUserPostVisibilityUseCase::new(state.post_visibility_repository.clone());
 
     let get_post_tags_use_case = GetPostTagsUseCase::new(state.post_tag_repository.clone());
 
@@ -193,6 +227,13 @@ async fn get_post(
         .await?;
     let tags = get_post_tags_use_case
         .execute(GetPostTagsInput { id })
+        .await?;
+
+    let group_visibility = get_group_post_visibility_use_case
+        .execute(GetGroupPostVisibilityInput { post_id: id })
+        .await?;
+    let user_visibility = get_user_post_visibility_use_case
+        .execute(GetUserPostVisibilityInput { post_id: id })
         .await?;
 
     if let Some(post) = post {
@@ -228,6 +269,27 @@ async fn get_post(
                     .collect()
             }),
             tags: Some(tags.tags.into_iter().map(|tag| tag.tag).collect()),
+            allowed_users: Some(
+                user_visibility
+                    .visibilities
+                    .iter()
+                    .map(|visibility| AllowedUserResponse {
+                        id: visibility.0.user_id.clone().into(),
+                        username: visibility.1.username.clone(),
+                        avatar_url: visibility.1.avatar_url.clone().unwrap_or_default(),
+                    })
+                    .collect(),
+            ),
+            allowed_groups: Some(
+                group_visibility
+                    .visibilities
+                    .iter()
+                    .map(|visibility| AllowedGroupResponse {
+                        id: visibility.0.group_id.clone().into(),
+                        name: visibility.1.name.clone(),
+                    })
+                    .collect(),
+            ),
             created_at: post.post.created_at,
         }))
     } else {
@@ -277,6 +339,8 @@ struct UpdatePostRequest {
     visibility: String,
     location_id: Option<Uuid>,
     tags: Option<Vec<String>>,
+    allowed_users: Option<Vec<Uuid>>,
+    allowed_groups: Option<Vec<Uuid>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -290,6 +354,8 @@ struct UpdatePostResponse {
     location_id: Option<Uuid>,
     created_at: DateTime<Utc>,
     tags: Option<Vec<String>>,
+    allowed_users: Option<Vec<Uuid>>,
+    allowed_groups: Option<Vec<Uuid>>,
 }
 
 async fn update_post(
@@ -305,6 +371,27 @@ async fn update_post(
     );
     let delete_tags_use_case = DeletePostTagUseCase::new(state.post_tag_repository.clone());
     let get_post_tags_use_case = GetPostTagsUseCase::new(state.post_tag_repository.clone());
+
+    let get_group_post_visibility_use_case =
+        GetGroupPostVisibilityUseCase::new(state.post_visibility_repository.clone());
+    let get_user_post_visibility_use_case =
+        GetUserPostVisibilityUseCase::new(state.post_visibility_repository.clone());
+
+    let delete_group_post_visibility_use_case = DeleteGroupPostVisibilityUseCase::new(
+        state.post_visibility_repository.clone(),
+        state.wall_post_repository.clone(),
+        state.group_repository.clone(),
+    );
+    let delete_user_post_visibility_use_case =
+        DeleteUserPostVisibilityUseCase::new(state.post_visibility_repository.clone());
+
+    let create_post_group_visibility_use_case = CreateGroupPostVisibilityUseCase::new(
+        state.post_visibility_repository.clone(),
+        state.wall_post_repository.clone(),
+        state.group_repository.clone(),
+    );
+    let create_post_user_visibility_use_case =
+        CreateUserPostVisibilityUseCase::new(state.post_visibility_repository.clone());
 
     let post = post_use_case.execute(GetPostInput { id }).await?;
 
@@ -369,6 +456,68 @@ async fn update_post(
         }
     }
 
+    let group_visibility = get_group_post_visibility_use_case
+        .execute(GetGroupPostVisibilityInput { post_id: id })
+        .await?;
+    let user_visibility = get_user_post_visibility_use_case
+        .execute(GetUserPostVisibilityInput { post_id: id })
+        .await?;
+
+    if !payload.allowed_groups.is_none() {
+        for group in group_visibility.visibilities.clone() {
+            let delete_group_visibility_input = DeleteGroupPostVisibilityInput {
+                post_id: id,
+                group_id: group.0.group_id.into(),
+            };
+
+            delete_group_post_visibility_use_case
+                .execute(delete_group_visibility_input)
+                .await?;
+        }
+
+        for group_id in payload.allowed_groups.clone().unwrap() {
+            let group_visibility_input = CreateGroupPostVisibilityInput {
+                post_id: id,
+                group_id,
+            };
+
+            create_post_group_visibility_use_case
+                .execute(group_visibility_input)
+                .await?;
+        }
+    }
+
+    if !payload.allowed_users.is_none() {
+        for user in user_visibility.visibilities {
+            let delete_user_visibility_input = DeleteUserPostVisibilityInput {
+                post_id: id,
+                user_id: user.0.user_id.into(),
+            };
+
+            delete_user_post_visibility_use_case
+                .execute(delete_user_visibility_input)
+                .await?;
+        }
+
+        for user_id in payload.allowed_users.unwrap() {
+            let user_visibility_input = CreateUserPostVisibilityInput {
+                post_id: id,
+                user_id,
+            };
+
+            create_post_user_visibility_use_case
+                .execute(user_visibility_input)
+                .await?;
+        }
+    }
+
+    let group_visibility = get_group_post_visibility_use_case
+        .execute(GetGroupPostVisibilityInput { post_id: id })
+        .await?;
+    let user_visibility = get_user_post_visibility_use_case
+        .execute(GetUserPostVisibilityInput { post_id: id })
+        .await?;
+
     let tags = get_post_tags_use_case
         .execute(GetPostTagsInput { id })
         .await?;
@@ -389,6 +538,20 @@ async fn update_post(
         location_id: updated_post.post.location_id.map(|id| id.into()),
         created_at: updated_post.post.created_at,
         tags: Some(tags.tags.into_iter().map(|tag| tag.tag).collect()),
+        allowed_users: Some(
+            user_visibility
+                .visibilities
+                .iter()
+                .map(|visibility| visibility.0.user_id.clone().into())
+                .collect(),
+        ),
+        allowed_groups: Some(
+            group_visibility
+                .visibilities
+                .iter()
+                .map(|visibility| visibility.0.group_id.clone().into())
+                .collect(),
+        ),
     }))
 }
 

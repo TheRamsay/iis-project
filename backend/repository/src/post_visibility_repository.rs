@@ -43,6 +43,14 @@ pub trait PostVisibilityRepository {
         post_id: Id<Post>,
         group_id: Id<Group>,
     ) -> Result<(), DbErr>;
+    async fn get_post_group_visibilities(
+        &self,
+        post_id: Id<Post>,
+    ) -> Result<Vec<(PostGroupVisibility, Group)>, DbErr>;
+    async fn get_post_user_visibilities(
+        &self,
+        post_id: Id<Post>,
+    ) -> Result<Vec<(PostUserVisibility, User)>, DbErr>;
 }
 
 impl PostVisibilityRepository for DbPostVisibilityRepository {
@@ -104,5 +112,61 @@ impl PostVisibilityRepository for DbPostVisibilityRepository {
         .await?;
 
         Ok(())
+    }
+
+    async fn get_post_group_visibilities(
+        &self,
+        post_id: Id<Post>,
+    ) -> Result<Vec<(PostGroupVisibility, Group)>, DbErr> {
+        let group_visibilities = models::schema::post_group_visibility::Entity::find()
+            .filter(
+                models::schema::post_group_visibility::Column::PostId
+                    .into_simple_expr()
+                    .eq(post_id.id),
+            )
+            .all(self.db.as_ref())
+            .await?;
+
+        let mut result = Vec::new();
+
+        for visibility in group_visibilities.into_iter() {
+            let group = models::schema::group::Entity::find_by_id(visibility.group_id)
+                .one(self.db.as_ref())
+                .await?;
+
+            if let Some(group) = group {
+                result.push((visibility.into(), group.into()));
+            }
+        }
+
+        Ok(result)
+    }
+
+    async fn get_post_user_visibilities(
+        &self,
+        post_id: Id<Post>,
+    ) -> Result<Vec<(PostUserVisibility, User)>, DbErr> {
+        let user_visibilities = models::schema::post_user_visibility::Entity::find()
+            .filter(
+                models::schema::post_user_visibility::Column::PostId
+                    .into_simple_expr()
+                    .eq(post_id.id),
+            )
+            .all(self.db.as_ref())
+            .await?;
+
+        let mut result = Vec::new();
+
+        for visibility in user_visibilities.into_iter() {
+            let user = models::schema::user::Entity::find_by_id(visibility.user_id)
+                .one(self.db.as_ref())
+                .await?;
+
+            if let Some(user) = user {
+                result.push((visibility.into(), user.into()));
+            }
+        }
+
+        Ok(result)
     }
 }
