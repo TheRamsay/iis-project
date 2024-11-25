@@ -181,10 +181,25 @@
       <li>JWT_SECRET: šifrovací klíč pro JWT</li>
     </ul>
 
+    
+
     <h3>Ukládání obrázků</h3>
     Pro ukládání obrázku využíváme službu Cloudinary. Je to služba pro ukládání a transformaci obrázků v cloudu. Pro inicializaci je potřeba specifikovat proměnné prostředí <b>CLOUDINARY_CLOUD_NAME</b>, <b>CLOUDINARY_API_KEY</b> a <b>CLOUDINARY_API_SECRET</b> v souboru /backend/.env viz templete v předchozím bodu.
 
     
+        <h3> 
+        Frontend  
+       </h3>
+       Frontend je napsany v React/Node.js a nachází se v adresáři <b>./frontend</b>
+         <h4>Instalace</h4>
+         Ve složce <b>./frontend</b> spustit příkaz <b>npm install</b> pro stažení všech závislostí. 
+         Také je potřeba vytvořit soubor <b>.env</b> a nastavit proměnnou <b>NEXT_PUBLIC_BACKEND_URL</b> na adresu backendu.
+
+        <h4>Spouštění</h4>
+        Pro spuštění frontendu je potřeba spustit příkaz <b>npm run dev</b> ve složce <b>./frontend</b>
+
+
+
 
     <h2>Známé problémy</h2>
     <p>
