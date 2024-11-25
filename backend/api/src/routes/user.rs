@@ -180,10 +180,9 @@ async fn block_user(
 
 async fn delete_user(
     state: State<AppState>,
-    mut jar: CookieJar,
     actor: AuthUser,
     Path(id): Path<Uuid>,
-) -> AppResult<(CookieJar, ())> {
+) -> AppResult<()> {
     if actor.role != models::domain::user::UserType::Administrator {
         return Err(AppError::Unauthorized("You can't delete this user".into()));
     }
@@ -204,17 +203,7 @@ async fn delete_user(
 
     state.user_repository.delete(user.id).await?;
 
-    let old_jwt_str = jar
-        .get("jwt")
-        .map(|cookie| cookie.value().to_string())
-        .expect("JWT cookie not found");
-
-    blacklist_token(&state.redis_client, &old_jwt_str, actor.exp)
-        .map_err(|e| AppError::Anyhow(anyhow!(e)))?;
-
-    jar = jar.remove(Cookie::from("jwt"));
-
-    Ok((jar, ()))
+    Ok(())
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
