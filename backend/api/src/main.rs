@@ -13,7 +13,7 @@ use repository::location_repository::DbLocationRepository;
 use repository::post_comments_repository::DbPostCommentsRepository;
 use repository::post_likes_repository::DbPostLikesRepository;
 use repository::post_repository::DbPostRepository;
-use repository::post_visibility_repository::PostVisibilityRepository;
+use repository::post_visibility_repository::DbPostVisibilityRepository;
 use repository::tag_repository::DbTagRepository;
 use repository::user_repository::DbUserRepository;
 use repository::wall_post_repository::DbWallPostRepository;
@@ -50,6 +50,7 @@ pub struct AppState {
     pub location_repository: DbLocationRepository,
     pub post_tag_repository: DbTagRepository,
     pub wall_post_repository: DbWallPostRepository,
+    pub post_visibility_repository: DbPostVisibilityRepository,
     pub jwt_secret: String,
     pub redis_client: Arc<redis::Client>,
 }
@@ -77,10 +78,12 @@ async fn create_app_state() -> AppState {
         post_comments_repository: DbPostCommentsRepository::new(Arc::new(conn.clone())),
         location_repository: DbLocationRepository::new(Arc::new(conn.clone())),
         post_tag_repository: DbTagRepository::new(Arc::new(conn.clone())),
+        post_visibility_repository: DbPostVisibilityRepository::new(Arc::new(conn.clone())),
         cloudinary_repository: GenericRepository {},
         conn: conn.clone(),
         jwt_secret,
         redis_client: Arc::new(redis::Client::open("redis://localhost:6379").unwrap()),
+        // redis_client: Arc::new(redis::Client::open("rediss://default:AWEgAAIjcDEzNmU1YzI0MzU1MGI0NThhOGM5N2Y4M2VlMDNjYjkxMnAxMA@sincere-mink-24864.upstash.io:6379").unwrap()),
     }
 }
 
