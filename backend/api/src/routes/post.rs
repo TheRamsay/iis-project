@@ -24,7 +24,7 @@ use crate::{
 };
 
 use axum::{
-    extract::{Path, State},
+    extract::{DefaultBodyLimit, Path, State},
     routing::{delete, get, post, put},
 };
 use models::{
@@ -503,4 +503,6 @@ pub fn post_routes() -> axum::Router<crate::AppState> {
         .route("/:id/like", post(like_post))
         .route("/:id/like", delete(unlike_post))
         .route("/upload_image", post(upload_image))
+        // Limit the size of the request body to 10mb
+        .layer(DefaultBodyLimit::max(1024 * 1024 * 10))
 }
