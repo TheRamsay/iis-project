@@ -20,6 +20,7 @@ use usecase::user::{
     get_user::{GetUserInput, GetUserUseCase},
     get_user_by_username::{GetUserByUsernameInput, GetUserByUsernameUseCase},
     register_user::{RegisterUserInput, RegisterUserUseCase},
+    unblock_user::{UnblockUserInput, UnblockUserUseCase},
     update_user::{UpdateUserInput, UpdateUserUseCase},
 };
 use uuid::Uuid;
@@ -89,9 +90,7 @@ async fn get_user_by_id(
 ) -> AppResult<Json<GetUserResponse>> {
     let user_usercase = GetUserUseCase::new(state.user_repository.clone());
 
-    let user = user_usercase
-        .execute(GetUserInput { id })
-        .await?;
+    let user = user_usercase.execute(GetUserInput { id }).await?;
 
     if let Some(user) = user {
         anyhow::Result::Ok(Json(GetUserResponse {
@@ -108,7 +107,6 @@ async fn get_user_by_id(
         Err(AppError::NotFound("User".into()))
     }
 }
-
 
 async fn get_user_by_username(
     state: State<AppState>,
@@ -159,10 +157,9 @@ async fn me(state: State<AppState>, user: AuthUser) -> AppResult<Json<GetUserRes
 
 async fn block_user(
     state: State<AppState>,
-    mut jar: CookieJar,
     actor: AuthUser,
     Path(id): Path<Uuid>,
-) -> AppResult<(CookieJar, ())> {
+) -> AppResult<()> {
     let get_user_usercase = GetUserUseCase::new(state.user_repository.clone());
     let block_user_usecase = BlockUserUseCase::new(state.user_repository.clone());
 
@@ -192,17 +189,45 @@ async fn block_user(
         .execute(BlockUserInput { user_id: id })
         .await?;
 
-    let old_jwt_str = jar
-        .get("jwt")
-        .map(|cookie| cookie.value().to_string())
-        .expect("JWT cookie not found");
+    Ok(())
+}
 
-    blacklist_token(&state.redis_client, &old_jwt_str, actor.exp)
-        .map_err(|e| AppError::Anyhow(anyhow!(e)))?;
+async fn unblock_user(
+    state: State<AppState>,
+    mut jar: CookieJar,
+    actor: AuthUser,
+    Path(id): Path<Uuid>,
+) -> AppResult<()> {
+    let get_user_usercase = GetUserUseCase::new(state.user_repository.clone());
+    let block_user_usecase = UnblockUserUseCase::new(state.user_repository.clone());
 
-    jar = jar.remove(Cookie::from("jwt"));
+    let user = get_user_usercase.execute(GetUserInput { id }).await?;
 
-    Ok((jar, ()))
+    if user.is_none() {
+        return Err(AppError::NotFound("User".into()));
+    }
+
+    let user = user.unwrap();
+
+    if !user.is_blocked {
+        return Err(AppError::BadRequest("User is not blocked".into()));
+    }
+
+    let self_block = actor.id == user.id.into();
+    if actor.role.is_regular()
+        || actor.role.has_lower_or_same_privilege_as(&user.user_type)
+        || self_block
+    {
+        return Err(AppError::Unauthorized(
+            "You do not have sufficient privileges to unblock this user.".into(),
+        ));
+    }
+
+    block_user_usecase
+        .execute(UnblockUserInput { user_id: id })
+        .await?;
+
+    Ok(())
 }
 
 async fn delete_user(
@@ -254,7 +279,7 @@ async fn update_user(
     let modifies_self = actor.id == id;
 
     // Check if the actor is an admin or the user being modified
-    if actor.role.is_administrator() && !modifies_self {
+    if !actor.role.is_administrator() && !modifies_self {
         return Err(AppError::Unauthorized("You can't modify this user".into()));
     }
 
@@ -366,4 +391,5 @@ pub fn user_routes() -> axum::Router<crate::AppState> {
         .route("/id/:id", delete(delete_user))
         .route("/id/:id", put(update_user))
         .route("/id/:id/block", get(block_user))
+        .route("/id/:id/unblock", get(unblock_user))
 }

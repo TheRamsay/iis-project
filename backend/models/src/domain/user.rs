@@ -138,6 +138,10 @@ impl User {
     pub fn block(&mut self) {
         self.is_blocked = true;
     }
+
+    pub fn unblock(&mut self) {
+        self.is_blocked = false;
+    }
 }
 
 impl From<schema::user::Model> for User {
