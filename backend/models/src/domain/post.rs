@@ -71,17 +71,11 @@ pub struct Post {
         message = "Description must be between 0 and 255 characters"
     ))]
     pub description: String,
-    #[validate(
-        length(
-            min = 3,
-            max = 15,
-            message = "Title must be between 3 and 15 characters"
-        ),
-        regex(
-            path = *RE_TITLE,
-            message = "Invalid title, only alphanumeric characters are allowed"
-        )
-    )]
+    #[validate(length(
+        min = 3,
+        max = 15,
+        message = "Title must be between 3 and 15 characters"
+    ))]
     pub title: String,
     pub author_id: Id<User>,
     pub post_type: PostType,
