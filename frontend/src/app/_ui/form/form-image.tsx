@@ -30,6 +30,7 @@ interface FormSubset {
 interface FormImage<T extends FormSubset> {
 	form: UseFormReturn<T>
 	required?: boolean
+	disabled?: boolean
 	className?: string
 }
 
@@ -37,6 +38,7 @@ export function FormImage<T extends FormSubset>({
 	form: _form,
 	required = true,
 	className,
+	disabled: _disabled,
 }: FormImage<T>) {
 	const form = _form as unknown as UseFormReturn<FormSubset>
 
@@ -110,19 +112,24 @@ export function FormImage<T extends FormSubset>({
 									}
 									error={error?.message}
 								/>
-								{!required && form.watch('image') && (
-									<XIcon
-										className="text-red-500 cursor-pointer"
-										width={20}
-										height={20}
-										onClick={deleteImage}
-									/>
-								)}
+								{!required &&
+									!disabled &&
+									!_disabled &&
+									form.watch('image') && (
+										<XIcon
+											className="text-red-500 cursor-pointer"
+											width={20}
+											height={20}
+											onClick={deleteImage}
+										/>
+									)}
 							</div>
 							<div
 								className={classNames(
 									'aspect-square w-full bg-secondary rounded-lg overflow-hidden',
-									disabled ? 'cursor-not-allowed' : 'cursor-pointer',
+									disabled || _disabled
+										? 'cursor-not-allowed pointer-events-none'
+										: 'cursor-pointer',
 									className,
 								)}
 							>

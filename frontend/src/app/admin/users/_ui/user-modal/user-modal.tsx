@@ -27,6 +27,8 @@ import { uploadImage } from '@/app/_lib/upload-image'
 import { useRouter } from 'next/navigation'
 import { ErrorTooltip } from '@/app/_ui/error-tooltip'
 import { extractError } from '@/app/_lib/extract-error'
+import { useSession } from '@/app/_lib/auth/auth-provider'
+import { isMinAdministrator } from '@/app/_lib/get-permission-level'
 
 const userModalSchema = z
 	.object({
@@ -61,6 +63,8 @@ export function UserModal({
 	const [open, setOpen] = useState(_open)
 	const [username, setUsername] = useState(_username)
 
+	const session = useSession()
+
 	const queryClient = useQueryClient()
 
 	const { data, isFetching, refetch } = useQuery<UserForm>({
@@ -79,7 +83,7 @@ export function UserModal({
 	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['admin-user', username],
 		mutationFn: async (formData: UserForm) => {
-			{
+			if (isMinAdministrator(session?.role)) {
 				let imageUrl = formData.image
 				if (imageUrl?.startsWith('blob:')) {
 					const { link } = await uploadImage(imageUrl)
@@ -106,6 +110,7 @@ export function UserModal({
 					throw error
 				}
 			}
+
 			if (formData.isBlocked !== data?.isBlocked) {
 				const response = await backendFetch(
 					`/api/users/id/${data?.id}/${formData.isBlocked ? 'block' : 'unblock'}`,
