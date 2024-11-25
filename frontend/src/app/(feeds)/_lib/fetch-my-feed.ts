@@ -43,5 +43,7 @@ export async function fetchMyFeed(filters: FeedFilters = {}): Promise<Post[]> {
       },
     },
     visibility: post.visibility,
+    allowedGroups: [],
+    allowedUsers: [],
   }));
 }

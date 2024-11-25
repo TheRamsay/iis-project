@@ -46,5 +46,7 @@ export async function fetchWallByTag(
       },
     },
     visibility: post.visibility,
+    allowedGroups: [],
+    allowedUsers: [],
   }));
 }
