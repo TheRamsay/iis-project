@@ -5,26 +5,50 @@ import { isMinModerator } from '@/app/_lib/get-permission-level'
 import { useMutation } from '@tanstack/react-query'
 import { Trash2Icon } from 'lucide-react'
 import { ErrorTooltip } from '../error-tooltip'
+import type { Post } from '@/app/post/_lib/fetch-post'
+import { backendFetch } from '@/app/_lib/backend-fetch'
+import { useRouter } from 'next/navigation'
 
 interface PostDeleteButton {
-	postId: number
-	postAuthorId: string
-	groupModeratorIdList?: string[]
+	post: Pick<Post, 'id'> & {
+		user: Pick<Post['user'], 'id'>
+	}
+	group?: {
+		id: string
+		moderatorId: string
+	}
 	size?: 'small' | 'full'
 }
 
 export function PostDeleteButton({
-	postId,
-	postAuthorId,
-	groupModeratorIdList,
+	post,
+	group,
 	size = 'full',
 }: PostDeleteButton) {
 	const session = useSession()
 
+	const router = useRouter()
+
+	const isGroupModerator = group?.moderatorId === session?.userId
+
 	const { mutate, error } = useMutation({
-		mutationKey: ['delete-post', postId, !!groupModeratorIdList],
+		mutationKey: ['delete-post', post, group],
 		mutationFn: async () => {
-			// TODO: endpoint
+			let link = `/api/posts/${post.id}`
+			if (isGroupModerator) {
+				link = `/api/posts/${post.id}/group/${group?.id}`
+			}
+
+			const response = await backendFetch(link, {
+				method: 'DELETE',
+			})
+
+			if (!response.ok) {
+				throw new Error('Failed to delete post')
+			}
+		},
+		onSuccess: () => {
+			router.refresh()
 		},
 	})
 
@@ -34,8 +58,8 @@ export function PostDeleteButton({
 
 	if (
 		isMinModerator(session.role) ||
-		session.userId === postAuthorId ||
-		groupModeratorIdList?.includes(session.userId)
+		session.userId === post.user.id ||
+		isGroupModerator
 	) {
 		const pix = size === 'small' ? 16 : 28
 

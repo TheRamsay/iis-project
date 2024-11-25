@@ -1,133 +1,83 @@
-'use client'
-
-import { SkeletonCircle, SkeletonText } from '@/components/components'
-import { useQuery } from '@tanstack/react-query'
+import { SkeletonCircle, SkeletonText } from '@/components/components/skeleton'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useCallback } from 'react'
-import { PostDeleteButton } from '../post-delete-button'
 import classNames from 'classnames'
+import { fetchPost, type Post } from '@/app/post/_lib/fetch-post'
+import { PostCommentDeleteButton } from './post-comment-delete-button'
+import type { Comment as CommentType } from '@/app/_types/comments'
+import { unstable_cache } from 'next/cache'
+import { Suspense } from 'react'
+import { Avatar } from '../../avatar'
 
 interface PostComments {
-	post: {
-		id: number
-		comments?:
-			| {
-					id: number
-					user: {
-						id: string
-						username: string
-						avatar: {
-							src: string
-							width: number
-							height: number
-						}
-					}
-					content: string
-			  }[]
-			| undefined
+	post: Pick<Post, 'comments' | 'id'> & {
+		user: Pick<Post['user'], 'id'>
 	}
+	showCount?: number
 	size: 'small' | 'full'
 }
 
-const undefinedComments = [undefined, undefined, undefined]
+export async function PostComments({ post, showCount, size }: PostComments) {
+	return (
+		<Suspense
+			fallback={
+				<div className="space-y-2">
+					<Comment isLoading size={size} />
+					<Comment isLoading size={size} />
+					<Comment isLoading size={size} />
+				</div>
+			}
+		>
+			<_PostComments post={post} showCount={showCount} size={size} />
+		</Suspense>
+	)
+}
 
-export function PostComments({ post, size }: PostComments) {
-	const { data: fetchedComments, isLoading } = useQuery({
-		queryKey: ['comments', post.id],
-		queryFn: async () => {
-			// TODO: endpoint
-			await new Promise((resolve) => setTimeout(resolve, 1000))
+async function _PostComments({ post: { id }, showCount, size }: PostComments) {
+	const post = await fetchPost(id)
 
-			return [
-				{
-					id: 1,
-					user: {
-						id: '1',
-						username: 'user1',
-						avatar: {
-							src: 'https://avatars.githubusercontent.com/u/7655549?v=4',
-							width: 128,
-							height: 128,
-						},
-					},
-					content:
-						'comment1co mment1comme nt1comment1comment1comment1comment1comment1comment1comment1comment1comment1comment1comment1comment1comment1',
-				},
-				{
-					id: 2,
-					user: {
-						id: '2',
-						username: 'user1',
-						avatar: {
-							src: 'https://avatars.githubusercontent.com/u/7655549?v=4',
-							width: 128,
-							height: 128,
-						},
-					},
-					content:
-						'comment1co mment1comme nt1comment1comment1comment1comment1comment1comment1comment1comment1comment1comment1comment1comment1comment1',
-				},
-			]
-		},
-		enabled: !post.comments,
-	})
-
-	if (isLoading) {
-		return (
-			<div className="space-y-2">
-				{undefinedComments.map((_, i) => (
-					<Comment key={i} comment={undefined} isLoading={true} size={size} />
-				))}
-			</div>
-		)
-	}
-
-	const data = fetchedComments || post.comments
-
-	if (!data) {
-		return null
-	}
+	const comments = showCount ? post.comments.slice(0, showCount) : post.comments
 
 	return (
 		<div className="space-y-2">
-			{data.map((comment) => (
-				<Comment key={comment.id} comment={comment} size={size} />
+			{comments.map((comment) => (
+				<Comment post={post} key={comment.id} comment={comment} size={size} />
 			))}
 		</div>
 	)
 }
 
 type CommentLoading = {
-	comment: undefined
+	post?: undefined
+	comment?: undefined
 	isLoading: true
 	size: 'small' | 'full'
 }
 
 type CommentLoaded = {
-	comment: NonNullable<PostComments['post']['comments']>[number]
+	post: Pick<Post, 'id'> & {
+		user: Pick<Post['user'], 'id'>
+	}
+	comment: CommentType
 	isLoading?: undefined | false
 	size: 'small' | 'full'
 }
 
 type CommentProps = CommentLoading | CommentLoaded
 
-function Comment({ comment, isLoading, size }: CommentProps) {
+function Comment({ post, comment, isLoading, size }: CommentProps) {
 	const circleSize = size === 'small' ? 20 : 48
 
-	const Shell = useCallback(
-		({ children }: { children: React.ReactNode }) => (
-			<div
-				className={classNames(
-					'flex flex-row items-center',
-					size === 'small' && 'space-x-2',
-					size === 'full' && 'space-x-4',
-				)}
-			>
-				{children}
-			</div>
-		),
-		[size],
+	const Shell = ({ children }: { children: React.ReactNode }) => (
+		<div
+			className={classNames(
+				'flex flex-row items-center',
+				size === 'small' && 'space-x-2',
+				size === 'full' && 'space-x-4',
+			)}
+		>
+			{children}
+		</div>
 	)
 
 	if (isLoading) {
@@ -147,13 +97,13 @@ function Comment({ comment, isLoading, size }: CommentProps) {
 	return (
 		<div className="flex justify-between items-center space-x-4">
 			<Shell>
-				<Image
+				<Avatar
+					name={comment.user.username}
 					unoptimized={true}
-					src={comment.user.avatar}
+					src={comment.user.avatar.src}
 					alt="avatar"
-					width={circleSize}
-					height={circleSize}
-					className="rounded-full flex-grow-0 object-contain"
+					className="rounded-full"
+					size={32}
 				/>
 				<p className="space-x-1 text-sm [word-break:break-word]">
 					<Link
@@ -167,11 +117,7 @@ function Comment({ comment, isLoading, size }: CommentProps) {
 					<span>{comment.content}</span>
 				</p>
 			</Shell>
-			<PostDeleteButton
-				size="small"
-				postId={comment.id}
-				postAuthorId={comment.user.id}
-			/>
+			<PostCommentDeleteButton size="small" post={post} comment={comment} />
 		</div>
 	)
 }

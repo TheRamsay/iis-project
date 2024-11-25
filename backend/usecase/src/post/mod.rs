@@ -1,3 +1,4 @@
+pub mod add_post_to_wall;
 pub mod comment_post;
 pub mod create_post;
 pub mod delete_post;
@@ -7,6 +8,7 @@ pub mod get_post_comments;
 pub mod get_post_is_liked_by_user;
 pub mod get_post_likes;
 pub mod like_post;
+pub mod remove_post_from_wall;
 pub mod uncomment_post;
 pub mod unlike_post;
 pub mod update_post;

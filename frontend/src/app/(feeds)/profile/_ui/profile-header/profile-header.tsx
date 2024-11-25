@@ -1,26 +1,17 @@
 import type { schema } from '@/app/_lib/db'
 import { Button } from '@/components/components/button'
-import Image from 'next/image'
 import Link from 'next/link'
 import { ProfileHeaderFollow } from './profile-header-follow'
 import { getSession } from '@/app/_lib/auth/get-session'
+import { fetchUserByUsername } from '../../../../_lib/user/fetch-user'
+import { Avatar } from '@/app/_ui/avatar'
 
 interface ProfileHeader {
 	username: string
 }
 
 export async function ProfileHeader({ username }: ProfileHeader) {
-	// TODO: endpoint
-	const profile = {
-		id: 'user_id',
-		username: 'johndoe',
-		description: 'I am a person.',
-		avatar: {
-			src: 'https://www.gravatar.com/avatar/',
-			width: 32,
-			height: 32,
-		},
-	}
+	const profile = await fetchUserByUsername(username)
 
 	const session = await getSession()
 
@@ -41,12 +32,13 @@ export async function ProfileHeader({ username }: ProfileHeader) {
 			<div className="flex-col flex">
 				<div className="flex-row flex items-center space-x-6">
 					<div className="relative h-28 w-28 rounded-full shrink-0">
-						<Image
+						<Avatar
 							unoptimized
 							src={profile.avatar.src}
 							fill
 							alt={profile.username}
 							className="rounded-full"
+							name={profile.username}
 						/>
 					</div>
 					<p className="space-y-2 [word-break:break-word]">
@@ -72,7 +64,7 @@ function ProfileActions({ id, username, role }: ProfileActions) {
 
 	switch (role) {
 		case 'regular': {
-			actions.push(<ProfileHeaderFollow key="follow" username={username} />)
+			// actions.push(<ProfileHeaderFollow key="follow" username={username} />)
 			break
 		}
 		case 'owner': {
@@ -87,7 +79,7 @@ function ProfileActions({ id, username, role }: ProfileActions) {
 		}
 		case 'moderator':
 		case 'administrator':
-			actions.push(<ProfileHeaderFollow key="follow" username={username} />)
+			// actions.push(<ProfileHeaderFollow key="follow" username={username} />)
 			actions.push(
 				<Link href={`/admin/users?id=${id}`}>
 					<Button key="edit" variant="outline">

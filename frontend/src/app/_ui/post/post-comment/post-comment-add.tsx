@@ -6,22 +6,36 @@ import { TextField } from '@/components/components/text-field'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { ErrorTooltip } from '../../error-tooltip'
+import { backendFetch } from '@/app/_lib/backend-fetch'
+import type { Post } from '@/app/post/_lib/fetch-post'
+import { useRouter } from 'next/navigation'
 
 interface PostCommentAdd {
-	postId: number
+	post: Pick<Post, 'id'>
 }
 
-export function PostCommentAdd({ postId }: PostCommentAdd) {
+export function PostCommentAdd({ post }: PostCommentAdd) {
 	const [comment, setComment] = useState('')
 
+	const router = useRouter()
+
 	const { mutate, error, isPending } = useMutation({
-		mutationKey: ['add-comment', postId],
+		mutationKey: ['add-comment', post.id],
 		mutationFn: async () => {
-			// TODO: endpoint
-			await new Promise((resolve) => setTimeout(resolve, 1000))
+			const response = await backendFetch(`/api/posts/${post.id}/comment`, {
+				method: 'POST',
+				body: JSON.stringify({ content: comment }),
+			})
+
+			if (!response.ok) {
+				throw new Error('Failed to add comment')
+			}
+
+			return response.json()
 		},
-		onSettled: () => {
+		onSuccess: () => {
 			setComment('')
+			router.refresh()
 		},
 	})
 

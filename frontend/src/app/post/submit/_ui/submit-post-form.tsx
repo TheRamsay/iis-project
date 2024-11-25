@@ -19,24 +19,28 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { FormTags, formTagsSchema } from '../../_ui/form-tags'
 import { FormLabelError } from '@/app/_ui/form/form-label-error'
 import { FormServerError } from '@/app/_ui/form/form-server-error'
+import { backendFetch, checkResponse } from '@/app/_lib/backend-fetch'
+import { useRouter } from 'next/navigation'
+import { uploadImage } from '@/app/_lib/upload-image'
+import { myz } from '@/app/_types/zod'
 
 const submitPostFromSchema: ZodType<PostForm> = z
 	.object({
-		title: z.string().min(3).max(64).or(z.literal('')),
-		description: z.string().max(255),
+		title: myz.title,
+		description: myz.description,
 	})
 	.merge(formImageSchema(true))
-	.merge(formLocationSchema)
+	// .merge(formLocationSchema)
 	.merge(formVisibilitySchema)
 	.merge(formTagsSchema)
 
 type Post = Pick<typeof schema.post.$inferSelect, 'description' | 'title'> & {
 	visibility: 'public' | 'private'
-	image: globalThis.File | null
-	location: {
-		lat: string
-		lng: string
-	}
+	image: string | null
+	// location: {
+	// 	lat: string
+	// 	lng: string
+	// }
 	allowedUsers: Entity[]
 	allowedGroups: Entity[]
 	tags: string[]
@@ -45,16 +49,38 @@ type Post = Pick<typeof schema.post.$inferSelect, 'description' | 'title'> & {
 export type PostForm = Post
 
 export function SubmitPostForm() {
+	const { push } = useRouter()
+
 	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['submit-post'],
-		mutationFn: async (data: PostForm) => {
-			// TODO: endpoint
-			await new Promise((resolve) => setTimeout(resolve, 1000))
+		mutationFn: async (formData: PostForm) => {
+			if (!formData.image) {
+				throw new Error('Image is required')
+			}
+			const { link } = await uploadImage(formData.image)
 
-			throw new Error('Failed to submit post')
+			const response = await backendFetch('/api/posts', {
+				method: 'POST',
+				body: JSON.stringify({
+					title: formData.title,
+					description: formData.description,
+					post_type: 'photo',
+					visibility: formData.visibility,
+					content_url: link,
+					tags: formData.tags,
+					allowed_users:
+						formData.visibility === 'private'
+							? formData.allowedUsers.map((u) => u.id)
+							: undefined,
+					allowed_groups: formData.allowedGroups.map((g) => g.id),
+				}),
+			})
+
+			await checkResponse(response)
+			return response.json() as Promise<{ id: string }>
 		},
-		onSuccess: () => {
-			// TODO: goto profile?
+		onSuccess: (res) => {
+			push(`/post/${res.id}`)
 		},
 		onError: () => {
 			scroll?.({ top: 0, behavior: 'smooth' })
@@ -67,23 +93,13 @@ export function SubmitPostForm() {
 		mode: 'all',
 		defaultValues: {
 			description: '',
-			location: { lat: '', lng: '' },
+			// location: { lat: '', lng: '' },
 			title: '',
 			visibility: 'public',
 			tags: [],
 			image: null,
 			allowedGroups: [],
-			allowedUsers: [
-				{
-					avatar: {
-						src: 'https://avatars.githubusercontent.com/u/7655549?v=4',
-						width: 128,
-						height: 128,
-					},
-					id: '1',
-					username: 'John Doe',
-				},
-			],
+			allowedUsers: [],
 		},
 		resolver: zodResolver(submitPostFromSchema),
 	})
@@ -151,7 +167,7 @@ export function SubmitPostForm() {
 					)}
 				/>
 
-				<FormLocation form={form} />
+				{/* <FormLocation form={form} /> */}
 				<FormVisibility form={form} />
 
 				<FormTags form={form} />

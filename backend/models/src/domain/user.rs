@@ -1,3 +1,5 @@
+use once_cell::sync::Lazy;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 use validator::{Validate, ValidationErrors};
@@ -9,6 +11,8 @@ use super::{
     wall::Wall,
     Id,
 };
+
+static RE_USERNAME: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[a-zA-Z0-9_]+$").unwrap());
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub enum UserType {
@@ -79,11 +83,14 @@ impl UserType {
 #[derive(Clone, Debug, PartialEq, Validate, Serialize, Deserialize)]
 pub struct User {
     pub id: Id<User>,
-    #[validate(length(
-        min = 3,
-        max = 15,
-        message = "Username must be between 3 and 15 characters"
-    ))]
+    #[validate(
+        length(
+            min = 3,
+            max = 15,
+            message = "Username must be between 3 and 15 characters"
+        ),
+        regex(path = *RE_USERNAME, message = "Username must be alphanumeric")
+    )]
     pub username: String,
     #[validate(length(
         min = 0,

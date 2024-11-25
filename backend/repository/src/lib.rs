@@ -6,6 +6,7 @@ pub mod location_repository;
 pub mod post_comments_repository;
 pub mod post_likes_repository;
 pub mod post_repository;
+pub mod post_visibility_repository;
 pub mod tag_repository;
 pub mod user_repository;
 pub mod wall_post_repository;

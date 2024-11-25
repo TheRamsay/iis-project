@@ -1,8 +1,7 @@
 'use client'
 
-import type { Post } from '@/app/_types/post'
+import type { Post } from '@/app/post/_lib/fetch-post'
 import { Share2 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { useMemo } from 'react'
 
 type PostShareButton = { post: Pick<Post, 'id'> }
@@ -11,7 +10,7 @@ export function PostShareButton({ post }: PostShareButton) {
 	const link = useMemo(() => {
 		if (typeof location === 'undefined') return ''
 
-		return `${location.href}/post/${post.id}`
+		return `${location.hostname}:${location.port}/post/${post.id}`
 	}, [post.id])
 
 	return (

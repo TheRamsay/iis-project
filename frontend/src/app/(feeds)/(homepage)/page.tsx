@@ -1,23 +1,25 @@
 import { Feed } from './_ui/feed/feed'
-import { getSession } from '../../_lib/auth/get-session'
-import { FeedSortDropdown } from '../../_ui/feed/feed-sort'
-import { FeedSearchProvider } from '../../_ui/feed/feed-search/feed-search-provider'
+import { FeedSortDropdown } from '../_ui/feed/feed-sort'
+import { FeedSearchProvider } from '../_ui/feed/feed-search/feed-search-provider'
 import { getTypedSearchParams } from '../../_lib/typed-search-params/get-typed-search-params'
-import { feedSearchSchema } from '../../_ui/feed/feed-search/feed-search-schema'
-import { backendFetch } from '@/app/_lib/backend-fetch'
+import { feedSearchSchema } from '../_ui/feed/feed-search/feed-search-schema'
 import { FeedPagination } from './_ui/feed/feed-pagination'
+import { fetchMyFeed } from '../_lib/fetch-my-feed'
 
 const pageSize = 10
 
 export default async function Page({
 	searchParams,
 }: { searchParams: Record<string, string> }) {
-	const session = await getSession()
-	const filters = getTypedSearchParams(feedSearchSchema, searchParams)
+	const { page, sorting } = getTypedSearchParams(feedSearchSchema, searchParams)
 
-	const response = await backendFetch(
-		`/api/wall/feed?offset=${pageSize * filters.page}&limit=${pageSize}&sort=${filters.sorting}`,
-	)
+	const feed = await fetchMyFeed({
+		pagination: {
+			pageIndex: page,
+			pageSize,
+		},
+		sorting,
+	})
 
 	return (
 		<FeedSearchProvider>
@@ -28,7 +30,7 @@ export default async function Page({
 			</div>
 			<div className="space-y-8">
 				<Feed data={feed} />
-				<FeedPagination page={filters.page} hasMore={true} />
+				<FeedPagination page={page} hasMore={feed.length === pageSize} />
 			</div>
 		</FeedSearchProvider>
 	)

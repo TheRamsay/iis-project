@@ -1,12 +1,10 @@
-import type { Comments } from "./comments";
+import type { Comment } from "./comments";
 import type { User } from "./user";
 
 export type Post = {
   id: number;
   image: {
     src: string;
-    width: number;
-    height: number;
   };
   title: string;
   description?: string;
@@ -17,7 +15,7 @@ export type Post = {
   };
   user: User;
   likeCount: number;
-  comments: Comments[];
+  comments: Comment[];
 };
 
 export const dummyPosts: Post[] = Array(10)
@@ -26,8 +24,6 @@ export const dummyPosts: Post[] = Array(10)
     id: i,
     image: {
       src: "https://picsum.photos/256",
-      width: 800,
-      height: 800,
     },
     title: "This is a post",
     description: "This is a post description",
@@ -37,8 +33,6 @@ export const dummyPosts: Post[] = Array(10)
       username: "fitstagram",
       avatar: {
         src: "https://avatars.githubusercontent.com/u/7655549?v=4",
-        width: 32,
-        height: 32,
       },
     },
     likeCount: 10,

@@ -6,6 +6,11 @@ import { Suspense } from 'react'
 import { getTypedSearchParams } from '@/app/_lib/typed-search-params/get-typed-search-params'
 import { feedSearchSchema } from './feed-search/feed-search-schema'
 import { dummyPosts } from '@/app/_types/post'
+import { fetchGroupByUsername } from '@/app/(feeds)/group/_lib/fetch-groups-by-username'
+import { fetchWallById } from '../../_lib/fetch-wall-by-id'
+import { fetchUserByUsername } from '@/app/_lib/user/fetch-user'
+import { fetchWallByTag } from '../../_lib/fetch-wall-by-tag'
+import type { FeedFilters } from '../../_lib/filters'
 
 type MiniatureFeed = (
 	| {
@@ -29,31 +34,39 @@ export async function MiniatureFeed(props: MiniatureFeed) {
 	)
 }
 
-async function fetchPosts(
-	props: MiniatureFeed,
-	filters: ReturnType<typeof getTypedSearchParams<typeof feedSearchSchema>>,
-) {
+async function fetchPosts(props: MiniatureFeed, filters: FeedFilters) {
 	if ('username' in props) {
-		// TODO: endpoint
 		const username = props.username
-		const posts = dummyPosts
+
+		const user = await fetchUserByUsername(username)
+
+		const posts = await fetchWallById(user.wallId, filters)
+
 		return { posts }
 	}
 
 	if ('groupname' in props) {
-		// TODO: endpoint
 		const groupname = props.groupname
-		const posts = dummyPosts
 
-		const groupModeratorIdList = ['1', '2', '3']
+		const group = await fetchGroupByUsername(groupname)
+		const groupModeratorId = group.admin.id
 
-		return { posts, groupModeratorIdList }
+		const posts = await fetchWallById(group.wallId, filters)
+
+		return {
+			posts,
+			group: {
+				id: group.id,
+				moderatorId: groupModeratorId,
+			},
+		}
 	}
 
 	if ('tag' in props) {
-		// TODO: endpoint
 		const tag = props.tag
-		const posts = dummyPosts
+
+		const posts = await fetchWallByTag(tag, filters)
+
 		return { posts }
 	}
 
@@ -63,7 +76,7 @@ async function fetchPosts(
 async function _MiniatureFeed(props: MiniatureFeed) {
 	const filters = getTypedSearchParams(feedSearchSchema, props.searchParams)
 
-	const { posts, groupModeratorIdList } = await fetchPosts(props, filters)
+	const { posts, group } = await fetchPosts(props, filters)
 
 	return (
 		<FeedSearchProvider>
@@ -75,7 +88,7 @@ async function _MiniatureFeed(props: MiniatureFeed) {
 			<div className="grid grid-cols-3 gap-3">
 				{posts.map((post) => (
 					<div key={post.id} className="w-full h-full relative aspect-square">
-						<PostDialog post={post}>
+						<PostDialog post={post} group={group}>
 							<Image
 								src={post.image.src}
 								fill

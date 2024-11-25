@@ -36,6 +36,7 @@ pub trait WallRepository {
         user_id: Option<Id<User>>,
         offset: i64,
         limit: i64,
+        is_mod: bool,
     ) -> Result<Vec<WallPostTuple>, DbErr>;
     async fn get_posts_by_tag(
         &self,
@@ -43,6 +44,7 @@ pub trait WallRepository {
         user_id: Option<Id<User>>,
         offset: i64,
         limit: i64,
+        is_mod: bool,
     ) -> Result<Vec<WallPostTuple>, DbErr>;
     async fn get_feed(
         &self,
@@ -78,6 +80,7 @@ impl WallRepository for DbWallRepository {
         user_id: Option<Id<User>>,
         offset: i64,
         limit: i64,
+        is_mod: bool,
     ) -> Result<Vec<WallPostTuple>, DbErr> {
         let is_user_wall = models::schema::user::Entity::find()
             .filter(
@@ -89,8 +92,21 @@ impl WallRepository for DbWallRepository {
             .await?
             .is_some();
 
-        let wall_posts = if !is_user_wall {
-            if (user_id.is_none()) {
+        let wall_posts = if is_mod {
+            models::schema::wall_post::Entity::find()
+                .from_raw_sql(Statement::from_sql_and_values(
+                    DbBackend::Postgres,
+                    r#"select * from wall_post wp  
+join post p on p.id  = wp.post_id 
+where wp.wall_id = $1 
+ORDER BY created_at DESC  -- Order posts by the latest first
+LIMIT $2 OFFSET $3"#,
+                    [wall_id.id.into(), limit.into(), offset.into()],
+                ))
+                .all(self.db.as_ref())
+                .await?
+        } else if !is_user_wall {
+            if user_id.is_none() {
                 return Ok(vec![]);
             }
 
@@ -257,8 +273,10 @@ FROM paged_posts;"#,
         user_id: Option<Id<User>>,
         offset: i64,
         limit: i64,
+        is_mod: bool,
     ) -> Result<Vec<WallPostTuple>, DbErr> {
-        let posts = get_posts_by_tag_helper(user_id, &tag, self.db.clone(), offset, limit).await?;
+        let posts =
+            get_posts_by_tag_helper(user_id, &tag, self.db.clone(), offset, limit, is_mod).await?;
 
         Ok(posts)
     }
@@ -281,8 +299,34 @@ async fn get_posts_by_tag_helper(
     db_conn: Arc<DbConn>,
     offset: i64,
     limit: i64,
+    is_mod: bool,
 ) -> Result<Vec<WallPostTuple>, DbErr> {
-    let post_tags = if let Some(user_id) = user_id {
+    let post_tags = if is_mod {
+        models::schema::post_tag::Entity::find()
+            .from_raw_sql(Statement::from_sql_and_values(
+                DbBackend::Postgres,
+                r#"
+WITH visible_posts AS (
+    SELECT * 
+    FROM post_tag pt 
+    JOIN post p ON p.id = pt.post_id 
+    WHERE pt.tag = $1
+),
+paged_posts AS (
+    SELECT * 
+    FROM visible_posts
+    ORDER BY created_at DESC
+    LIMIT $2 OFFSET $3
+)
+
+SELECT * 
+FROM paged_posts;
+"#,
+                [tag.into(), limit.into(), offset.into()],
+            ))
+            .all(db_conn.as_ref())
+            .await?
+    } else if let Some(user_id) = user_id {
         models::schema::post_tag::Entity::find()
             .from_raw_sql(Statement::from_sql_and_values(
                 DbBackend::Postgres,

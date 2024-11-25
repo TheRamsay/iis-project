@@ -121,7 +121,6 @@ const ChipInput: FC<ChipInputProps> = ({
 	}, [fullTags, partialTag])
 
 	useEffect(() => {
-		console.log('onvaluechange')
 		onValueChange(allTags)
 	}, [onValueChange, allTags])
 

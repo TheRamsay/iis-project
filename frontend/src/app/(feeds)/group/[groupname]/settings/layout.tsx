@@ -2,9 +2,10 @@ import { Container } from '@/components/components/container'
 import { redirect } from 'next/navigation'
 import { Sidebar, type SidebarItem } from '@/app/_ui/sidebar'
 import { getSession } from '@/app/_lib/auth/get-session'
+import { fetchGroupByUsername } from '../../_lib/fetch-groups-by-username'
 
 const sidebarItems = (id: string): SidebarItem[] => [
-	{ name: 'Settings', path: `/group/${id}/settings` },
+	{ name: 'Dashboard', path: `/group/${id}/settings` },
 	{ name: 'Requests', path: `/group/${id}/settings/requests` },
 	{ name: 'Users', path: `/group/${id}/settings/users` },
 	{
@@ -20,8 +21,13 @@ export default async function Layout({
 }: { children: React.ReactNode; params: { groupname: string } }) {
 	const session = await getSession()
 
-	// TODO: endpoint (je moderator skupiny?)
 	if (!session) {
+		return redirect('/')
+	}
+
+	const group = await fetchGroupByUsername(groupname)
+
+	if (group.admin.id !== session?.userId) {
 		return redirect('/')
 	}
 

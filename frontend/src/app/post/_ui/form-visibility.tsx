@@ -11,15 +11,14 @@ import {
 import type { UseFormReturn } from 'react-hook-form'
 import { type Entity, PickEntities } from './pick-entities'
 import { Collapsible } from '@/components/components/animation/Collapsible'
-import { z, type ZodType } from 'zod'
+import { z } from 'zod'
 
-const entitySchema: ZodType<Entity> = z.object({
+const entitySchema = z.object({
 	id: z.string(),
 	username: z.string(),
 	avatar: z.object({
-		src: z.string(),
-		width: z.number(),
-		height: z.number(),
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		src: z.string().optional().nullable() as any,
 	}),
 })
 
@@ -27,7 +26,7 @@ export const formVisibilitySchema = z.object({
 	visibility: z.enum(['public', 'private']),
 	allowedUsers: z.array(entitySchema),
 	allowedGroups: z.array(entitySchema),
-}) satisfies ZodType<FormSubset>
+})
 
 type FormSubset = {
 	visibility: 'public' | 'private'
@@ -89,12 +88,22 @@ export function FormVisibility<T extends FormSubset>({
 					<PickEntities
 						type="user"
 						list={form.watch('allowedUsers')}
-						onChange={(newList) => form.setValue('allowedUsers', newList)}
+						onChange={(newList) =>
+							form.setValue('allowedUsers', newList, {
+								shouldTouch: true,
+								shouldValidate: true,
+							})
+						}
 					/>
 					<PickEntities
 						type="group"
 						list={form.watch('allowedGroups')}
-						onChange={(newList) => form.setValue('allowedGroups', newList)}
+						onChange={(newList) =>
+							form.setValue('allowedGroups', newList, {
+								shouldTouch: true,
+								shouldValidate: true,
+							})
+						}
 					/>
 				</Collapsible>
 				<Collapsible
@@ -104,7 +113,12 @@ export function FormVisibility<T extends FormSubset>({
 					<PickEntities
 						type="group"
 						list={form.watch('allowedGroups')}
-						onChange={(newList) => form.setValue('allowedGroups', newList)}
+						onChange={(newList) =>
+							form.setValue('allowedGroups', newList, {
+								shouldTouch: true,
+								shouldValidate: true,
+							})
+						}
 					/>
 				</Collapsible>
 			</span>
