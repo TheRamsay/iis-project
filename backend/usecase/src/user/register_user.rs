@@ -16,8 +16,8 @@ use super::auth_utils::hash_password;
 #[derive(Debug)]
 pub struct RegisterUserInput {
     pub email: Option<String>,
-    pub display_name: Option<String>,
     pub username: String,
+    pub description: Option<String>,
     pub avatar_url: Option<String>,
     pub user_type: UserType,
     pub password: String,
@@ -52,9 +52,9 @@ where
         let wall_id = self.wall_repository.create(Wall { id: Id::gen() }).await?;
 
         let model_result = User::new(
-            None,
             input.username.clone(),
             input.email.clone(),
+            None,
             input.avatar_url,
             input.user_type,
             wall_id,

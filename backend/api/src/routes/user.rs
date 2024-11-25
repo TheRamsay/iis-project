@@ -1,6 +1,6 @@
 use anyhow::anyhow;
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     routing::{delete, get, post, put},
 };
 use axum_extra::extract::{
@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use usecase::user::{
     block_user::{BlockUserInput, BlockUserUseCase},
-    get_all_users::GetAllUsersUseCase,
+    get_all_users::{GetAllUsersInput, GetAllUsersUseCase},
     get_user::{GetUserInput, GetUserUseCase},
     get_user_by_username::{GetUserByUsernameInput, GetUserByUsernameUseCase},
     register_user::{RegisterUserInput, RegisterUserUseCase},
@@ -32,8 +32,8 @@ use crate::{
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 struct CreateUserRequest {
-    display_name: Option<String>,
     username: String,
+    description: Option<String>,
     email: Option<String>,
     avatar_url: Option<String>,
     password: String,
@@ -58,8 +58,8 @@ async fn create_user(
         RegisterUserUseCase::new(state.user_repository.clone(), state.wall_repository.clone());
 
     let input = RegisterUserInput {
-        display_name: payload.display_name,
         username: payload.username,
+        description: payload.description,
         email: payload.email,
         avatar_url: payload.avatar_url,
         user_type: payload.user_type,
@@ -74,8 +74,8 @@ async fn create_user(
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GetUserResponse {
     pub id: Uuid,
-    pub display_name: Option<String>,
     pub username: String,
+    pub description: Option<String>,
     pub email: Option<String>,
     pub avatar_url: Option<String>,
     pub user_type: String,
@@ -96,8 +96,8 @@ async fn get_user_by_username(
     if let Some(user) = user {
         anyhow::Result::Ok(Json(GetUserResponse {
             id: user.id.id,
-            display_name: user.display_name,
             username: user.username,
+            description: user.description,
             email: user.email,
             avatar_url: user.avatar_url,
             user_type: user.user_type.to_string(),
@@ -117,7 +117,7 @@ async fn me(state: State<AppState>, user: AuthUser) -> AppResult<Json<GetUserRes
     if let Some(user) = user {
         anyhow::Result::Ok(Json(GetUserResponse {
             id: user.id.id,
-            display_name: user.display_name,
+            description: user.description,
             username: user.username,
             email: user.email,
             avatar_url: user.avatar_url,
@@ -223,7 +223,7 @@ struct UpdateUserRequest {
     username: String,
     email: Option<String>,
     avatar_url: Option<String>,
-    password: String,
+    password: Option<String>,
     user_type: UserType,
 }
 
@@ -300,16 +300,32 @@ async fn update_user(
     std::result::Result::Ok((jar, ()))
 }
 
-async fn get_all_users(state: State<AppState>) -> AppResult<Json<Vec<GetUserResponse>>> {
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetAllUsersRequest {
+    role: Option<UserType>,
+    is_blocked: Option<bool>,
+    username: Option<String>,
+}
+
+async fn get_all_users(
+    state: State<AppState>,
+    Query(filters): Query<GetAllUsersRequest>,
+) -> AppResult<Json<Vec<GetUserResponse>>> {
     let user_usercase = GetAllUsersUseCase::new(state.user_repository.clone());
 
-    let users = user_usercase.execute().await?;
+    let users = user_usercase
+        .execute(GetAllUsersInput {
+            filter_role: filters.role,
+            filter_is_blocked: filters.is_blocked,
+            filter_username: filters.username,
+        })
+        .await?;
 
     let users = users
         .into_iter()
         .map(|user| GetUserResponse {
             id: user.id.id,
-            display_name: user.display_name,
+            description: user.description,
             username: user.username,
             email: user.email,
             avatar_url: user.avatar_url,

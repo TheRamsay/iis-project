@@ -92,9 +92,9 @@ async fn register(
 
     let inserted = register_user_usecase
         .execute(RegisterUserInput {
-            display_name: None,
             username: payload.username.clone(),
             email: payload.email.clone(),
+            description: None,
             avatar_url: payload.avatar_url.clone(),
             user_type: models::domain::user::UserType::Regular,
             password: payload.password.clone(),
