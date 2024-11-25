@@ -1,5 +1,5 @@
 import { getSession } from '@/app/_lib/auth/get-session'
-import { isMinAdministrator } from '@/app/_lib/get-permission-level'
+import { isMinModerator } from '@/app/_lib/get-permission-level'
 import { HomeIcon, Settings, SquarePlusIcon, UsersIcon } from 'lucide-react'
 import Link from 'next/link'
 
@@ -21,7 +21,7 @@ export async function HeaderNavigation() {
 					</Link>
 				</>
 			)}
-			{isMinAdministrator(session?.role) && (
+			{isMinModerator(session?.role) && (
 				<Link href="/admin">
 					<Settings width={24} height={24} />
 				</Link>
