@@ -254,7 +254,51 @@ CREATE TABLE public.wall_post (
 	CONSTRAINT fk_wall_post_wall FOREIGN KEY (wall_id) REFERENCES public.wall(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+
 -- Inserts
+
+INSERT INTO public.seaql_migrations
+("version", applied_at)
+VALUES('m20220101_000001_create_user_table', 1732567840);
+INSERT INTO public.seaql_migrations
+("version", applied_at)
+VALUES('m20241009_204556_create_location_table', 1732567840);
+INSERT INTO public.seaql_migrations
+("version", applied_at)
+VALUES('m20241009_204559_create_post_table', 1732567841);
+INSERT INTO public.seaql_migrations
+("version", applied_at)
+VALUES('m20241010_141247_create_post_related_tables', 1732567841);
+INSERT INTO public.seaql_migrations
+("version", applied_at)
+VALUES('m20241010_142036_create_wall_tables', 1732567841);
+INSERT INTO public.seaql_migrations
+("version", applied_at)
+VALUES('m20241010_142037_create_group_tables', 1732567841);
+INSERT INTO public.seaql_migrations
+("version", applied_at)
+VALUES('m20241010_142838_add_wall_to_user', 1732567841);
+INSERT INTO public.seaql_migrations
+("version", applied_at)
+VALUES('m20241028_210624_user_is_bloced', 1732567841);
+INSERT INTO public.seaql_migrations
+("version", applied_at)
+VALUES('m20241028_230949_location_lat_long', 1732567841);
+INSERT INTO public.seaql_migrations
+("version", applied_at)
+VALUES('m20241102_185447_pwd_hash_for_user', 1732567841);
+INSERT INTO public.seaql_migrations
+("version", applied_at)
+VALUES('m20241110_225527_group_join_request', 1732567841);
+INSERT INTO public.seaql_migrations
+("version", applied_at)
+VALUES('m20241121_111845_user_make_fields_unique', 1732567841);
+INSERT INTO public.seaql_migrations
+("version", applied_at)
+VALUES('m20241124_004127_visibility_tables', 1732567841);
+INSERT INTO public.seaql_migrations
+("version", applied_at)
+VALUES('m20241125_001304_add_description_user', 1732567841);
 
 INSERT INTO public."wall" (id) VALUES ('9eabfafe-d210-4628-82c8-9e9aa5cf2952');
 INSERT INTO public."wall" (id) VALUES ('88ff5762-5372-4c2e-a761-99f8ae80f1ea');
@@ -262,4 +306,4 @@ INSERT INTO public."wall" (id) VALUES ('68ce78e1-1f3a-402d-8729-427fe4661456');
 
 INSERT INTO public."user" (id, username, email, "user_type", wall_id, is_blocked, password_hash) VALUES ('6214fd84-1c6d-4f06-a233-efb1935fc7ad', 'dominik', 'dominik@test.cz', 'regular', '9eabfafe-d210-4628-82c8-9e9aa5cf2952', false, '$argon2id$v=19$m=19456,t=2,p=1$mWJ85rgmfeWcePKPJbvHCA$TE2U0+pqL+SomJIyZQSZqA2UA0yJE/kLcJe4WXFguI0');
 INSERT INTO public."user" (id, username, email, "user_type", wall_id, is_blocked, password_hash) VALUES ('59f437da-cef7-43b1-9d25-09590d80bd20', 'lukas', 'lukas@test.cz', 'moderator', '88ff5762-5372-4c2e-a761-99f8ae80f1ea', false, '$argon2id$v=19$m=19456,t=2,p=1$gVpxmHTz7xaYtYy/mMHprQ$H1zEnA+rCwuH4AZZCrmrDQhO0iHnKoNozSnjfvbyeNo');
-INSERT INTO public."user" (id, username, email, "user_type", wall_id, is_blocked, password_hash) VALUES ('db003ce1-6ea3-4eda-ac06-193cb092b7ac', 'matyas', 'matyas@test.cz', 'admin', '68ce78e1-1f3a-402d-8729-427fe4661456', false, '$argon2id$v=19$m=19456,t=2,p=1$RsvzIsDJczdZcbPAfw5lrw$m/5Pa12tqf8j1Un1iC9UVwHglO6irRmnOyOgGbDDCj8');
+INSERT INTO public."user" (id, username, email, "user_type", wall_id, is_blocked, password_hash) VALUES ('db003ce1-6ea3-4eda-ac06-193cb092b7ac', 'matyas', 'matyas@test.cz', 'administrator', '68ce78e1-1f3a-402d-8729-427fe4661456', false, '$argon2id$v=19$m=19456,t=2,p=1$RsvzIsDJczdZcbPAfw5lrw$m/5Pa12tqf8j1Un1iC9UVwHglO6irRmnOyOgGbDDCj8');
