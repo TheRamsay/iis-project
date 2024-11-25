@@ -18,9 +18,17 @@ export type Group = {
 };
 
 export async function fetchGroupsByUsername(
-  groupname: string
+  groupname: string,
+  whereUserId?: string
 ): Promise<Group[]> {
-  const response = await backendFetch(`/api/groups?query=${groupname}`);
+  const searchParams = new URLSearchParams();
+
+  searchParams.set("query", groupname);
+  if (whereUserId) {
+    searchParams.set("where_user", whereUserId);
+  }
+
+  const response = await backendFetch(`/api/groups?${searchParams.toString()}`);
 
   await checkResponse(response);
 

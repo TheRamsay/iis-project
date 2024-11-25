@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use models::domain::{
-        post::Post, post_comment::PostComment, Id,
+        post::Post, post_comment::PostComment, user::User, Id
     };
 use sea_orm::{
     DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter,

@@ -1,6 +1,6 @@
 use axum::{
     extract::{Path, State},
-    routing::get,
+    routing::{get, post},
 };
 use models::{domain::group_join_request::GroupJoinRequestStatus, errors::AppResult};
 use usecase::group::resolve_group_join_request::{self, ResolveGroupJoinRequestInput};

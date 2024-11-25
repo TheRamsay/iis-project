@@ -1,7 +1,6 @@
 use models::{
     domain::{
-        post_comment::PostComment,
-        Id,
+        post_comment::PostComment, user::User, Id
     },
     errors::AppResult,
 };
