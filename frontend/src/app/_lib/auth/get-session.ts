@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import type { Session } from "./types";
 import { BACKEND_URL } from "../constants";
 import { backendFetch } from "../backend-fetch";
+import { redirect } from "next/navigation";
 
 export async function getSession(): Promise<Session | null> {
   const cookiez = cookies();
@@ -15,7 +16,7 @@ export async function getSession(): Promise<Session | null> {
 
   if (!response.ok) {
     if (response.status === 401) {
-      return null;
+      redirect("/logout");
     }
 
     throw new Error("Failed to fetch session");

@@ -93,7 +93,7 @@ export function UserModal({
 						username: formData.username,
 						email: formData.email,
 						avatar_url: imageUrl || undefined,
-						user_type: data?.role || 'regular',
+						user_type: formData.role || 'regular',
 					}),
 				})
 
@@ -156,7 +156,7 @@ export function UserModal({
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger>{children}</DialogTrigger>
-			<DialogContent>
+			<DialogContent className="overflow-y-auto max-h-full">
 				<FormProvider {...form}>
 					<DialogTitle>User Settings</DialogTitle>
 					<FormServerError error={error} />
