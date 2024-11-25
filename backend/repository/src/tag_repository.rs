@@ -25,6 +25,7 @@ pub trait TagRepository {
     async fn create(&self, tag: PostTag) -> Result<(String, Uuid), DbErr>;
     async fn delete_by_id(&self, id: Id<PostTag>, tag: &str) -> Result<(), DbErr>;
     async fn search(&self, query: String) -> Result<Option<Vec<PostTag>>, DbErr>;
+    async fn get_tags_by_post_id(&self, id: Id<Post>) -> Result<Option<Vec<PostTag>>, DbErr>;
 }
 
 impl TagRepository for DbTagRepository {
@@ -59,6 +60,21 @@ impl TagRepository for DbTagRepository {
 
         Ok(Some(
             Tags.into_iter().map(PostTag::from).collect::<Vec<_>>(),
+        ))
+    }
+
+    async fn get_tags_by_post_id(&self, id: Id<Post>) -> Result<Option<Vec<PostTag>>, DbErr> {
+        let tags = models::schema::post_tag::Entity::find()
+            .filter(
+                models::schema::post_tag::Column::PostId
+                    .into_simple_expr()
+                    .eq(id.id),
+            )
+            .all(self.db.as_ref())
+            .await?;
+
+        Ok(Some(
+            tags.into_iter().map(PostTag::from).collect::<Vec<_>>(),
         ))
     }
 }

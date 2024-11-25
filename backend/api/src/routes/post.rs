@@ -1,19 +1,33 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use usecase::post::{
-    comment_post::{CommentPostInput, CommentPostUseCase},
-    create_post::{CreatePostInput, CreatePostUseCase},
-    delete_post::{DeletePostInput, DeletePostUseCase},
-    get_comment::{GetCommentInput, GetCommentUseCase},
-    get_post::{GetPostInput, GetPostUseCase},
-    get_post_comments::{GetPostCommentsInput, GetPostCommentsUseCase},
-    get_post_is_liked_by_user::{PostLikedByUserInput, PostLikedByUserUseCase},
-    get_post_likes::{self, GetPostLikesInput},
-    like_post::{LikePostInput, LikePostUseCase},
-    uncomment_post::{UncommentPostInput, UncommentPostUseCase},
-    unlike_post::{UnlikePostInput, UnlikePostUseCase},
-    update_post::{UpdatePostInput, UpdatePostUseCase},
-    upload_image::{UploadImageInput, UploadImageUseCase},
+use usecase::{
+    group::create_group,
+    post::{
+        comment_post::{CommentPostInput, CommentPostUseCase},
+        create_post::{CreatePostInput, CreatePostUseCase},
+        delete_post::{DeletePostInput, DeletePostUseCase},
+        get_comment::{GetCommentInput, GetCommentUseCase},
+        get_post::{GetPostInput, GetPostUseCase},
+        get_post_comments::{GetPostCommentsInput, GetPostCommentsUseCase},
+        get_post_is_liked_by_user::{PostLikedByUserInput, PostLikedByUserUseCase},
+        get_post_likes::{self, GetPostLikesInput},
+        like_post::{LikePostInput, LikePostUseCase},
+        uncomment_post::{UncommentPostInput, UncommentPostUseCase},
+        unlike_post::{UnlikePostInput, UnlikePostUseCase},
+        update_post::{UpdatePostInput, UpdatePostUseCase},
+        upload_image::{UploadImageInput, UploadImageUseCase},
+    },
+    post_tag::{
+        create_post_tag,
+        delete_tag::{DeletePostTagInput, DeletePostTagUseCase},
+        get_post_tags::{self, GetPostTagsInput, GetPostTagsUseCase},
+    },
+    visibility::{
+        create_post_group_visibility::{
+            self, CreateGroupPostVisibilityInput, CreateGroupPostVisibilityUseCase,
+        },
+        create_post_user_visibility::{self, CreateUserPostVisibilityUseCase},
+    },
 };
 use uuid::Uuid;
 use validator::ValidationErrors;
@@ -43,6 +57,9 @@ struct CreatePostRequest {
     content_url: String,
     visibility: String,
     location_id: Option<Uuid>,
+    tags: Option<Vec<String>>,
+    allowed_users: Option<Vec<Uuid>>,
+    allowed_groups: Option<Vec<Uuid>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -60,6 +77,14 @@ async fn create_post(
         state.wall_post_repository.clone(),
         state.user_repository.clone(),
     );
+    let create_tag_use_case = usecase::post_tag::create_post_tag::CreatePostTagUseCase::new(
+        state.post_tag_repository.clone(),
+    );
+    let create_post_group_visibility_use_case =
+        CreateGroupPostVisibilityUseCase::new(state.post_visibility_repository.clone());
+
+    let create_post_user_visibility_use_case =
+        CreateUserPostVisibilityUseCase::new(state.post_visibility_repository.clone());
 
     let input = CreatePostInput {
         title: payload.title,
@@ -80,6 +105,44 @@ async fn create_post(
 
     let output = post_usecase.execute(input).await?;
 
+    if !payload.tags.is_none() {
+        for tag in payload.tags.unwrap() {
+            let tag_input = usecase::post_tag::create_post_tag::CreatePostTagInput {
+                post_id: output.id,
+                tag,
+            };
+
+            create_tag_use_case.execute(tag_input).await?;
+        }
+    }
+
+    if !payload.allowed_users.is_none() {
+        for user_id in payload.allowed_users.unwrap() {
+            let user_visibility_input =
+                create_post_user_visibility::CreateUserPostVisibilityInput {
+                    post_id: output.id,
+                    user_id,
+                };
+
+            create_post_user_visibility_use_case
+                .execute(user_visibility_input)
+                .await?;
+        }
+    }
+
+    if !payload.allowed_groups.is_none() {
+        for group_id in payload.allowed_groups.unwrap() {
+            let group_visibility_input = CreateGroupPostVisibilityInput {
+                post_id: output.id,
+                group_id,
+            };
+
+            create_post_group_visibility_use_case
+                .execute(group_visibility_input)
+                .await?;
+        }
+    }
+
     anyhow::Result::Ok(Json(CreatePostResponse { id: output.id }))
 }
 
@@ -96,6 +159,7 @@ struct GetPostResponse {
     comments: Option<Vec<GetPostCommentResponse>>,
     location_id: Option<Uuid>,
     created_at: DateTime<Utc>,
+    tags: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -118,12 +182,17 @@ async fn get_post(
     let get_post_comments_use_case =
         GetPostCommentsUseCase::new(state.post_comments_repository.clone());
 
+    let get_post_tags_use_case = GetPostTagsUseCase::new(state.post_tag_repository.clone());
+
     let post = post_usecase.execute(GetPostInput { id }).await?;
     let likes = get_post_likes_use_case
         .execute(GetPostLikesInput { id: id })
         .await?;
     let comments = get_post_comments_use_case
         .execute(GetPostCommentsInput { id: id })
+        .await?;
+    let tags = get_post_tags_use_case
+        .execute(GetPostTagsInput { id })
         .await?;
 
     if let Some(post) = post {
@@ -132,7 +201,7 @@ async fn get_post(
             title: post.post.title,
             description: post.post.description,
             post_type: match post.post.post_type {
-                PostType::Photo => "Photo".into(),
+                PostType::Photo => "photo".into(),
             },
             author_id: post.post.author_id.into(),
             content_url: post.post.content_url,
@@ -158,6 +227,7 @@ async fn get_post(
                     })
                     .collect()
             }),
+            tags: Some(tags.tags.into_iter().map(|tag| tag.tag).collect()),
             created_at: post.post.created_at,
         }))
     } else {
@@ -206,6 +276,7 @@ struct UpdatePostRequest {
     post_type: String,
     visibility: String,
     location_id: Option<Uuid>,
+    tags: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -218,6 +289,7 @@ struct UpdatePostResponse {
     visibility: String,
     location_id: Option<Uuid>,
     created_at: DateTime<Utc>,
+    tags: Option<Vec<String>>,
 }
 
 async fn update_post(
@@ -228,6 +300,12 @@ async fn update_post(
 ) -> AppResult<Json<UpdatePostResponse>> {
     let post_use_case = GetPostUseCase::new(state.post_repository.clone());
     let update_post_use_case = UpdatePostUseCase::new(state.post_repository.clone());
+    let create_post_tag_use_case = usecase::post_tag::create_post_tag::CreatePostTagUseCase::new(
+        state.post_tag_repository.clone(),
+    );
+    let delete_tags_use_case = DeletePostTagUseCase::new(state.post_tag_repository.clone());
+    let get_post_tags_use_case = GetPostTagsUseCase::new(state.post_tag_repository.clone());
+
     let post = post_use_case.execute(GetPostInput { id }).await?;
 
     if post.is_none() {
@@ -270,6 +348,31 @@ async fn update_post(
         return Err(AppError::NotFound("Post".into()));
     }
 
+    let tags = get_post_tags_use_case
+        .execute(GetPostTagsInput { id })
+        .await?;
+
+    if !payload.tags.is_none() {
+        for old_tags in tags.tags {
+            let delete_tags_input = DeletePostTagInput {
+                id: id,
+                tag: old_tags.tag,
+            };
+            delete_tags_use_case.execute(delete_tags_input).await?;
+        }
+
+        for tag in payload.tags.unwrap() {
+            let tag_input =
+                usecase::post_tag::create_post_tag::CreatePostTagInput { post_id: id, tag };
+
+            create_post_tag_use_case.execute(tag_input).await?;
+        }
+    }
+
+    let tags = get_post_tags_use_case
+        .execute(GetPostTagsInput { id })
+        .await?;
+
     let updated_post = result.unwrap();
     anyhow::Result::Ok(Json(UpdatePostResponse {
         id: updated_post.post.id.into(),
@@ -285,6 +388,7 @@ async fn update_post(
         },
         location_id: updated_post.post.location_id.map(|id| id.into()),
         created_at: updated_post.post.created_at,
+        tags: Some(tags.tags.into_iter().map(|tag| tag.tag).collect()),
     }))
 }
 
