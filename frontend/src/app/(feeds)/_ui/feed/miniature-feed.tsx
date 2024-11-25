@@ -53,7 +53,13 @@ async function fetchPosts(props: MiniatureFeed, filters: FeedFilters) {
 
 		const posts = await fetchWallById(group.wallId, filters)
 
-		return { posts, groupModeratorId }
+		return {
+			posts,
+			group: {
+				id: group.id,
+				moderatorId: groupModeratorId,
+			},
+		}
 	}
 
 	if ('tag' in props) {
@@ -70,7 +76,7 @@ async function fetchPosts(props: MiniatureFeed, filters: FeedFilters) {
 async function _MiniatureFeed(props: MiniatureFeed) {
 	const filters = getTypedSearchParams(feedSearchSchema, props.searchParams)
 
-	const { posts, groupModeratorId } = await fetchPosts(props, filters)
+	const { posts, group } = await fetchPosts(props, filters)
 
 	return (
 		<FeedSearchProvider>
@@ -82,7 +88,7 @@ async function _MiniatureFeed(props: MiniatureFeed) {
 			<div className="grid grid-cols-3 gap-3">
 				{posts.map((post) => (
 					<div key={post.id} className="w-full h-full relative aspect-square">
-						<PostDialog post={post} groupModeratorId={groupModeratorId}>
+						<PostDialog post={post} group={group}>
 							<Image
 								src={post.image.src}
 								fill

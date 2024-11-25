@@ -12,13 +12,16 @@ import type { Post } from '@/app/post/_lib/fetch-post'
 
 type PostDialogContent = {
 	post: Post
-	groupModeratorId?: string
+	group?: {
+		id: string
+		moderatorId: string
+	}
 	dialog?: boolean
 }
 
 export function PostDialogContent({
 	post,
-	groupModeratorId,
+	group,
 	dialog = true,
 }: PostDialogContent) {
 	return (
@@ -71,10 +74,7 @@ export function PostDialogContent({
 						</div>
 						<div className="space-x-4 flex ">
 							<PostEditButton post={post} />
-							<PostDeleteButton
-								post={post}
-								groupModeratorId={groupModeratorId}
-							/>
+							<PostDeleteButton post={post} group={group} />
 						</div>
 					</div>
 					<div className="px-4 py-2">

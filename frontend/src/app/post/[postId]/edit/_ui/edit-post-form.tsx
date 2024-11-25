@@ -61,14 +61,16 @@ export function EditPostForm({ postId }: { postId: string }) {
 		queryFn: async () => {
 			const post = await fetchPost(postId)
 
+			console.log(post)
+
 			return {
 				id: postId,
 				title: post.title,
 				description: post.description,
 				visibility: post.visibility,
 				// location: { lat: '', lng: '' },
-				allowedUsers: [], // TODO!
-				allowedGroups: [],
+				allowedUsers: post.allowedUsers,
+				allowedGroups: post.allowedGroups,
 				tags: post.tags,
 			}
 		},
@@ -118,6 +120,8 @@ export function EditPostForm({ postId }: { postId: string }) {
 		},
 		resolver: zodResolver(editPostFromSchema),
 	})
+
+	console.log(form)
 
 	useEffect(() => {
 		if (data) {

@@ -105,10 +105,12 @@ export default function Page({
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			const data: any[] = await response.json()
 
-			const mapped = data.map((entry) => ({
-				id: entry.id,
-				username: entry.user.username,
-			}))
+			const mapped = data
+				.filter((entry) => entry.status === 'pending')
+				.map((entry) => ({
+					id: entry.id,
+					username: entry.user.username,
+				}))
 
 			const filtered = mapped.filter((entry) => {
 				if (filters.search) {
