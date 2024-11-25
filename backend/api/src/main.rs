@@ -82,8 +82,8 @@ async fn create_app_state() -> AppState {
         cloudinary_repository: GenericRepository {},
         conn: conn.clone(),
         jwt_secret,
-        redis_client: Arc::new(redis::Client::open("redis://localhost:6379").unwrap()),
-        // redis_client: Arc::new(redis::Client::open("rediss://default:AWEgAAIjcDEzNmU1YzI0MzU1MGI0NThhOGM5N2Y4M2VlMDNjYjkxMnAxMA@sincere-mink-24864.upstash.io:6379").unwrap()),
+        // redis_client: Arc::new(redis::Client::open("redis://localhost:6379").unwrap()),
+        redis_client: Arc::new(redis::Client::open("rediss://default:AWEgAAIjcDEzNmU1YzI0MzU1MGI0NThhOGM5N2Y4M2VlMDNjYjkxMnAxMA@sincere-mink-24864.upstash.io:6379").unwrap()),
     }
 }
 
