@@ -25,6 +25,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(User::Id).uuid().not_null().primary_key())
                     .col(string(User::Username))
                     .col(ColumnDef::new(User::Email).string().null())
+                    .col(ColumnDef::new(User::Description).string().null())
                     .col(ColumnDef::new(User::AvatarUrl).string().null())
                     .col(
                         ColumnDef::new(User::UserType)
@@ -55,6 +56,7 @@ impl MigrationTrait for Migration {
 pub enum User {
     Table,
     Id,
+    Description,
     Username,
     Email,
     AvatarUrl,
