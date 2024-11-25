@@ -103,6 +103,30 @@
   >
 
     <h2>Implementace</h2>
+
+    <p>
+      <h3>
+        Frontend
+      </h3>
+
+      Frontend využívá framework NextJS a napsán v TypeScriptu. Některé komponenty (ty ve složce src/components) jsou
+      vypůjčené z ui knihovny Sushi (víceméně stylování + Radix-UI).
+
+      <h4>Instalace frontendu</h4>
+      <ol>
+        <li>Závislosti: node v18 a pnpm</li>
+        <p>apt install nodejs npm</p>
+        <p>npm install -g pnpm</p>
+        <p>pnpm i</p>
+        <li>Prosředí</li>
+        <p>Je třeba vytvořit .env soubor dle vzoru z .env.sample</p>
+        <li>Build</li>
+        <p>pnpm build</p>
+        <li>Spuštění</li>
+        <p>pnpm start</p>
+      </ol>
+    </p>
+
     <p>
       <h3>
        Backend 
@@ -147,20 +171,6 @@
       <li>jak rozbalit, konfigurovat, inicializovat databázi, ...</li>
     </ul>
 
-    <h4>Instalace frontendu</h4>
-    <ol>
-      <li>Závislosti: node v18 a pnpm</li>
-      <p>apt install nodejs npm</p>
-      <p>npm install -g pnpm</p>
-      <p>pnpm i</p>
-      <li>Prosředí</li>
-      <p>Je třeba vytvořit .env soubor dle vzoru z .env.sample</p>
-      <li>Build</li>
-      <p>pnpm build</p>
-      <li>Spuštění</li>
-      <p>pnpm start</p>
-    </ol>
-
     <h4>Instalace backendu</h4>
     <ol>
       <li>Instalace <a href="https://docs.docker.com/engine/install/">Docker</a> a <a href="https://docs.docker.com/compose/install/"> Docker compose</a></li>
@@ -194,6 +204,8 @@
       <li>FRONTEND_URL: adresa frontendu</li>
       <li>JWT_SECRET: šifrovací klíč pro JWT</li>
     </ul>
+
+    
 
     <h3>Ukládání obrázků</h3>
     Pro ukládání obrázku využíváme službu Cloudinary. Je to služba pro ukládání a transformaci obrázků v cloudu. Pro inicializaci je potřeba specifikovat proměnné prostředí <b>CLOUDINARY_CLOUD_NAME</b>, <b>CLOUDINARY_API_KEY</b> a <b>CLOUDINARY_API_SECRET</b> v souboru /backend/.env viz templete v předchozím bodu.
