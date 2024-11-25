@@ -49,7 +49,7 @@ where
     pub async fn execute(&self, input: CreateGroupInput) -> AppResult<CreateGroupOutput> {
         let exists = self
             .group_repository
-            .search(input.name.clone())
+            .search(input.name.clone(), None)
             .await?
             .iter()
             .any(|(group, _)| group.name.to_lowercase() == input.name.to_lowercase());

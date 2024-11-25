@@ -105,8 +105,9 @@ async fn get_group(
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
-struct SearchGroupRequest {
+struct SearchGroupRequestQuery {
     query: Option<String>,
+    where_member: Option<Uuid>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -116,12 +117,13 @@ struct SearchGroupResponse {
 
 async fn search_group(
     state: State<AppState>,
-    Query(params): Query<SearchGroupRequest>,
+    Query(params): Query<SearchGroupRequestQuery>,
 ) -> AppResult<Json<SearchGroupResponse>> {
     let group_usecace = SearchGroupUseCase::new(state.group_repository.clone());
 
     let input = SearchGroupInput {
         query: params.query.unwrap_or(String::new()),
+        filter_where_member: params.where_member.map(Into::into),
     };
 
     let output = group_usecace.execute(input).await?;
