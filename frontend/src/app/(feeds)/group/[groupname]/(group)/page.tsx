@@ -41,7 +41,7 @@ async function Feed({
 	const group = await fetchGroupByUsername(groupname)
 	const { status } = await fetchGroupStatus({ groupId: group.id })
 
-	if (status !== 'joined' && !isPublic) {
+	if (status !== 'joined' && !isPublic && group.admin.id !== session?.userId) {
 		return (
 			<div className="w-full flex justify-center text-xl">
 				This group is private and you are not a member

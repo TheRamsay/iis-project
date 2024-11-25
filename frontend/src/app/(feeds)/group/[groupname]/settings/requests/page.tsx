@@ -99,7 +99,7 @@ export default function Page({
 	const { data, isLoading } = useQuery({
 		queryKey: ['group-requests', groupId, filters],
 		queryFn: async () => {
-			const response = await backendFetch(`/api/groups/${groupId}`)
+			const response = await backendFetch(`/api/groups/${groupId}/requests`)
 
 			await checkResponse(response)
 
@@ -109,18 +109,6 @@ export default function Page({
 			const mapped = data.map((entry) => ({
 				id: entry.id,
 				username: entry.user.username,
-				// user: {
-				// 	id: entry.user_id,
-				// 	username: entry.username,
-				// 	displayName: entry.display_name,
-				// 	avatar: {
-				// 		src: entry.avatar_url,
-				// 		width: 32,
-				// 		height: 32,
-				// 	},
-				// 	role: entry.user_type,
-				// 	isBlocked: entry.is_blocked,
-				// },
 			}))
 
 			const filtered = mapped.filter((entry) => {

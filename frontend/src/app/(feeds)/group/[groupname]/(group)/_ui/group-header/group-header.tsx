@@ -4,51 +4,51 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { GroupHeaderFollow, type GroupType } from './group-header-follow'
 import { isMinModerator } from '@/app/_lib/get-permission-level'
+import {
+	fetchGroupByUsername,
+	type Group,
+} from '@/app/(feeds)/group/_lib/fetch-groups-by-username'
 
 interface GroupHeader {
 	groupname: string
 }
 
 export async function GroupHeader({ groupname }: GroupHeader) {
-	const group = {
-		name: 'groupname',
-		description:
-			'descriptiondondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescription',
-	}
+	const group = await fetchGroupByUsername(groupname)
 
 	return (
 		<div className="flex w-full justify-between items-center space-x-4">
 			<div className="flex-col flex">
 				<div className="flex-row flex items-center space-x-6">
 					<p className="space-y-2 [word-break:break-word]">
-						<span className="text-2xl float-left">{group.name}</span>
-						<br />
-						<span className="text-sm text-gray-300">{group.description}</span>
+						<span className="text-2xl float-left">{group.groupname}</span>
+						{/* <br />
+						<span className="text-sm text-gray-300">{group.description}</span> */}
 					</p>
 				</div>
 			</div>
-			<GroupActions groupname={groupname} />
+			<GroupActions group={group} />
 		</div>
 	)
 }
 
 interface GroupActions {
-	groupname: string
+	group: Group
 }
 
-async function GroupActions({ groupname }: GroupActions) {
+async function GroupActions({ group }: GroupActions) {
 	const session = await getSession()
 
 	const groupType: GroupType = 'private' as GroupType
-	const isManager = true
+	const isManager = group.admin.id === session?.userId
 
 	const actions: React.ReactNode[] = []
 
-	if (session) {
+	if (session && !isManager) {
 		actions.push(
 			<GroupHeaderFollow
 				key="follow"
-				groupname={groupname}
+				groupId={group.id}
 				groupType={groupType}
 			/>,
 		)
@@ -56,7 +56,7 @@ async function GroupActions({ groupname }: GroupActions) {
 
 	if (isManager) {
 		actions.push(
-			<Link href={`/group/${groupname}/settings`} key="settings">
+			<Link href={`/group/${group.groupname}/settings`} key="settings">
 				<Button variant="outline" fullWidth>
 					Settings
 				</Button>

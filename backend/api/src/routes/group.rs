@@ -413,8 +413,8 @@ pub fn group_routes() -> axum::Router<crate::AppState> {
         .route("/:id/members", get(get_group_members))
         .route("/:id/requests", get(get_group_requests))
         .route("/:id/status", get(check_user_status_in_group))
-        .route("/:id/join", get(join_group))
-        .route("/:id/leave", get(leave_group))
+        .route("/:id/join", post(join_group))
+        .route("/:id/leave", post(leave_group))
         .route("/:id/remove_user", post(remove_user))
         .route("/:id/add_user", post(add_user))
 }
