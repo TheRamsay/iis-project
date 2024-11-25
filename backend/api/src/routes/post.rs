@@ -734,6 +734,31 @@ async fn delete_post_comment(
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+struct RemovePostFromGroupResponse {
+    success: bool,
+}
+
+async fn delete_from_group(
+    state: State<AppState>,
+    Path(ids): Path<(Uuid, Uuid)>,
+) -> AppResult<Json<RemovePostFromGroupResponse>> {
+    let delete_group_post_visibility_use_case = DeleteGroupPostVisibilityUseCase::new(
+        state.post_visibility_repository.clone(),
+        state.wall_post_repository.clone(),
+        state.group_repository.clone(),
+    );
+
+    delete_group_post_visibility_use_case
+        .execute(DeleteGroupPostVisibilityInput {
+            post_id: ids.0,
+            group_id: ids.1,
+        })
+        .await?;
+
+    anyhow::Result::Ok(Json(RemovePostFromGroupResponse { success: true }))
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 struct UploadImageRequest {
     image: String,
 }
@@ -769,6 +794,7 @@ pub fn post_routes() -> axum::Router<crate::AppState> {
         .route("/:id/like/check", get(check_like_get))
         .route("/:id/like", post(like_post))
         .route("/:id/like", delete(unlike_post))
+        .route("/:id/group/:group_id", delete(delete_from_group))
         .route("/upload_image", post(upload_image))
         // Limit the size of the request body to 10mb
         .layer(DefaultBodyLimit::max(1024 * 1024 * 10))
