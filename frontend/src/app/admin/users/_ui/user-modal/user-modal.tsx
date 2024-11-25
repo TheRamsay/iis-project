@@ -79,29 +79,44 @@ export function UserModal({
 	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['admin-user', username],
 		mutationFn: async (formData: UserForm) => {
-			let imageUrl = formData.image
-			if (imageUrl?.startsWith('blob:')) {
-				const { link } = await uploadImage(imageUrl)
-				imageUrl = link
-			}
-
-			const response = await backendFetch(`/api/users/id/${data?.id}`, {
-				method: 'PUT',
-				body: JSON.stringify({
-					description: formData.description,
-					username: formData.username,
-					email: formData.email,
-					avatar_url: imageUrl || undefined,
-					user_type: data?.role || 'regular',
-				}),
-			})
-
-			try {
-				await checkResponse(response, { passError: true })
-			} catch (error) {
-				if (error instanceof Error) {
-					throw new Error(extractError(error.message))
+			{
+				let imageUrl = formData.image
+				if (imageUrl?.startsWith('blob:')) {
+					const { link } = await uploadImage(imageUrl)
+					imageUrl = link
 				}
+
+				const response = await backendFetch(`/api/users/id/${data?.id}`, {
+					method: 'PUT',
+					body: JSON.stringify({
+						description: formData.description,
+						username: formData.username,
+						email: formData.email,
+						avatar_url: imageUrl || undefined,
+						user_type: data?.role || 'regular',
+					}),
+				})
+
+				try {
+					await checkResponse(response, { passError: true })
+				} catch (error) {
+					if (error instanceof Error) {
+						throw new Error(extractError(error.message))
+					}
+					throw error
+				}
+			}
+			if (formData.isBlocked !== data?.isBlocked) {
+				const response = await backendFetch(
+					`/api/users/id/${data?.id}/${formData.isBlocked ? 'block' : 'unblock'}`,
+					{
+						method: 'POST',
+					},
+				)
+
+				await checkResponse(response, {
+					customError: 'Failed to block user',
+				})
 			}
 
 			return { username: formData.username }

@@ -7,7 +7,7 @@ import { Trash2Icon } from 'lucide-react'
 import { ErrorTooltip } from '../error-tooltip'
 import type { Post } from '@/app/post/_lib/fetch-post'
 import { backendFetch } from '@/app/_lib/backend-fetch'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 
 interface PostDeleteButton {
 	post: Pick<Post, 'id'> & {
@@ -28,6 +28,7 @@ export function PostDeleteButton({
 	const session = useSession()
 
 	const router = useRouter()
+	const path = usePathname()
 
 	const isGroupModerator = group?.moderatorId === session?.userId
 
@@ -48,7 +49,11 @@ export function PostDeleteButton({
 			}
 		},
 		onSuccess: () => {
-			router.refresh()
+			if (path.startsWith('/post/')) {
+				router.push('/')
+			} else {
+				router.refresh()
+			}
 		},
 	})
 

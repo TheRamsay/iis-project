@@ -362,5 +362,5 @@ pub fn user_routes() -> axum::Router<crate::AppState> {
         .route("/id/:id", get(get_user_by_id))
         .route("/id/:id", delete(delete_user))
         .route("/id/:id", put(update_user))
-        .route("/id/:id/block", get(block_user))
+        .route("/id/:id/block", post(block_user))
 }

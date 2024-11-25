@@ -14,7 +14,11 @@ export async function getSession(): Promise<Session | null> {
   const response = await backendFetch("/api/users/me");
 
   if (!response.ok) {
-    return null;
+    if (response.status === 401) {
+      return null;
+    }
+
+    throw new Error("Failed to fetch session");
   }
 
   const data = await response.json();
