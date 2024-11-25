@@ -1,10 +1,17 @@
+use once_cell::sync::Lazy;
+use regex::Regex;
+use validator::Validate;
+
 use crate::schema;
 
 use super::{post::Post, Id};
 
-#[derive(Clone, Debug, PartialEq)]
+static RE_TAG: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[a-zA-Z0-9]$").unwrap());
+
+#[derive(Clone, Debug, PartialEq, Validate)]
 pub struct PostTag {
     pub post_id: Id<Post>,
+    #[validate(length(min = 3, max = 10), regex(path = *RE_TAG))]
     pub tag: String,
 }
 
