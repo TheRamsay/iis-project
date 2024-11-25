@@ -122,24 +122,10 @@ fn create_router(app_state: AppState) -> Router {
         .with_state(app_state)
 }
 
-#[cfg(feature = "shuttle")]
 #[shuttle_runtime::main]
 async fn main() -> shuttle_axum::ShuttleAxum {
     let app_state = create_app_state().await;
     let router = create_router(app_state);
 
     Ok(router.into())
-}
-
-#[cfg(not(any(feature = "shuttle")))]
-#[tokio::main]
-async fn main() {
-    let app_state = create_app_state().await;
-    let router = create_router(app_state);
-
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:8000")
-        .await
-        .unwrap();
-
-    axum::serve(listener, router).await.unwrap();
 }
