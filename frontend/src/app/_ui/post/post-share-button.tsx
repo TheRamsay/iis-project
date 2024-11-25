@@ -10,7 +10,7 @@ export function PostShareButton({ post }: PostShareButton) {
 	const link = useMemo(() => {
 		if (typeof location === 'undefined') return ''
 
-		return `${location.href}/post/${post.id}`
+		return `${location.hostname}:${location.port}/post/${post.id}`
 	}, [post.id])
 
 	return (
