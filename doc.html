@@ -107,8 +107,30 @@
 
     <h2>Implementace</h2>
     <p>
-      Stručná dokumentace k implementaci, která popisuje, které části projektu
-      (např. PHP skripty) implementují jednotlivé případy použití.
+      <h3>
+       Backend 
+      </h3>
+      Backend je rozdělen do několika samostatných modulů.
+      <ul>
+        <li><b>models</b></li>
+        <ul>
+          <li>schema - objekty které reprezentují databázové tabulky, mapping pomocí ORM</li>
+          <li>domain - doménové objekty, je v nich zapouzdřena logika a validace</li>
+        </ul>
+        <li><b>migration</b> - migrační soubory potřebné pro vytvoření databáze</li>
+        <li><b>repository</b> - repozitáře pro jednotlivé doménové entity, manipulují s daty</li>
+        <li><b>usecase</b> - implementace jednotlivých případů užití, obdrží přes DI repozitáře a následně vykonávají veškeré akce</li>
+        <li><b>api</b> - implentace HTTP endpointů, volají se zde jednotlivé "use_casy"</li>
+        <ul>
+          <li>routes - implementace kontrolerů a směrování</li>
+          <li>extractors - extraktory pro manipulaci s HTTP požadavky</li>
+        </ul>
+      </ul>
+
+      <h4>Autentikace</h4>
+      Autentikace probíhá pomocí JWT tokenů, ten se na klientovi uchovává v <b>HttpOnly</b> a <b>Secure</b> cookie, pro vyšší bezpečnost. JWT token v sobě obsahuje základní informace, jako jméno uživatele a role.
+      Pro invalidaci tokenu se využívá Redis úložistě, kde je token po dobu své platnosti "blacklistnut".
+
     </p>
 
     <h3>Databáze</h3>
