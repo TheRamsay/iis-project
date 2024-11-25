@@ -38,8 +38,6 @@ export function PostCommentDeleteButton({
 			if (!response.ok) {
 				throw new Error('Failed to delete post')
 			}
-
-			return response.json()
 		},
 		onSuccess: () => {
 			router.refresh()

@@ -64,7 +64,7 @@ export function UserModalForm({ form }: { form: UseFormReturn<UserForm> }) {
 						</FormItem>
 					)}
 				/>
-				<FormField
+				{/* <FormField
 					control={form.control}
 					name="displayName"
 					render={({
@@ -88,7 +88,7 @@ export function UserModalForm({ form }: { form: UseFormReturn<UserForm> }) {
 							</FormControl>
 						</FormItem>
 					)}
-				/>
+				/> */}
 			</div>
 			<FormField
 				control={form.control}
@@ -147,7 +147,7 @@ export function UserModalForm({ form }: { form: UseFormReturn<UserForm> }) {
 				/>
 				<FormField
 					control={form.control}
-					name="userType"
+					name="role"
 					render={({
 						field: { name, value, onChange },
 						fieldState: { isDirty },

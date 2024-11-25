@@ -9,7 +9,21 @@ interface Filters {
 }
 
 export async function fetchAllUsers(filters?: Filters): Promise<User[]> {
-  const response = await backendFetch("/api/users");
+  const searchParams = new URLSearchParams();
+
+  if (filters?.role) {
+    searchParams.append("role", filters.role);
+  }
+
+  if (typeof filters?.isBlocked === "boolean") {
+    searchParams.append("is_blocked", filters.isBlocked.toString());
+  }
+
+  if (filters?.username) {
+    searchParams.append("username", filters.username);
+  }
+
+  const response = await backendFetch(`/api/users?${searchParams.toString()}`);
 
   await checkResponse(response, { customError: "Failed to fetch users" });
 

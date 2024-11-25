@@ -5,7 +5,7 @@ import { getSession } from '@/app/_lib/auth/get-session'
 import { fetchGroupByUsername } from '../../_lib/fetch-groups-by-username'
 
 const sidebarItems = (id: string): SidebarItem[] => [
-	{ name: 'Settings', path: `/group/${id}/settings` },
+	{ name: 'Dashboard', path: `/group/${id}/settings` },
 	{ name: 'Requests', path: `/group/${id}/settings/requests` },
 	{ name: 'Users', path: `/group/${id}/settings/users` },
 	{

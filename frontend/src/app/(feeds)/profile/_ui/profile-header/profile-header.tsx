@@ -64,7 +64,7 @@ function ProfileActions({ id, username, role }: ProfileActions) {
 
 	switch (role) {
 		case 'regular': {
-			actions.push(<ProfileHeaderFollow key="follow" username={username} />)
+			// actions.push(<ProfileHeaderFollow key="follow" username={username} />)
 			break
 		}
 		case 'owner': {
@@ -79,7 +79,7 @@ function ProfileActions({ id, username, role }: ProfileActions) {
 		}
 		case 'moderator':
 		case 'administrator':
-			actions.push(<ProfileHeaderFollow key="follow" username={username} />)
+			// actions.push(<ProfileHeaderFollow key="follow" username={username} />)
 			actions.push(
 				<Link href={`/admin/users?id=${id}`}>
 					<Button key="edit" variant="outline">

@@ -13,6 +13,7 @@ use repository::location_repository::DbLocationRepository;
 use repository::post_comments_repository::DbPostCommentsRepository;
 use repository::post_likes_repository::DbPostLikesRepository;
 use repository::post_repository::DbPostRepository;
+use repository::post_visibility_repository::PostVisibilityRepository;
 use repository::tag_repository::DbTagRepository;
 use repository::user_repository::DbUserRepository;
 use repository::wall_post_repository::DbWallPostRepository;

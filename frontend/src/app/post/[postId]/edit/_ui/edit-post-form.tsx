@@ -56,7 +56,7 @@ export type EditPostForm = Post
 export function EditPostForm({ postId }: { postId: string }) {
 	const { push } = useRouter()
 
-	const { data, isFetching, refetch } = useQuery<Post>({
+	const { data, isFetching } = useQuery<Post>({
 		queryKey: ['post', postId],
 		queryFn: async () => {
 			const post = await fetchPost(postId)
@@ -67,7 +67,7 @@ export function EditPostForm({ postId }: { postId: string }) {
 				description: post.description,
 				visibility: post.visibility,
 				location: { lat: '', lng: '' },
-				allowedUsers: [], // TODO: post.allowedUsers, groups
+				allowedUsers: [],
 				allowedGroups: [],
 				tags: post.tags,
 			}
@@ -83,7 +83,11 @@ export function EditPostForm({ postId }: { postId: string }) {
 					title: formData.title,
 					description: formData.description,
 					visibility: formData.visibility,
-					// location: formData.location,
+					allowed_users:
+						formData.visibility === 'private'
+							? formData.allowedUsers.map((u) => u.id)
+							: [],
+					allowed_groups: formData.allowedGroups.map((g) => g.id),
 					tags: formData.tags,
 					post_type: 'photo',
 				}),
@@ -97,7 +101,6 @@ export function EditPostForm({ postId }: { postId: string }) {
 		},
 		onSuccess: () => {
 			push(`/post/${postId}`)
-			// goto profile?
 		},
 	})
 

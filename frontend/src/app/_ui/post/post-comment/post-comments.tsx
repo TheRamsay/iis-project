@@ -13,10 +13,11 @@ interface PostComments {
 	post: Pick<Post, 'comments' | 'id'> & {
 		user: Pick<Post['user'], 'id'>
 	}
+	showCount?: number
 	size: 'small' | 'full'
 }
 
-export async function PostComments({ post, size }: PostComments) {
+export async function PostComments({ post, showCount, size }: PostComments) {
 	return (
 		<Suspense
 			fallback={
@@ -27,17 +28,19 @@ export async function PostComments({ post, size }: PostComments) {
 				</div>
 			}
 		>
-			<_PostComments post={post} size={size} />
+			<_PostComments post={post} showCount={showCount} size={size} />
 		</Suspense>
 	)
 }
 
-async function _PostComments({ post: { id }, size }: PostComments) {
+async function _PostComments({ post: { id }, showCount, size }: PostComments) {
 	const post = await fetchPost(id)
+
+	const comments = showCount ? post.comments.slice(0, showCount) : post.comments
 
 	return (
 		<div className="space-y-2">
-			{post.comments.map((comment) => (
+			{comments.map((comment) => (
 				<Comment post={post} key={comment.id} comment={comment} size={size} />
 			))}
 		</div>

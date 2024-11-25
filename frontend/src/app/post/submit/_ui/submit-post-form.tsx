@@ -67,6 +67,7 @@ export function SubmitPostForm() {
 					post_type: 'photo',
 					visibility: formData.visibility,
 					content_url: link,
+					tags: formData.tags,
 				}),
 			})
 

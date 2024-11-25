@@ -1,5 +1,4 @@
 import Image from 'next/image'
-import Link from 'next/link'
 import { PostLikeButton } from '@/app/_ui/post/post-like-button'
 import { PostCommentButton } from '@/app/_ui/post/post-comment/post-comment-button'
 import { PostDialog } from '@/app/_ui/post/post-dialog/post-dialog'
@@ -37,7 +36,7 @@ export function Post(post: PostType) {
 					<PostDeleteButton post={post} />
 				</div>
 			</div>
-			<PostComments post={post} size="small" />
+			<PostComments post={post} showCount={3} size="small" />
 		</div>
 	)
 }

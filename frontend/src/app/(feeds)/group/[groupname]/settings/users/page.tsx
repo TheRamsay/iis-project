@@ -10,6 +10,7 @@ import { ChevronLeftIcon, ChevronRightIcon, SearchIcon } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { fetchGroupByUsername } from '../../../_lib/fetch-groups-by-username'
 import { backendFetch, checkResponse } from '@/app/_lib/backend-fetch'
+import { fetchGroupMembers } from '../../../_lib/fetch-group-members'
 
 type Entry = Pick<typeof schema.user.$inferSelect, 'id' | 'username'> & {
 	role: 'manager' | 'member'
@@ -97,19 +98,22 @@ export default function Page({
 	const { data, isLoading } = useQuery({
 		queryKey: ['group-users', group],
 		queryFn: async () => {
-			const response = await backendFetch(`/api/groups/${group.id}/members`)
+			if (!group) {
+				throw new Error('Group undefined')
+			}
 
-			await checkResponse(response)
+			const data = await fetchGroupMembers(group.id)
 
-			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-			const data: any[] = await response.json()
-
-			return data.map((entry) => ({
-				id: entry.id,
-				username: entry.username,
-				role: entry.id === group?.admin.id ? 'manager' : 'member',
-			}))
+			return data.map(
+				(entry) =>
+					({
+						id: entry.id,
+						username: entry.username,
+						role: entry.id === group?.admin.id ? 'manager' : 'member',
+					}) as const,
+			)
 		},
+		enabled: !!group,
 	})
 
 	const currentData = useMemo(() => {

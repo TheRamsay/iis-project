@@ -7,6 +7,7 @@ import { Trash2Icon } from 'lucide-react'
 import { ErrorTooltip } from '../error-tooltip'
 import type { Post } from '@/app/post/_lib/fetch-post'
 import { backendFetch } from '@/app/_lib/backend-fetch'
+import { useRouter } from 'next/navigation'
 
 interface PostDeleteButton {
 	post: Pick<Post, 'id'> & {
@@ -23,6 +24,8 @@ export function PostDeleteButton({
 }: PostDeleteButton) {
 	const session = useSession()
 
+	const router = useRouter()
+
 	const { mutate, error } = useMutation({
 		mutationKey: ['delete-post', post, groupModeratorId],
 		mutationFn: async () => {
@@ -34,8 +37,9 @@ export function PostDeleteButton({
 			if (!response.ok) {
 				throw new Error('Failed to delete post')
 			}
-
-			return response.json()
+		},
+		onSuccess: () => {
+			router.refresh()
 		},
 	})
 

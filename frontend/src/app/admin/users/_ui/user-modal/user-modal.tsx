@@ -8,7 +8,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '@/components/components/dialog'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { UserModalForm } from './user-modal-form'
@@ -28,7 +28,7 @@ import { uploadImage } from '@/app/_lib/upload-image'
 const userModalSchema = z
 	.object({
 		id: z.string(),
-		displayName: myz.displayName,
+		// displayName: myz.displayName,
 		email: z.string().email(),
 		isBlocked: z.boolean(),
 		role: z.string(),
@@ -41,7 +41,7 @@ type UserModal = {
 	open?: boolean
 } & Pick<typeof schema.user.$inferSelect, 'username'>
 
-type User = Pick<
+export type UserForm = Pick<
 	typeof schema.user.$inferSelect,
 	'id' | 'displayName' | 'email' | 'isBlocked' | 'username'
 > & {
@@ -49,12 +49,17 @@ type User = Pick<
 	role: Role
 }
 
-export type UserForm = Pick<User, 'id'> & Partial<User>
-
-export function UserModal({ children, username, open: _open }: UserModal) {
+export function UserModal({
+	children,
+	username: _username,
+	open: _open,
+}: UserModal) {
 	const [open, setOpen] = useState(_open)
+	const [username, setUsername] = useState(_username)
 
-	const { data, isFetching, refetch } = useQuery<User>({
+	const queryClient = useQueryClient()
+
+	const { data, isFetching, refetch } = useQuery<UserForm>({
 		queryKey: ['admin-user', username],
 		queryFn: async () => {
 			const user = await fetchUserByUsername(username)
@@ -64,7 +69,7 @@ export function UserModal({ children, username, open: _open }: UserModal) {
 				image: user.avatar.src,
 			}
 		},
-		enabled: open,
+		enabled: !!open,
 	})
 
 	const { mutate, error, isPending } = useMutation({
@@ -76,7 +81,7 @@ export function UserModal({ children, username, open: _open }: UserModal) {
 				imageUrl = link
 			}
 
-			const response = await backendFetch(`/api/user/${data?.id}`, {
+			const response = await backendFetch(`/api/users/id/${data?.id}`, {
 				method: 'PUT',
 				body: JSON.stringify({
 					display_name: formData.displayName,
@@ -88,8 +93,15 @@ export function UserModal({ children, username, open: _open }: UserModal) {
 			})
 
 			await checkResponse(response, { customError: 'Failed to update user' })
+
+			return { username: formData.username }
 		},
-		onSuccess: () => {
+		onSuccess: (data) => {
+			if (username !== data.username) {
+				queryClient.invalidateQueries({ queryKey: ['admin-users'] })
+			}
+
+			setUsername(data.username)
 			refetch()
 		},
 	})
@@ -103,7 +115,7 @@ export function UserModal({ children, username, open: _open }: UserModal) {
 			email: '',
 			isBlocked: false,
 			role: 'regular',
-			username: '',
+			username: username,
 			image: null,
 			id: '',
 		},
