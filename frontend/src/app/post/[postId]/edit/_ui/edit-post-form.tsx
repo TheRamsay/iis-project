@@ -61,8 +61,6 @@ export function EditPostForm({ postId }: { postId: string }) {
 		queryFn: async () => {
 			const post = await fetchPost(postId)
 
-			console.log(post)
-
 			return {
 				id: postId,
 				title: post.title,
@@ -120,8 +118,6 @@ export function EditPostForm({ postId }: { postId: string }) {
 		},
 		resolver: zodResolver(editPostFromSchema),
 	})
-
-	console.log(form)
 
 	useEffect(() => {
 		if (data) {

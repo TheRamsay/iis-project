@@ -35,7 +35,7 @@ export async function fetchAllUsers(filters?: Filters): Promise<User[]> {
       id: entry.id,
       username: entry.username,
       displayName: entry.display_name,
-      description: "bio", // TODO: Description
+      description: entry.description,
       email: entry.email,
       role: entry.user_type,
       isBlocked: entry.is_blocked,
