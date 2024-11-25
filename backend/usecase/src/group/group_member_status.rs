@@ -65,22 +65,17 @@ where
             .await?
             .ok_or(AppError::NotFound("Group".to_string()))?;
 
-        if self
-            .group_member_repository
-            .get_by_id(input.group_id.clone(), input.user_id.clone())
-            .await?
-            .is_none()
-        {
-            return Ok(GroupMemberStatusOutput {
-                status: GroupMemberStatus::NotJoined,
-            });
-        }
-
         if group.admin_id == input.user_id {
             return Ok(GroupMemberStatusOutput {
                 status: GroupMemberStatus::Joined,
             });
         }
+
+        let not_in_group = self
+            .group_member_repository
+            .get_by_id(input.group_id.clone(), input.user_id.clone())
+            .await?
+            .is_none();
 
         let requests = self
             .group_join_request_repository
@@ -102,6 +97,12 @@ where
                 })
             }
             models::domain::group_join_request::GroupJoinRequestStatus::Accepted => {
+                if not_in_group {
+                    return Ok(GroupMemberStatusOutput {
+                        status: GroupMemberStatus::NotJoined,
+                    });
+                }
+
                 Ok(GroupMemberStatusOutput {
                     status: GroupMemberStatus::Joined,
                 })
