@@ -2,11 +2,7 @@ use models::{
     domain::{post::Post, post_comment::PostComment, post_like::PostLike, user::User, Id},
     errors::AppResult,
 };
-use repository::{
-    post_repository::PostRepository, wall_post_repository::WallPostRepository,
-    wall_repository::WallRepository,
-};
-use uuid::Uuid;
+use repository::wall_repository::WallRepository;
 
 use super::types::SortBy;
 
@@ -18,7 +14,13 @@ pub struct GetTagPostsInput {
     pub sort_by: SortBy,
 }
 
-pub type GetTagPostsOutput = Vec<(Post, User, Vec<(PostComment, User)>, Vec<(PostLike, User)>)>;
+pub type GetTagPostsOutput = Vec<(
+    Post,
+    User,
+    Vec<(PostComment, User)>,
+    Vec<(PostLike, User)>,
+    Vec<String>,
+)>;
 
 pub struct GetTagPostsUseCase<P: WallRepository> {
     wall_repository: P,

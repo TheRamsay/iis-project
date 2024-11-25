@@ -2,8 +2,7 @@ use models::{
     domain::{post::Post, post_comment::PostComment, post_like::PostLike, user::User, Id},
     errors::AppResult,
 };
-use repository::{post_repository::PostRepository, wall_repository::WallRepository};
-use uuid::Uuid;
+use repository::wall_repository::WallRepository;
 
 use super::types::SortBy;
 
@@ -14,7 +13,13 @@ pub struct GetFeedPostsInput {
     pub sort_by: SortBy,
 }
 
-pub type GetFeedPostsOutput = Vec<(Post, User, Vec<(PostComment, User)>, Vec<(PostLike, User)>)>;
+pub type GetFeedPostsOutput = Vec<(
+    Post,
+    User,
+    Vec<(PostComment, User)>,
+    Vec<(PostLike, User)>,
+    Vec<String>,
+)>;
 
 pub struct GetFeedPostsUseCase<P: WallRepository> {
     wall_repository: P,

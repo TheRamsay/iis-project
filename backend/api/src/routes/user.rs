@@ -32,9 +32,9 @@ use crate::{
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 struct CreateUserRequest {
-    display_name: String,
+    display_name: Option<String>,
     username: String,
-    email: String,
+    email: Option<String>,
     avatar_url: Option<String>,
     password: String,
     user_type: UserType,
@@ -74,9 +74,9 @@ async fn create_user(
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GetUserResponse {
     pub id: Uuid,
-    pub display_name: String,
+    pub display_name: Option<String>,
     pub username: String,
-    pub email: String,
+    pub email: Option<String>,
     pub avatar_url: Option<String>,
     pub user_type: String,
     pub wall_id: Uuid,
@@ -246,9 +246,9 @@ async fn delete_user(
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct UpdateUserRequest {
-    display_name: String,
+    display_name: Option<String>,
     username: String,
-    email: String,
+    email: Option<String>,
     avatar_url: Option<String>,
     password: String,
     user_type: UserType,

@@ -1,17 +1,8 @@
 use models::{
-    domain::{
-        post::Post,
-        post_comment::PostComment,
-        post_like::PostLike,
-        user::{User, UserType},
-        wall,
-    },
-    errors::{AppError, AppResult},
+    domain::{post::Post, post_comment::PostComment, post_like::PostLike, user::User},
+    errors::AppResult,
 };
-use repository::{
-    post_repository::PostRepository, user_repository::UserRepository,
-    wall_repository::WallRepository,
-};
+use repository::wall_repository::WallRepository;
 use uuid::Uuid;
 
 use super::types::SortBy;
@@ -23,7 +14,13 @@ pub struct GetWallPostsInput {
     pub sort_by: SortBy,
 }
 
-pub type GetWallPostsOutput = Vec<(Post, User, Vec<(PostComment, User)>, Vec<(PostLike, User)>)>;
+pub type GetWallPostsOutput = Vec<(
+    Post,
+    User,
+    Vec<(PostComment, User)>,
+    Vec<(PostLike, User)>,
+    Vec<String>,
+)>;
 
 pub struct GetWallPostsUseCase<P: WallRepository> {
     wall_repository: P,

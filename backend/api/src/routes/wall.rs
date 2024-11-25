@@ -5,12 +5,8 @@ use axum::{
 use chrono::{DateTime, Utc};
 use models::{
     domain::{
-        location::Location,
-        post::{Post, PostType, PostVisibilityType},
-        post_comment::PostComment,
-        post_like::PostLike,
-        user::{User, UserType},
-        Id,
+        post::{PostType, PostVisibilityType},
+        user::UserType,
     },
     errors::AppResult,
 };
@@ -32,7 +28,7 @@ use crate::{
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetAuthorResponse {
     id: Uuid,
-    display_name: String,
+    display_name: Option<String>,
     username: String,
     avatar_url: Option<String>,
     user_type: UserType,
@@ -51,6 +47,7 @@ pub struct GetPostResponse {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetPostCommentResponse {
+    pub id: Uuid,
     pub post_id: Uuid,
     pub user: GetAuthorResponse,
     pub content: String,
@@ -70,6 +67,7 @@ pub struct PostItem {
     author: GetAuthorResponse,
     comments: Vec<GetPostCommentResponse>,
     likes: Vec<GetPostLikeResponse>,
+    tags: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -102,7 +100,7 @@ pub async fn get_wall(
     Ok(Json(GetWallResponse {
         posts: output
             .into_iter()
-            .map(|(post, author, comments, likes)| PostItem {
+            .map(|(post, author, comments, likes, tags)| PostItem {
                 post: GetPostResponse {
                     id: post.id.into(),
                     title: post.title,
@@ -122,6 +120,7 @@ pub async fn get_wall(
                 comments: comments
                     .into_iter()
                     .map(|(comment, user)| GetPostCommentResponse {
+                        id: comment.id.into(),
                         post_id: comment.post_id.into(),
                         content: comment.content,
                         user: GetAuthorResponse {
@@ -148,6 +147,7 @@ pub async fn get_wall(
                         created_at: like.created_at,
                     })
                     .collect(),
+                tags,
             })
             .collect(),
     }))
@@ -177,7 +177,7 @@ pub async fn get_feed(
     Ok(Json(GetWallResponse {
         posts: output
             .into_iter()
-            .map(|(post, author, comments, likes)| PostItem {
+            .map(|(post, author, comments, likes, tags)| PostItem {
                 post: GetPostResponse {
                     id: post.id.into(),
                     title: post.title,
@@ -197,6 +197,7 @@ pub async fn get_feed(
                 comments: comments
                     .into_iter()
                     .map(|(comment, user)| GetPostCommentResponse {
+                        id: comment.id.into(),
                         post_id: comment.post_id.into(),
                         content: comment.content,
                         user: GetAuthorResponse {
@@ -223,6 +224,7 @@ pub async fn get_feed(
                         created_at: like.created_at,
                     })
                     .collect(),
+                tags,
             })
             .collect(),
     }))
@@ -255,7 +257,7 @@ pub async fn get_wall_by_tag(
     Ok(Json(GetWallResponse {
         posts: output
             .into_iter()
-            .map(|(post, author, comments, likes)| PostItem {
+            .map(|(post, author, comments, likes, tags)| PostItem {
                 post: GetPostResponse {
                     id: post.id.into(),
                     title: post.title,
@@ -275,6 +277,7 @@ pub async fn get_wall_by_tag(
                 comments: comments
                     .into_iter()
                     .map(|(comment, user)| GetPostCommentResponse {
+                        id: comment.id.into(),
                         post_id: comment.post_id.into(),
                         content: comment.content,
                         user: GetAuthorResponse {
@@ -301,6 +304,7 @@ pub async fn get_wall_by_tag(
                         created_at: like.created_at,
                     })
                     .collect(),
+                tags,
             })
             .collect(),
     }))

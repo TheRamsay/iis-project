@@ -1,8 +1,7 @@
 use sea_orm_migration::{prelude::*, schema::*};
 
 use crate::m20220101_000001_create_user_table::User;
-use crate::m20241009_204559_create_post_table::Post;
-use crate::m20241010_142036_create_wall_tables::{Wall, WallPost};
+use crate::m20241010_142036_create_wall_tables::Wall;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;

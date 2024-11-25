@@ -1,4 +1,4 @@
-use std::{future::Future, sync::Arc};
+use std::sync::Arc;
 
 use models::{
     domain::{group::Group, group_member::GroupMember, user::User, Id},

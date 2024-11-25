@@ -22,6 +22,7 @@ pub struct CreatePostTagInput {
 
 pub struct CreatePostTagOutput {
     pub tag: String,
+    pub id: Id<PostTag>,
 }
 
 pub struct CreatePostTagUseCase<T>
@@ -43,9 +44,11 @@ where
 
     pub async fn execute(&self, input: CreatePostTagInput) -> AppResult<CreatePostTagOutput> {
         let tag = PostTag::new(Id::new(input.post_id), input.tag);
+        let inserted = self.post_tag_repository.create(tag).await?;
 
         Ok(CreatePostTagOutput {
-            tag: self.post_tag_repository.create(tag).await?,
+            tag: inserted.0,
+            id: inserted.1.into(),
         })
     }
 }

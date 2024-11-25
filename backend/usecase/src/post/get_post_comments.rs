@@ -1,15 +1,11 @@
 use models::{
     domain::{
-        post::Post,
         post_comment::PostComment,
-        user::{User, UserType},
         Id,
     },
     errors::AppResult,
 };
-use repository::{
-    post_comments_repository::PostCommentsRepository, post_likes_repository::PostLikesRepository,
-};
+use repository::post_comments_repository::PostCommentsRepository;
 use uuid::Uuid;
 
 #[derive(Debug)]

@@ -2,12 +2,11 @@ use std::fmt::Display;
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 use validator::{Validate, ValidationErrors};
 
 use crate::schema;
 
-use super::{email::Email, user::User, wall::Wall, Id};
+use super::{user::User, wall::Wall, Id};
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub enum PostType {
@@ -63,8 +62,9 @@ impl From<String> for PostVisibilityType {
 pub struct Post {
     pub id: Id<Post>,
     #[validate(length(
+        min = 0,
         max = 255,
-        message = "Description must have at most 255 characters"
+        message = "Description must be between 0 and 255 characters"
     ))]
     pub description: String,
     #[validate(length(

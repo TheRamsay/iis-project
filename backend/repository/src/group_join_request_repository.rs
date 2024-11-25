@@ -1,8 +1,8 @@
-use std::{future::Future, sync::Arc};
+use std::sync::Arc;
 
 use models::{
     domain::{
-        group::{self, Group},
+        group::Group,
         group_join_request::{GroupJoinRequest, GroupJoinRequestStatus},
         user::User,
         Id,

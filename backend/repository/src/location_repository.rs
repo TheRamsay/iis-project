@@ -1,14 +1,9 @@
-use std::{future::Future, sync::Arc};
+use std::sync::Arc;
 
-use models::{
-    domain::{group::Group, location::Location, post::Post, post_like::PostLike, user::User, Id},
-    schema,
-};
+use models::domain::{location::Location, Id};
 use sea_orm::{
-    sea_query::extension::postgres::PgExpr, Condition, DbConn, DbErr, EntityTrait, IntoSimpleExpr,
-    PaginatorTrait, QueryFilter,
+    sea_query::extension::postgres::PgExpr, DbConn, DbErr, EntityTrait, IntoSimpleExpr, QueryFilter,
 };
-use uuid::Uuid;
 
 #[derive(Debug, Clone)]
 pub struct DbLocationRepository {

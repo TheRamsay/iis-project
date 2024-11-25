@@ -2,18 +2,14 @@ use models::{
     domain::{
         group::Group,
         group_join_request::{GroupJoinRequest, GroupJoinRequestStatus},
-        group_member,
-        user::{User, UserType},
+        user::User,
         Id,
     },
     errors::{AppError, AppResult},
 };
 use repository::{
-    group_join_request_repository::GroupJoinRequestRepository,
-    group_member_repository::GroupMemberRepository, group_repository::GroupRepository,
-    user_repository::UserRepository,
+    group_join_request_repository::GroupJoinRequestRepository, group_repository::GroupRepository,
 };
-use uuid::Uuid;
 
 #[derive(Debug)]
 pub struct GetGroupRequestsInput {

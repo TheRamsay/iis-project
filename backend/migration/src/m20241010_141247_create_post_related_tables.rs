@@ -27,17 +27,23 @@ impl MigrationTrait for Migration {
                         ForeignKey::create()
                             .name("fk_post_comment_post")
                             .from(PostComment::Table, PostComment::PostId)
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade)
                             .to(Post::Table, Post::Id),
                     )
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_post_comment_user")
                             .from(PostComment::Table, PostComment::UserId)
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade)
                             .to(User::Table, User::Id),
                     )
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_post_comment_parent")
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade)
                             .from(PostComment::Table, PostComment::ParentId)
                             .to(PostComment::Table, PostComment::Id),
                     )
@@ -57,12 +63,15 @@ impl MigrationTrait for Migration {
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_post_like_post")
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade)
                             .from(PostLike::Table, PostLike::PostId)
                             .to(Post::Table, Post::Id),
                     )
                     .foreign_key(
                         ForeignKey::create()
-                            .name("fk_post_like_user")
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade)
                             .from(PostLike::Table, PostLike::UserId)
                             .to(User::Table, User::Id),
                     )
@@ -75,11 +84,14 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(PostTag::Table)
                     .if_not_exists()
-                    .col(string(PostTag::Tag).not_null().primary_key())
+                    .col(string(PostTag::Tag))
                     .col(uuid(PostTag::PostId))
+                    .primary_key(Index::create().col(PostTag::Tag).col(PostTag::PostId))
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_post_tag_post")
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade)
                             .from(PostTag::Table, PostTag::PostId)
                             .to(Post::Table, Post::Id),
                     )
@@ -102,12 +114,16 @@ impl MigrationTrait for Migration {
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_post_visibility_post")
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade)
                             .from(PostVisibility::Table, PostVisibility::PostId)
                             .to(Post::Table, Post::Id),
                     )
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_post_visibility_user")
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade)
                             .from(PostVisibility::Table, PostVisibility::UserId)
                             .to(User::Table, User::Id),
                     )

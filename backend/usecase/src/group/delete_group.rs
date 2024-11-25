@@ -1,13 +1,8 @@
 use models::{
-    domain::{
-        group::Group,
-        user::{User, UserType},
-        Id,
-    },
+    domain::{group::Group, Id},
     errors::AppResult,
 };
-use repository::{group_repository::GroupRepository, user_repository::UserRepository};
-use uuid::Uuid;
+use repository::group_repository::GroupRepository;
 
 #[derive(Debug)]
 pub struct DeleteGroupInput {

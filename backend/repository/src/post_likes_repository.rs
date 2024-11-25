@@ -1,14 +1,10 @@
-use std::{future::Future, sync::Arc};
+use std::sync::Arc;
 
-use models::{
-    domain::{group::Group, post::Post, post_like::PostLike, user::User, Id},
-    schema,
-};
+use models::domain::{post::Post, post_like::PostLike, user::User, Id};
 use sea_orm::{
-    sea_query::extension::postgres::PgExpr, Condition, DbConn, DbErr, EntityTrait, IntoSimpleExpr,
+    DbConn, DbErr, EntityTrait, IntoSimpleExpr,
     PaginatorTrait, QueryFilter,
 };
-use uuid::Uuid;
 
 #[derive(Debug, Clone)]
 pub struct DbPostLikesRepository {

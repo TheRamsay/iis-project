@@ -4,35 +4,22 @@ use axum::{
     routing::{delete, get, post},
 };
 use models::{
-    domain::{
-        group_join_request::{self, GroupJoinRequestStatus},
-        user::{User, UserType},
-    },
+    domain::{group_join_request::GroupJoinRequestStatus, user::UserType},
     errors::{AppError, AppResult},
-    schema::user,
 };
-use repository::{group_repository::GroupRepository, user_repository::UserRepository};
 use serde::{Deserialize, Serialize};
-use usecase::{
-    group::{
-        add_user_to_group,
-        create_group::{CreateGroupInput, CreateGroupUseCase},
-        delete_group::{DeleteGroupInput, DeleteGroupUseCase},
-        get_group::{GetGroupInput, GetGroupUseCase},
-        get_group_members::{GetGroupMembersInput, GetGroupMembersUseCase},
-        get_group_requests::{GetGroupRequestsInput, GetGroupRequestsUseCase},
-        group_member_status::{
-            GroupMemberStatus, GroupMemberStatusInput, GroupMemberStatusUseCase,
-        },
-        join_group::{JoinGroupInput, JoinGroupUseCase},
-        leave_group::{LeaveGroupInput, LeaveGroupUseCase},
-        remove_user_from_group,
-        search_group::{SearchGroupInput, SearchGroupOutput, SearchGroupUseCase},
-    },
-    user::{
-        get_user::{GetUserInput, GetUserUseCase},
-        register_user::{RegisterUserInput, RegisterUserUseCase},
-    },
+use usecase::group::{
+    add_user_to_group,
+    create_group::{CreateGroupInput, CreateGroupUseCase},
+    delete_group::{DeleteGroupInput, DeleteGroupUseCase},
+    get_group::{GetGroupInput, GetGroupUseCase},
+    get_group_members::{GetGroupMembersInput, GetGroupMembersUseCase},
+    get_group_requests::{GetGroupRequestsInput, GetGroupRequestsUseCase},
+    group_member_status::{GroupMemberStatus, GroupMemberStatusInput, GroupMemberStatusUseCase},
+    join_group::{JoinGroupInput, JoinGroupUseCase},
+    leave_group::{LeaveGroupInput, LeaveGroupUseCase},
+    remove_user_from_group,
+    search_group::{SearchGroupInput, SearchGroupUseCase},
 };
 use uuid::Uuid;
 
@@ -75,9 +62,9 @@ async fn create_group(
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Admin {
     pub id: Uuid,
-    pub display_name: String,
+    pub display_name: Option<String>,
     pub username: String,
-    pub email: String,
+    pub email: Option<String>,
     pub avatar_url: Option<String>,
     pub user_type: UserType,
 }
@@ -118,8 +105,9 @@ async fn get_group(
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
-struct SearchGroupRequest {
+struct SearchGroupRequestQuery {
     query: Option<String>,
+    where_member: Option<Uuid>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -129,12 +117,13 @@ struct SearchGroupResponse {
 
 async fn search_group(
     state: State<AppState>,
-    Query(params): Query<SearchGroupRequest>,
+    Query(params): Query<SearchGroupRequestQuery>,
 ) -> AppResult<Json<SearchGroupResponse>> {
     let group_usecace = SearchGroupUseCase::new(state.group_repository.clone());
 
     let input = SearchGroupInput {
         query: params.query.unwrap_or(String::new()),
+        filter_where_member: params.where_member.map(Into::into),
     };
 
     let output = group_usecace.execute(input).await?;
@@ -290,7 +279,7 @@ async fn check_user_status_in_group(
 struct GetGroupMembersResponse {
     id: Uuid,
     username: String,
-    display_name: String,
+    display_name: Option<String>,
     avatar_url: Option<String>,
     user_type: UserType,
     is_blocked: bool,
@@ -338,7 +327,7 @@ struct GetGroupRequestsResponse {
 struct GetGroupRequestUser {
     id: Uuid,
     username: String,
-    display_name: String,
+    display_name: Option<String>,
     avatar_url: Option<String>,
     user_type: UserType,
     is_blocked: bool,

@@ -1,13 +1,5 @@
-use models::{
-    domain::{
-        post::{Post, PostType, PostVisibilityType},
-        post_user_visibility::PostUserVisibility,
-        Id,
-    },
-    errors::AppResult,
-};
-use repository::{cloudinary_repository::CloudinaryRepository, post_repository::PostRepository};
-use uuid::Uuid;
+use models::errors::AppResult;
+use repository::cloudinary_repository::CloudinaryRepository;
 
 #[derive(Debug)]
 pub struct UploadImageInput {
