@@ -30,17 +30,17 @@ const submitPostFromSchema: ZodType<PostForm> = z
 		description: myz.description,
 	})
 	.merge(formImageSchema(true))
-	.merge(formLocationSchema)
+	// .merge(formLocationSchema)
 	.merge(formVisibilitySchema)
 	.merge(formTagsSchema)
 
 type Post = Pick<typeof schema.post.$inferSelect, 'description' | 'title'> & {
 	visibility: 'public' | 'private'
 	image: string | null
-	location: {
-		lat: string
-		lng: string
-	}
+	// location: {
+	// 	lat: string
+	// 	lng: string
+	// }
 	allowedUsers: Entity[]
 	allowedGroups: Entity[]
 	tags: string[]
@@ -68,6 +68,11 @@ export function SubmitPostForm() {
 					visibility: formData.visibility,
 					content_url: link,
 					tags: formData.tags,
+					allowed_users:
+						formData.visibility === 'private'
+							? formData.allowedUsers.map((u) => u.id)
+							: undefined,
+					allowed_groups: formData.allowedGroups.map((g) => g.id),
 				}),
 			})
 
@@ -88,7 +93,7 @@ export function SubmitPostForm() {
 		mode: 'all',
 		defaultValues: {
 			description: '',
-			location: { lat: '', lng: '' },
+			// location: { lat: '', lng: '' },
 			title: '',
 			visibility: 'public',
 			tags: [],
@@ -164,7 +169,7 @@ export function SubmitPostForm() {
 					)}
 				/>
 
-				<FormLocation form={form} />
+				{/* <FormLocation form={form} /> */}
 				<FormVisibility form={form} />
 
 				<FormTags form={form} />

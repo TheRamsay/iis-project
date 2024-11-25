@@ -14,6 +14,7 @@ type User = {
 interface UserAvatarName {
 	user: User
 	className?: string
+	type?: 'user' | 'group'
 	size?: 'small' | 'full'
 	disableLink?: boolean
 }
@@ -26,12 +27,16 @@ const style = {
 export function UserAvatarName({
 	user,
 	className,
+	type = 'user',
 	size = 'full',
 	disableLink = false,
 }: UserAvatarName) {
 	const pix = size === 'small' ? 16 : 32
 
 	const _Link = disableLink ? 'div' : Link
+
+	const path =
+		type === 'user' ? `/profile/${user.username}` : `/group/${user.username}`
 
 	return (
 		<div
@@ -41,7 +46,7 @@ export function UserAvatarName({
 				className,
 			)}
 		>
-			<_Link href={`/profile/${user.username}`}>
+			<_Link href={path}>
 				<Avatar
 					name={user.username}
 					unoptimized={true}
@@ -51,7 +56,7 @@ export function UserAvatarName({
 					className="rounded-full"
 				/>
 			</_Link>
-			<_Link href={`/profile/${user.username}`}>
+			<_Link href={path}>
 				<span>{user.username}</span>
 			</_Link>
 		</div>

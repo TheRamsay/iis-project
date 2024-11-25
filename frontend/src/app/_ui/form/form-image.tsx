@@ -12,12 +12,15 @@ import { XIcon } from 'lucide-react'
 
 export const formImageSchema = (required: boolean) =>
 	z.object({
-		image: z.string().refine(
-			(data) => {
-				return !(required && !data)
-			},
-			{ message: 'Image is required' },
-		),
+		image: z
+			.string()
+			.nullable()
+			.refine(
+				(data) => {
+					return !(required && !data)
+				},
+				{ message: 'Image is required' },
+			),
 	})
 
 interface FormSubset {

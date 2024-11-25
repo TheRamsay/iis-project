@@ -34,7 +34,7 @@ export async function fetchPost(
     title: data.title,
     description: data.description,
     image: { src: data.content_url },
-    tags: [],
+    tags: data.tags,
     user: {
       id: user.id,
       username: user.username,

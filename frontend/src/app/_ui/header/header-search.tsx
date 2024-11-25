@@ -5,6 +5,27 @@ import { SearchIcon, XIcon } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useOnClickOutside } from './use-on-click-outside'
 import { SkeletonText } from '@/components/components/skeleton'
+import { useQuery } from '@tanstack/react-query'
+import { useDebounce } from 'use-debounce'
+import { backendFetch, checkResponse } from '@/app/_lib/backend-fetch'
+import { UserAvatarName } from '../user/user-avatar-name'
+import Link from 'next/link'
+
+type Data = {
+	users: {
+		id: string
+		username: string
+		avatar: { src: string }
+	}[]
+	groups: {
+		id: string
+		username: string
+		avatar: { src: undefined }
+	}[]
+	tags: {
+		name: string
+	}[]
+}
 
 // Inspired by https://github.com/sushi-labs/sushiswap/blob/feature/egn-677/apps/web/src/app/(cms)/faq/(root)/components/search-box.tsx
 
@@ -12,16 +33,50 @@ export function HeaderSearch() {
 	const [query, setQuery] = useState<string>('')
 	const [open, setOpen] = useState<boolean>(false)
 
+	const [debounced] = useDebounce(query, 300)
+
 	const ref = useRef<HTMLDivElement>(null)
 
 	useOnClickOutside(ref, () => setOpen(false))
 
 	// TODO: endpoint
-	const { data, isLoading, isError } = {
-		data: [],
-		isLoading: false,
-		isError: false,
-	}
+	const { data, isLoading, isError } = useQuery({
+		queryKey: ['header-search', debounced],
+		queryFn: async () => {
+			const response = await backendFetch(`/api/search?query=${debounced}`)
+
+			await checkResponse(response)
+
+			const data: {
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				users: any[]
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				groups: any[]
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				tags: any[]
+			} = await response.json()
+
+			return {
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				users: data.users.map((user: any) => ({
+					id: user.id as string,
+					username: user.username as string,
+					avatar: { src: user.avatar_url as string },
+				})),
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				groups: data.groups.map((group: any) => ({
+					id: group.id as string,
+					username: group.name as string,
+					avatar: { src: undefined },
+				})),
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				tags: data.tags.map((tag: any) => ({
+					name: tag.tag as string,
+				})),
+			} satisfies Data
+		},
+		enabled: query.length > 0 && open,
+	})
 
 	return (
 		<div className="flex flex-col gap-3 relative justify-center">
@@ -73,22 +128,13 @@ export function HeaderSearch() {
 		</div>
 	)
 }
-
 interface Results {
-	isLoading: boolean
+	isLoading?: boolean
 	isError: boolean
-	data: unknown[]
+	data: Data | undefined
 }
 
 function Results({ data, isError, isLoading }: Results) {
-	if (isError) {
-		return (
-			<div className="px-4 pt-4 pb-2 gap-2 flex justify-center w-full text-sm">
-				An unexpected error has occured.
-			</div>
-		)
-	}
-
 	if (isLoading) {
 		return (
 			<div>
@@ -104,11 +150,50 @@ function Results({ data, isError, isLoading }: Results) {
 		)
 	}
 
+	if (isError || !data) {
+		return (
+			<div className="px-4 pt-4 pb-2 gap-2 flex justify-center w-full text-sm">
+				An unexpected error has occured.
+			</div>
+		)
+	}
+
 	return (
 		<div>
-			<div className="font-medium mt-2 px-4 text-gray-400">Profiles</div>
+			<div className="font-medium mt-2 px-4 text-gray-400">Users</div>
 			<div className="px-4 py-2 gap-2 text-sm">
-				<div className="text-sm">data</div>
+				{data.users.length ? (
+					data.users.map((user) => <UserAvatarName key={user.id} user={user} />)
+				) : (
+					<div>No users found</div>
+				)}
+			</div>
+			<div className="font-medium px-4 text-gray-400">Groups</div>
+			<div className="px-4 py-2 gap-2 text-sm">
+				{data.groups.length ? (
+					data.groups.map((group) => (
+						<UserAvatarName key={group.id} user={group} type="group" />
+					))
+				) : (
+					<div>No groups found</div>
+				)}
+			</div>
+			<div className="font-medium px-4 text-gray-400">Tags</div>
+			<div className="px-4 py-2 gap-2">
+				{data.tags.length ? (
+					data.tags.map((tag) => (
+						<div
+							key={tag.name}
+							className="flex items-center gap-2 flex-row w-full pl-12 text-blue-500"
+						>
+							<Link href={`/tag/${tag.name}`}>
+								<div>#{tag.name}</div>
+							</Link>
+						</div>
+					))
+				) : (
+					<div>No tags found</div>
+				)}
 			</div>
 		</div>
 	)

@@ -44,7 +44,7 @@ async function Feed({
 	if (status !== 'joined' && !isPublic && group.admin.id !== session?.userId) {
 		return (
 			<div className="w-full flex justify-center text-xl">
-				This group is private and you are not a member
+				You are not a member of this group
 			</div>
 		)
 	}

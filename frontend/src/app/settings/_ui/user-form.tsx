@@ -20,8 +20,7 @@ import { uploadImage } from '@/app/_lib/upload-image'
 import { z, type ZodType } from 'zod'
 import { myz } from '@/app/_types/zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-
-// TODO: validation
+import { extractError } from '@/app/_lib/extract-error'
 
 const userSchema: ZodType<User> = z
 	.object({
@@ -77,11 +76,19 @@ export function UserForm({ userId }: UserFormProps) {
 					email: formData.email,
 					password: formData.password || undefined,
 					avatar_url: imageUrl || undefined,
+					description: formData.description,
 					user_type: data?.role || 'regular',
 				}),
 			})
 
-			await checkResponse(response, { customError: 'Failed to update user' })
+			try {
+				await checkResponse(response, { passError: true })
+			} catch (error) {
+				if (error instanceof Error) {
+					throw new Error(extractError(error.message))
+				}
+				throw new Error('Failed to update user')
+			}
 		},
 		onSuccess: () => {
 			refetch()
@@ -143,7 +150,7 @@ export function UserForm({ userId }: UserFormProps) {
 							</FormItem>
 						)}
 					/>
-					<FormField
+					{/* <FormField
 						name="displayName"
 						control={form.control}
 						render={({
@@ -170,7 +177,7 @@ export function UserForm({ userId }: UserFormProps) {
 								</FormControl>
 							</FormItem>
 						)}
-					/>
+					/> */}
 				</div>
 				<FormField
 					name="password"

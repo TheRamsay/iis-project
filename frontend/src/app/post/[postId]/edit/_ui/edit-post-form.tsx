@@ -33,7 +33,7 @@ const editPostFromSchema: ZodType<EditPostForm> = z
 		title: myz.title,
 		description: myz.description,
 	})
-	.merge(formLocationSchema)
+	// .merge(formLocationSchema)
 	.merge(formVisibilitySchema)
 	.merge(formTagsSchema)
 
@@ -42,10 +42,10 @@ type Post = Pick<
 	'id' | 'description' | 'title'
 > & {
 	visibility: 'public' | 'private'
-	location: {
-		lat: string
-		lng: string
-	}
+	// location: {
+	// 	lat: string
+	// 	lng: string
+	// }
 	allowedUsers: Entity[]
 	allowedGroups: Entity[]
 	tags: string[]
@@ -66,8 +66,8 @@ export function EditPostForm({ postId }: { postId: string }) {
 				title: post.title,
 				description: post.description,
 				visibility: post.visibility,
-				location: { lat: '', lng: '' },
-				allowedUsers: [],
+				// location: { lat: '', lng: '' },
+				allowedUsers: [], // TODO!
 				allowedGroups: [],
 				tags: post.tags,
 			}
@@ -86,7 +86,7 @@ export function EditPostForm({ postId }: { postId: string }) {
 					allowed_users:
 						formData.visibility === 'private'
 							? formData.allowedUsers.map((u) => u.id)
-							: [],
+							: undefined,
 					allowed_groups: formData.allowedGroups.map((g) => g.id),
 					tags: formData.tags,
 					post_type: 'photo',
@@ -109,7 +109,7 @@ export function EditPostForm({ postId }: { postId: string }) {
 	const form = useForm<EditPostForm>({
 		defaultValues: {
 			description: '',
-			location: { lat: '', lng: '' },
+			// location: { lat: '', lng: '' },
 			title: '',
 			visibility: 'public',
 			tags: [],
@@ -188,7 +188,7 @@ export function EditPostForm({ postId }: { postId: string }) {
 					)}
 				/>
 
-				<FormLocation form={form} />
+				{/* <FormLocation form={form} /> */}
 				<FormVisibility form={form} />
 
 				<FormTags form={form} />

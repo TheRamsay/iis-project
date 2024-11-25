@@ -24,6 +24,7 @@ use routes::group_join_request::group_join_request_router;
 use routes::location::location_routes;
 use routes::post::post_routes;
 use routes::post_tag::post_tag_routes;
+use routes::search::search_routes;
 use routes::user::user_routes;
 use routes::wall::wall_routes;
 use sea_orm::{Database, DatabaseConnection};
@@ -99,6 +100,7 @@ fn create_router(app_state: AppState) -> Router {
         .nest("/api/walls", wall_routes())
         .nest("/api/locations", location_routes())
         .nest("/api/tags", post_tag_routes())
+        .nest("/api/search", search_routes())
         .layer(
             ServiceBuilder::new()
                 .layer(

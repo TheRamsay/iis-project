@@ -247,6 +247,7 @@ async fn delete_user(
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct UpdateUserRequest {
     display_name: Option<String>,
+    description: Option<String>,
     username: String,
     email: Option<String>,
     avatar_url: Option<String>,
@@ -289,6 +290,7 @@ async fn update_user(
             avatar_url: payload.avatar_url,
             user_type: payload.user_type,
             password: payload.password,
+            description: payload.description,
             user: user.clone(),
         })
         .await?;

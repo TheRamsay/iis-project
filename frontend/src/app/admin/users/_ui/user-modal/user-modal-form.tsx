@@ -15,6 +15,8 @@ import {
 import { userType } from '../../../../../../drizzle/schema'
 import { formClassnames } from '@/app/_lib/form-classnames'
 import { FormImage } from '@/app/_ui/form/form-image'
+import { FormLabelError } from '@/app/_ui/form/form-label-error'
+import { TextArea } from '@/components/components'
 
 export function UserModalForm({ form }: { form: UseFormReturn<UserForm> }) {
 	return (
@@ -64,50 +66,57 @@ export function UserModalForm({ form }: { form: UseFormReturn<UserForm> }) {
 						</FormItem>
 					)}
 				/>
-				{/* <FormField
-					control={form.control}
-					name="displayName"
-					render={({
-						field: { name, value, onChange, onBlur },
-						fieldState: { isDirty },
-						formState: { disabled },
-					}) => (
-						<FormItem className="w-full">
-							<FormControl>
-								<>
-									<label htmlFor={name}>Display Name</label>
-									<TextField
-										type="text"
-										value={value || ''}
-										onChange={onChange}
-										onBlur={onBlur}
-										className={formClassnames({ isDirty })}
-										disabled={disabled}
-									/>
-								</>
-							</FormControl>
-						</FormItem>
-					)}
-				/> */}
 			</div>
+			<FormField
+				name="description"
+				control={form.control}
+				render={({
+					field: { name, value, onChange, onBlur },
+					fieldState: { isDirty, invalid: isError, error },
+				}) => (
+					<FormItem className="w-full">
+						<FormControl>
+							<>
+								<FormLabelError
+									htmlFor={name}
+									label="Description"
+									error={error?.message}
+								/>
+								<TextArea
+									type="text"
+									placeholder="Description"
+									value={value}
+									onChange={(e) => onChange(e.target.value)}
+									onBlur={onBlur}
+									className={formClassnames({ isDirty, isError })}
+								/>
+							</>
+						</FormControl>
+					</FormItem>
+				)}
+			/>
 			<FormField
 				control={form.control}
 				name="email"
 				render={({
 					field: { name, value, onBlur, onChange },
-					fieldState: { isDirty },
+					fieldState: { isDirty, error, invalid: isError },
 					formState: { disabled },
 				}) => (
 					<FormItem className="w-full">
 						<FormControl>
 							<>
-								<label htmlFor={name}>E-mail</label>
+								<FormLabelError
+									htmlFor={name}
+									label="E-mail"
+									error={error?.message}
+								/>
 								<TextField
 									type="text"
 									value={value || ''}
 									onChange={onChange}
 									onBlur={onBlur}
-									className={formClassnames({ isDirty })}
+									className={formClassnames({ isDirty, isError })}
 									disabled={disabled}
 								/>
 							</>

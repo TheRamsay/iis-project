@@ -11,7 +11,7 @@ export default async function Page() {
 		redirect('/login')
 	}
 
-	const groups = await fetchGroupsByUsername('', session?.userId)
+	const groups = await fetchGroupsByUsername('', session.userId)
 
 	return (
 		<div className="w-full space-y-8">

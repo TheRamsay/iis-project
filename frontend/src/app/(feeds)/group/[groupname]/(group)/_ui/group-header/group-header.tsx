@@ -54,21 +54,13 @@ async function GroupActions({ group }: GroupActions) {
 		)
 	}
 
-	if (isManager) {
+	if (isManager || isMinModerator(session?.role)) {
 		actions.push(
 			<Link href={`/group/${group.groupname}/settings`} key="settings">
 				<Button variant="outline" fullWidth>
 					Settings
 				</Button>
 			</Link>,
-		)
-	}
-
-	if (isMinModerator(session?.role)) {
-		actions.push(
-			<Button variant="destructive" fullWidth>
-				Delete
-			</Button>,
 		)
 	}
 

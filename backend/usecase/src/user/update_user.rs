@@ -18,6 +18,7 @@ pub struct UpdateUserInput {
     pub avatar_url: Option<String>,
     pub user_type: UserType,
     pub password: Option<String>,
+    pub description: Option<String>,
     pub user: User,
 }
 
@@ -49,7 +50,7 @@ where
             id: input.id.into(),
             email: input.email.clone(),
             username: input.username.clone(),
-            description: input.display_name.clone(),
+            description: input.description.clone(),
             avatar_url: input.avatar_url,
             user_type: input.user_type,
             password_hash: if input.password.is_some() {

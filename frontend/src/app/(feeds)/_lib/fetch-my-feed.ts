@@ -14,7 +14,7 @@ export async function fetchMyFeed(filters: FeedFilters = {}): Promise<Post[]> {
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   const { posts }: { posts: any[] } = await response.json();
 
-  return posts.map(({ post, author, comments, likes }) => ({
+  return posts.map(({ post, author, comments, likes, tags }) => ({
     id: post.id,
     title: post.title,
     description: post.description,
@@ -23,7 +23,7 @@ export async function fetchMyFeed(filters: FeedFilters = {}): Promise<Post[]> {
     },
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     comments: comments.map((comment: any) => ({
-      id: comment.id || "481658165156165156615", // TODO: FIX
+      id: comment.id,
       content: comment.content,
       user: {
         id: comment.user_id,
@@ -34,7 +34,7 @@ export async function fetchMyFeed(filters: FeedFilters = {}): Promise<Post[]> {
       },
     })),
     likeCount: likes.length,
-    tags: post.tags || [], // TODO: FIX
+    tags,
     user: {
       id: author.id,
       username: author.username,

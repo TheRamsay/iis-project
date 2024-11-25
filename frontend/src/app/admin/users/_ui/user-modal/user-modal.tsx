@@ -24,11 +24,14 @@ import { formImageSchema } from '@/app/_ui/form/form-image'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { backendFetch, checkResponse } from '@/app/_lib/backend-fetch'
 import { uploadImage } from '@/app/_lib/upload-image'
+import { useRouter } from 'next/navigation'
+import { ErrorTooltip } from '@/app/_ui/error-tooltip'
+import { extractError } from '@/app/_lib/extract-error'
 
 const userModalSchema = z
 	.object({
 		id: z.string(),
-		// displayName: myz.displayName,
+		description: myz.description,
 		email: z.string().email(),
 		isBlocked: z.boolean(),
 		role: z.string(),
@@ -43,8 +46,9 @@ type UserModal = {
 
 export type UserForm = Pick<
 	typeof schema.user.$inferSelect,
-	'id' | 'displayName' | 'email' | 'isBlocked' | 'username'
+	'id' | 'email' | 'isBlocked' | 'username'
 > & {
+	description: string
 	image: string | null | undefined
 	role: Role
 }
@@ -84,7 +88,7 @@ export function UserModal({
 			const response = await backendFetch(`/api/users/id/${data?.id}`, {
 				method: 'PUT',
 				body: JSON.stringify({
-					display_name: formData.displayName,
+					description: formData.description,
 					username: formData.username,
 					email: formData.email,
 					avatar_url: imageUrl || undefined,
@@ -92,7 +96,13 @@ export function UserModal({
 				}),
 			})
 
-			await checkResponse(response, { customError: 'Failed to update user' })
+			try {
+				await checkResponse(response, { passError: true })
+			} catch (error) {
+				if (error instanceof Error) {
+					throw new Error(extractError(error.message))
+				}
+			}
 
 			return { username: formData.username }
 		},
@@ -111,7 +121,7 @@ export function UserModal({
 	const form = useForm<UserForm>({
 		disabled: loading,
 		defaultValues: {
-			displayName: '',
+			description: '',
 			email: '',
 			isBlocked: false,
 			role: 'regular',
@@ -142,6 +152,7 @@ export function UserModal({
 								<Loader size={20} />
 							</div>
 							<div className="flex w-full justify-end space-x-4">
+								<PostDeleteButton userId={data?.id} />
 								<Button
 									onClick={() => mutate(form.watch())}
 									disabled={loading || !form.formState.isDirty}
@@ -157,5 +168,37 @@ export function UserModal({
 				</FormProvider>
 			</DialogContent>
 		</Dialog>
+	)
+}
+
+function PostDeleteButton({ userId }: { userId: string | undefined }) {
+	const router = useRouter()
+
+	const { mutate, error, isPending } = useMutation({
+		mutationKey: ['delete-user', userId],
+		mutationFn: async () => {
+			const response = await backendFetch(`/api/users/id/${userId}`, {
+				method: 'DELETE',
+			})
+
+			if (!response.ok) {
+				throw new Error('Failed to delete user')
+			}
+		},
+		onSuccess: () => {
+			router.refresh()
+		},
+	})
+
+	return (
+		<div className="flex items-center space-x-2">
+			<div className={classNames(!isPending && 'hidden')}>
+				<Loader size={20} />
+			</div>
+			<ErrorTooltip error={error} size="small" />
+			<Button onClick={() => mutate()} variant="destructive">
+				Delete User
+			</Button>
+		</div>
 	)
 }

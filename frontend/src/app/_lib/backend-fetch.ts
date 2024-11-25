@@ -52,6 +52,7 @@ export async function checkResponse(
       if ("passError" in opts) {
         throw error;
       }
+
       throw new Error(opts.customError || "An unknown error has occurred.");
     }
   }
