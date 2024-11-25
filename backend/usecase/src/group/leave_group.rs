@@ -51,7 +51,7 @@ where
 
         let group_member = self
             .group_member_repository
-            .get_by_id(Id::new(input.user_id), Id::new(input.group_id))
+            .get_by_id(Id::new(input.group_id), Id::new(input.user_id))
             .await?;
 
         if group_member.is_none() {
