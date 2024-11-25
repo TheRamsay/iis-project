@@ -104,8 +104,6 @@ export function SubmitPostForm() {
 		resolver: zodResolver(submitPostFromSchema),
 	})
 
-	console.log(form.formState.errors)
-
 	return (
 		<div className="space-y-4">
 			<FormServerError error={error} />

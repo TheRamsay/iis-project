@@ -11,7 +11,6 @@ export const formTagsSchema = z.object({
 	tags: z.array(z.string()).refine(
 		(tags) => {
 			const set = new Set(tags)
-			console.log(set.size, tags.length)
 			return set.size === tags.length
 		},
 		{
