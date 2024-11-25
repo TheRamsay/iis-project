@@ -8,16 +8,23 @@ import { formClassnames } from '@/app/_lib/form-classnames'
 import { FormLabelError } from '@/app/_ui/form/form-label-error'
 
 export const formTagsSchema = z.object({
-	tags: z.array(z.string()).refine(
-		(tags) => {
-			const set = new Set(tags)
-			console.log(set.size, tags.length)
-			return set.size === tags.length
-		},
-		{
-			message: 'Tags must be unique',
-		},
-	),
+	tags: z
+		.array(z.string())
+		.refine(
+			(tags) => {
+				const set = new Set(tags)
+				return set.size === tags.length
+			},
+			{
+				message: 'Tags must be unique',
+			},
+		)
+		.refine(
+			(tags) => {
+				return tags.every((tag) => /^[a-zA-Z0-9]+$/.test(tag))
+			},
+			{ message: 'Only use alphanumeric characters' },
+		),
 })
 
 type FormSubset = {

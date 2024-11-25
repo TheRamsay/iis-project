@@ -21,11 +21,13 @@ export default async function Layout({
 }: { children: React.ReactNode; params: { groupname: string } }) {
 	const session = await getSession()
 
+	if (!session) {
+		return redirect('/')
+	}
+
 	const group = await fetchGroupByUsername(groupname)
 
-	// TODO: check if user is admin of group
-
-	if (!session) {
+	if (group.admin.id !== session?.userId) {
 		return redirect('/')
 	}
 

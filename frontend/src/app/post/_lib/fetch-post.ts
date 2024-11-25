@@ -15,6 +15,8 @@ export type Post = {
   visibility: "public" | "private";
   likeCount: number;
   comments: Comment[];
+  allowedUsers: User[];
+  allowedGroups: User[];
 };
 
 export async function fetchPost(
@@ -56,5 +58,11 @@ export async function fetchPost(
         },
       },
     })),
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    allowedGroups: data.allowed_groups.map((group: any) => ({
+      ...group,
+      avatar: { src: undefined },
+    })),
+    allowedUsers: data.allowed_users,
   };
 }

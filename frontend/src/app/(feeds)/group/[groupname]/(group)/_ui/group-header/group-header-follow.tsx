@@ -52,8 +52,6 @@ export function GroupHeaderFollow({ groupId, groupType }: GroupHeaderFollow) {
 		},
 	})
 
-	console.log(data)
-
 	const { mutate, error } = useMutation<void, Error, boolean>({
 		mutationKey: ['group-follow', groupId, session?.userId],
 		mutationFn: async (join) => {

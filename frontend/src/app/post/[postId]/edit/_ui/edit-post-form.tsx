@@ -67,8 +67,8 @@ export function EditPostForm({ postId }: { postId: string }) {
 				description: post.description,
 				visibility: post.visibility,
 				// location: { lat: '', lng: '' },
-				allowedUsers: [], // TODO!
-				allowedGroups: [],
+				allowedUsers: post.allowedUsers,
+				allowedGroups: post.allowedGroups,
 				tags: post.tags,
 			}
 		},

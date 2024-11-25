@@ -39,7 +39,6 @@ export function HeaderSearch() {
 
 	useOnClickOutside(ref, () => setOpen(false))
 
-	// TODO: endpoint
 	const { data, isLoading, isError } = useQuery({
 		queryKey: ['header-search', debounced],
 		queryFn: async () => {
@@ -56,28 +55,33 @@ export function HeaderSearch() {
 				tags: any[]
 			} = await response.json()
 
-			console.log(data)
-
 			return {
-				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-				users: data.users.map((user: any) => ({
-					id: user.id as string,
-					username: user.username as string,
-					avatar: { src: user.avatar_url as string },
-				})),
-				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-				groups: data.groups.map((group: any) => ({
-					id: group.id as string,
-					username: group.name as string,
-					avatar: { src: undefined },
-				})),
-				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-				tags: data.tags.map((tag: any) => ({
-					name: tag.tag as string,
-				})),
+				users: data.users
+					// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+					.map((user: any) => ({
+						id: user.id as string,
+						username: user.username as string,
+						avatar: { src: user.avatar_url as string },
+					}))
+					.slice(0, 5),
+				groups: data.groups
+					// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+					.map((group: any) => ({
+						id: group.id as string,
+						username: group.name as string,
+						avatar: { src: undefined },
+					}))
+					.slice(0, 5),
+				tags: data.tags
+					// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+					.map((tag: any) => ({
+						name: tag.tag as string,
+					}))
+					.sort((a, b) => a.name.length - b.name.length)
+					.slice(0, 5),
 			} satisfies Data
 		},
-		enabled: query.length > 0 && open,
+		enabled: debounced.length > 0 && open,
 	})
 
 	return (
@@ -152,12 +156,16 @@ function Results({ data, isError, isLoading }: Results) {
 		)
 	}
 
-	if (isError || !data) {
+	if (isError) {
 		return (
 			<div className="px-4 pt-4 pb-2 gap-2 flex justify-center w-full text-sm">
 				An unexpected error has occured.
 			</div>
 		)
+	}
+
+	if (!data) {
+		return <div />
 	}
 
 	return (

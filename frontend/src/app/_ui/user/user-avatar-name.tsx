@@ -6,7 +6,7 @@ import { Avatar } from '../avatar'
 type User = {
 	id: string
 	username: string
-	avatar: {
+	avatar?: {
 		src?: string | undefined
 	}
 }
@@ -50,7 +50,7 @@ export function UserAvatarName({
 				<Avatar
 					name={user.username}
 					unoptimized={true}
-					src={user.avatar.src}
+					src={user.avatar?.src}
 					alt="avatar"
 					size={pix}
 					className="rounded-full"

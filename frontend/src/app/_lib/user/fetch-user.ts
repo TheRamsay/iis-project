@@ -20,7 +20,7 @@ function transform(data: any) {
     id: data.id,
     username: data.username,
     displayName: data.display_name,
-    description: data.description, // TODO: Description
+    description: data.description,
     email: data.email,
     role: data.user_type,
     isBlocked: data.is_blocked,

@@ -77,7 +77,7 @@ export function FormLogin() {
 								<>
 									<FormLabelError
 										htmlFor={name}
-										label="E-mail"
+										label="Username"
 										error={error?.message}
 									/>
 									<TextField

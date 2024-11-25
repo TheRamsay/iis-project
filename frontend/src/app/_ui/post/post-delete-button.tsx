@@ -13,25 +13,34 @@ interface PostDeleteButton {
 	post: Pick<Post, 'id'> & {
 		user: Pick<Post['user'], 'id'>
 	}
-	groupModeratorId?: string
+	group?: {
+		id: string
+		moderatorId: string
+	}
 	size?: 'small' | 'full'
 }
 
 export function PostDeleteButton({
 	post,
-	groupModeratorId,
+	group,
 	size = 'full',
 }: PostDeleteButton) {
 	const session = useSession()
 
 	const router = useRouter()
 
+	const isGroupModerator = group?.moderatorId === session?.userId
+
 	const { mutate, error } = useMutation({
-		mutationKey: ['delete-post', post, groupModeratorId],
+		mutationKey: ['delete-post', post, group],
 		mutationFn: async () => {
-			const response = await backendFetch(`/api/posts/${post.id}`, {
+			let link = `/api/posts/${post.id}`
+			if (isGroupModerator) {
+				link = `/api/posts/${post.id}/group/${group?.id}`
+			}
+
+			const response = await backendFetch(link, {
 				method: 'DELETE',
-				credentials: 'include',
 			})
 
 			if (!response.ok) {
@@ -50,7 +59,7 @@ export function PostDeleteButton({
 	if (
 		isMinModerator(session.role) ||
 		session.userId === post.user.id ||
-		groupModeratorId === session.userId
+		isGroupModerator
 	) {
 		const pix = size === 'small' ? 16 : 28
 

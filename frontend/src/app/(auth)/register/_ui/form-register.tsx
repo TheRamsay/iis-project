@@ -68,11 +68,6 @@ export function FormRegister() {
 		onSuccess: () => {
 			push('/settings')
 		},
-		onError: (error) => {
-			// // TODO: Error handling
-			// form.setError('username', { message: 'This username already exists.' })
-			// form.setError('email', { message: 'This email already exists.' })
-		},
 	})
 
 	const loading = isPending
