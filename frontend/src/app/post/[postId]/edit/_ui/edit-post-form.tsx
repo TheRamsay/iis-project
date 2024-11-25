@@ -19,7 +19,7 @@ import { FormLocation, formLocationSchema } from '../../../_ui/form-location'
 import { z, type ZodType } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { FormTags, formTagsSchema } from '../../../_ui/form-tags'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { FormLabelError } from '@/app/_ui/form/form-label-error'
 import { FormServerError } from '@/app/_ui/form/form-server-error'
 import { fetchPost } from '@/app/post/_lib/fetch-post'
@@ -54,6 +54,7 @@ type Post = Pick<
 export type EditPostForm = Post
 
 export function EditPostForm({ postId }: { postId: string }) {
+	const [resetCounter, setResetCounter] = useState(0)
 	const { push } = useRouter()
 
 	const { data, isFetching } = useQuery<Post>({
@@ -122,6 +123,7 @@ export function EditPostForm({ postId }: { postId: string }) {
 	useEffect(() => {
 		if (data) {
 			form.reset(data, { keepDirty: false })
+			setResetCounter((c) => c + 1)
 		}
 	}, [data, form.reset])
 
@@ -191,7 +193,7 @@ export function EditPostForm({ postId }: { postId: string }) {
 				{/* <FormLocation form={form} /> */}
 				<FormVisibility form={form} />
 
-				<FormTags form={form} />
+				<FormTags key={resetCounter} form={form} />
 
 				<div className="flex flex-row w-full justify-between items-center">
 					<div className={classNames(!loading && 'hidden')}>
