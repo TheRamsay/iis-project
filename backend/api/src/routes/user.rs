@@ -89,9 +89,7 @@ async fn get_user_by_id(
 ) -> AppResult<Json<GetUserResponse>> {
     let user_usercase = GetUserUseCase::new(state.user_repository.clone());
 
-    let user = user_usercase
-        .execute(GetUserInput { id })
-        .await?;
+    let user = user_usercase.execute(GetUserInput { id }).await?;
 
     if let Some(user) = user {
         anyhow::Result::Ok(Json(GetUserResponse {
@@ -108,7 +106,6 @@ async fn get_user_by_id(
         Err(AppError::NotFound("User".into()))
     }
 }
-
 
 async fn get_user_by_username(
     state: State<AppState>,
@@ -254,7 +251,7 @@ async fn update_user(
     let modifies_self = actor.id == id;
 
     // Check if the actor is an admin or the user being modified
-    if actor.role.is_administrator() && !modifies_self {
+    if !actor.role.is_administrator() && !modifies_self {
         return Err(AppError::Unauthorized("You can't modify this user".into()));
     }
 
