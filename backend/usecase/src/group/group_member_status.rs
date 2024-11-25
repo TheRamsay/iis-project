@@ -3,7 +3,8 @@ use models::{
     errors::{AppError, AppResult},
 };
 use repository::{
-    group_join_request_repository::GroupJoinRequestRepository, group_repository::GroupRepository,
+    group_join_request_repository::GroupJoinRequestRepository,
+    group_member_repository::GroupMemberRepository, group_repository::GroupRepository,
 };
 use serde::{Deserialize, Serialize};
 
@@ -25,24 +26,32 @@ pub struct GroupMemberStatusOutput {
     pub status: GroupMemberStatus,
 }
 
-pub struct GroupMemberStatusUseCase<T, X>
+pub struct GroupMemberStatusUseCase<T, X, Y>
 where
     T: GroupJoinRequestRepository,
     X: GroupRepository,
+    Y: GroupMemberRepository,
 {
     group_join_request_repository: T,
     group_repository: X,
+    group_member_repository: Y,
 }
 
-impl<T, X> GroupMemberStatusUseCase<T, X>
+impl<T, X, Y> GroupMemberStatusUseCase<T, X, Y>
 where
     T: GroupJoinRequestRepository,
     X: GroupRepository,
+    Y: GroupMemberRepository,
 {
-    pub fn new(group_join_request_repository: T, group_repository: X) -> Self {
+    pub fn new(
+        group_join_request_repository: T,
+        group_repository: X,
+        group_member_repository: Y,
+    ) -> Self {
         Self {
             group_join_request_repository,
             group_repository,
+            group_member_repository,
         }
     }
 
@@ -55,6 +64,17 @@ where
             .get_by_id(&input.group_id)
             .await?
             .ok_or(AppError::NotFound("Group".to_string()))?;
+
+        if self
+            .group_member_repository
+            .get_by_id(input.group_id.clone(), input.user_id.clone())
+            .await?
+            .is_none()
+        {
+            return Ok(GroupMemberStatusOutput {
+                status: GroupMemberStatus::NotJoined,
+            });
+        }
 
         if group.admin_id == input.user_id {
             return Ok(GroupMemberStatusOutput {

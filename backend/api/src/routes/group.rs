@@ -261,6 +261,7 @@ async fn check_user_status_in_group(
     let usecase = GroupMemberStatusUseCase::new(
         state.group_join_request_repository.clone(),
         state.group_repository.clone(),
+        state.group_member_repository.clone(),
     );
 
     let input = GroupMemberStatusInput {
