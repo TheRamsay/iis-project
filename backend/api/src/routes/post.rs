@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use usecase::{
     group::{create_group, delete_group},
     post::{
+        add_post_to_wall::{AddPostToWallInput, AddPostToWallUseCase},
         comment_post::{CommentPostInput, CommentPostUseCase},
         create_post::{CreatePostInput, CreatePostUseCase},
         delete_post::{DeletePostInput, DeletePostUseCase},
@@ -92,8 +93,11 @@ async fn create_post(
         state.post_tag_repository.clone(),
     );
 
-    let create_post_group_visibility_use_case =
-        CreateGroupPostVisibilityUseCase::new(state.post_visibility_repository.clone());
+    let create_post_group_visibility_use_case = CreateGroupPostVisibilityUseCase::new(
+        state.post_visibility_repository.clone(),
+        state.wall_post_repository.clone(),
+        state.group_repository.clone(),
+    );
     let create_post_user_visibility_use_case =
         CreateUserPostVisibilityUseCase::new(state.post_visibility_repository.clone());
 
@@ -373,13 +377,19 @@ async fn update_post(
     let get_user_post_visibility_use_case =
         GetUserPostVisibilityUseCase::new(state.post_visibility_repository.clone());
 
-    let delete_group_post_visibility_use_case =
-        DeleteGroupPostVisibilityUseCase::new(state.post_visibility_repository.clone());
+    let delete_group_post_visibility_use_case = DeleteGroupPostVisibilityUseCase::new(
+        state.post_visibility_repository.clone(),
+        state.wall_post_repository.clone(),
+        state.group_repository.clone(),
+    );
     let delete_user_post_visibility_use_case =
         DeleteUserPostVisibilityUseCase::new(state.post_visibility_repository.clone());
 
-    let create_post_group_visibility_use_case =
-        CreateGroupPostVisibilityUseCase::new(state.post_visibility_repository.clone());
+    let create_post_group_visibility_use_case = CreateGroupPostVisibilityUseCase::new(
+        state.post_visibility_repository.clone(),
+        state.wall_post_repository.clone(),
+        state.group_repository.clone(),
+    );
     let create_post_user_visibility_use_case =
         CreateUserPostVisibilityUseCase::new(state.post_visibility_repository.clone());
 

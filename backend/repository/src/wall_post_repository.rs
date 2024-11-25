@@ -16,6 +16,7 @@ impl DbWallPostRepository {
 
 pub trait WallPostRepository {
     async fn create(&self, wall_post: WallPost) -> Result<(), DbErr>;
+    async fn delete(&self, wall_post: WallPost) -> Result<(), DbErr>;
 }
 
 impl WallPostRepository for DbWallPostRepository {
@@ -24,6 +25,20 @@ impl WallPostRepository for DbWallPostRepository {
         let active_model: models::schema::wall_post::ActiveModel = wall_post_model.into();
 
         let _ = models::schema::wall_post::Entity::insert(active_model)
+            .exec(self.db.as_ref())
+            .await?;
+
+        Ok(())
+    }
+
+    async fn delete(&self, wall_post: WallPost) -> Result<(), DbErr> {
+        let active_model = models::schema::wall_post::ActiveModel {
+            post_id: sea_orm::ActiveValue::Set(wall_post.post_id.id),
+            wall_id: sea_orm::ActiveValue::Set(wall_post.wall_id.id),
+            ..Default::default()
+        };
+
+        models::schema::wall_post::Entity::delete(active_model)
             .exec(self.db.as_ref())
             .await?;
 
