@@ -28,7 +28,7 @@ use crate::{
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetAuthorResponse {
     id: Uuid,
-    display_name: Option<String>,
+    description: Option<String>,
     username: String,
     avatar_url: Option<String>,
     user_type: UserType,
@@ -112,7 +112,7 @@ pub async fn get_wall(
                 },
                 author: GetAuthorResponse {
                     id: author.id.into(),
-                    display_name: author.display_name,
+                    description: author.description,
                     username: author.username,
                     avatar_url: author.avatar_url,
                     user_type: author.user_type,
@@ -125,7 +125,7 @@ pub async fn get_wall(
                         content: comment.content,
                         user: GetAuthorResponse {
                             id: user.id.into(),
-                            display_name: user.display_name,
+                            description: user.description,
                             username: user.username,
                             avatar_url: user.avatar_url,
                             user_type: user.user_type,
@@ -139,7 +139,7 @@ pub async fn get_wall(
                         post_id: like.post_id.into(),
                         user: GetAuthorResponse {
                             id: user.id.into(),
-                            display_name: user.display_name,
+                            description: user.description,
                             username: user.username,
                             avatar_url: user.avatar_url,
                             user_type: user.user_type,
@@ -189,7 +189,7 @@ pub async fn get_feed(
                 },
                 author: GetAuthorResponse {
                     id: author.id.into(),
-                    display_name: author.display_name,
+                    description: author.description,
                     username: author.username,
                     avatar_url: author.avatar_url,
                     user_type: author.user_type,
@@ -202,7 +202,7 @@ pub async fn get_feed(
                         content: comment.content,
                         user: GetAuthorResponse {
                             id: user.id.into(),
-                            display_name: user.display_name,
+                            description: user.description,
                             username: user.username,
                             avatar_url: user.avatar_url,
                             user_type: user.user_type,
@@ -216,7 +216,7 @@ pub async fn get_feed(
                         post_id: like.post_id.into(),
                         user: GetAuthorResponse {
                             id: user.id.into(),
-                            display_name: user.display_name,
+                            description: user.description,
                             username: user.username,
                             avatar_url: user.avatar_url,
                             user_type: user.user_type,
@@ -269,7 +269,7 @@ pub async fn get_wall_by_tag(
                 },
                 author: GetAuthorResponse {
                     id: author.id.into(),
-                    display_name: author.display_name,
+                    description: author.description,
                     username: author.username,
                     avatar_url: author.avatar_url,
                     user_type: author.user_type,
@@ -282,7 +282,7 @@ pub async fn get_wall_by_tag(
                         content: comment.content,
                         user: GetAuthorResponse {
                             id: user.id.into(),
-                            display_name: user.display_name,
+                            description: user.description,
                             username: user.username,
                             avatar_url: user.avatar_url,
                             user_type: user.user_type,
@@ -296,7 +296,7 @@ pub async fn get_wall_by_tag(
                         post_id: like.post_id.into(),
                         user: GetAuthorResponse {
                             id: user.id.into(),
-                            display_name: user.display_name,
+                            description: user.description,
                             username: user.username,
                             avatar_url: user.avatar_url,
                             user_type: user.user_type,

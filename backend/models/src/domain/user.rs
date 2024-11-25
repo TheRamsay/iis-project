@@ -82,15 +82,15 @@ pub struct User {
     #[validate(length(
         min = 3,
         max = 15,
-        message = "Display name must be between 3 and 15 characters"
-    ))]
-    pub display_name: Option<String>,
-    #[validate(length(
-        min = 3,
-        max = 15,
         message = "Username must be between 3 and 15 characters"
     ))]
     pub username: String,
+    #[validate(length(
+        min = 0,
+        max = 255,
+        message = "Description must be between 0 and 255 characters"
+    ))]
+    pub description: Option<String>,
     #[validate(email)]
     pub email: Option<String>,
     #[validate(url)]
@@ -103,9 +103,9 @@ pub struct User {
 
 impl User {
     pub fn new(
-        display_name: Option<String>,
         username: String,
         email: Option<String>,
+        description: Option<String>,
         avatar_url: Option<String>,
         user_type: UserType,
         wall_id: Id<Wall>,
@@ -113,7 +113,7 @@ impl User {
     ) -> Result<Self, ValidationErrors> {
         let model = Self {
             id: Id::gen(),
-            display_name,
+            description,
             username,
             email,
             avatar_url,
@@ -137,9 +137,9 @@ impl From<schema::user::Model> for User {
     fn from(model: schema::user::Model) -> Self {
         Self {
             id: Id::new(model.id),
-            display_name: model.display_name,
             username: model.username,
             email: model.email,
+            description: model.description,
             avatar_url: model.avatar_url,
             user_type: model.user_type.into(),
             wall_id: Id::new(model.wall_id),
@@ -153,8 +153,8 @@ impl From<User> for schema::user::Model {
     fn from(user: User) -> Self {
         Self {
             id: user.id.id,
-            display_name: user.display_name,
             username: user.username,
+            description: user.description,
             email: user.email,
             avatar_url: user.avatar_url,
             user_type: user.user_type.into(),

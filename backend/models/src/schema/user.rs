@@ -9,13 +9,13 @@ use serde::{Deserialize, Serialize};
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    pub display_name: Option<String>,
     #[sea_orm(unique)]
     pub username: String,
     #[sea_orm(unique)]
     pub email: Option<String>,
     pub avatar_url: Option<String>,
     pub user_type: UserType,
+    pub description: Option<String>,
     pub wall_id: Uuid,
     pub is_blocked: bool,
     pub password_hash: String,

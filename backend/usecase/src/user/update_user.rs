@@ -17,7 +17,7 @@ pub struct UpdateUserInput {
     pub display_name: Option<String>,
     pub avatar_url: Option<String>,
     pub user_type: UserType,
-    pub password: String,
+    pub password: Option<String>,
     pub user: User,
 }
 
@@ -39,15 +39,26 @@ where
     }
 
     pub async fn execute(&self, input: UpdateUserInput) -> AppResult<UpdateUserOutput> {
+        let user = self
+            .user_repository
+            .get_by_id(input.id.into())
+            .await?
+            .ok_or(AppError::NotFound("User ".into()))?;
+
         let model = User {
             id: input.id.into(),
             email: input.email.clone(),
             username: input.username.clone(),
-            display_name: input.display_name,
+            description: input.display_name.clone(),
             avatar_url: input.avatar_url,
             user_type: input.user_type,
-            password_hash: hash_password(&input.password)?,
-            ..input.user
+            password_hash: if input.password.is_some() {
+                hash_password(&input.password.clone().unwrap())?
+            } else {
+                user.password_hash
+            },
+            wall_id: user.wall_id,
+            is_blocked: user.is_blocked,
         };
 
         let mut validation_errors = ValidationErrors::new();
@@ -89,12 +100,14 @@ where
             }
         }
 
-        if input.password.len() < 3 || input.password.len() > 15 {
-            let mut validation_error = ValidationError::new("password");
-            validation_error = validation_error
-                .with_message("Password must be between 3 and 15 characters".into());
-            validation_error.add_param("value".into(), &input.password);
-            validation_errors.add("password", validation_error);
+        if let Some(password) = input.password.clone() {
+            if password.len() < 3 || password.len() > 15 {
+                let mut validation_error = ValidationError::new("password");
+                validation_error = validation_error
+                    .with_message("Password must be between 3 and 15 characters".into());
+                validation_error.add_param("value".into(), &input.password);
+                validation_errors.add("password", validation_error);
+            }
         }
 
         if !validation_errors.is_empty() {

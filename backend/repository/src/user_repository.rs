@@ -100,7 +100,7 @@ impl UserRepository for DbUserRepository {
 
         active_model.is_blocked = Set(user.is_blocked);
         active_model.avatar_url = Set(user.avatar_url);
-        active_model.display_name = Set(user.display_name);
+        active_model.description = Set(user.description);
         active_model.email = Set(user.email);
         active_model.user_type = Set(user.user_type.into());
         active_model.username = Set(user.username);
