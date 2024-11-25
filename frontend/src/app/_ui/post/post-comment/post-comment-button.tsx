@@ -11,7 +11,7 @@ export function PostCommentButton({ post }: PostCommentButton) {
 			<MessageCircle
 				width={28}
 				height={28}
-				className="cursor-pointer hover:text-accent-foreground"
+				className="hover:text-accent-foreground"
 			/>
 			<span>{post.comments.length}</span>
 		</div>

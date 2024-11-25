@@ -1,6 +1,7 @@
 'use client'
 
 import { fetchGroupsByUsername } from '@/app/(feeds)/group/_lib/fetch-groups-by-username'
+import { useSession } from '@/app/_lib/auth/auth-provider'
 import { fetchAllUsers } from '@/app/_lib/user/fetch-all-users'
 import { InfoTooltip } from '@/app/_ui/info-tooltip'
 import {
@@ -17,7 +18,7 @@ export type Entity = {
 	id: string
 	username: string
 	avatar: {
-		src: string | undefined
+		src?: string | undefined
 	}
 }
 
@@ -28,6 +29,7 @@ interface PickEntities {
 }
 
 export function PickEntities({ type, list, onChange }: PickEntities) {
+	const session = useSession()
 	const [query, setQuery] = useState('')
 
 	const { data, isLoading, isError } = useQuery<Entity[]>({
@@ -42,7 +44,7 @@ export function PickEntities({ type, list, onChange }: PickEntities) {
 			}
 
 			if (type === 'group') {
-				const data = await fetchGroupsByUsername(query)
+				const data = await fetchGroupsByUsername(query, session?.userId)
 
 				return data.map((group) => ({
 					id: group.id,
@@ -168,25 +170,23 @@ function Results({
 	)
 
 	return (
-		<div className="px-4 py-2 gap-2 text-sm">
-			<div className="text-sm">
-				{data?.length ? (
-					data.map((entity) => (
-						<div
-							key={entity.id}
-							onClick={(event) => onClick(event, entity)}
-							className="w-full justify-between flex cursor-pointer"
-						>
-							<UserAvatarName user={entity} size="small" disableLink />
-							{selectedData.find((d) => d.id === entity.id) ? (
-								<CheckIcon color="green" width={20} height={20} />
-							) : null}
-						</div>
-					))
-				) : (
-					<div>No results found</div>
-				)}
-			</div>
+		<div className="px-4 py-2 gap-2 text-sm space-y-1">
+			{data?.length ? (
+				data.map((entity) => (
+					<div
+						key={entity.id}
+						onClick={(event) => onClick(event, entity)}
+						className="w-full justify-between flex cursor-pointer"
+					>
+						<UserAvatarName user={entity} size="small" disableLink />
+						{selectedData.find((d) => d.id === entity.id) ? (
+							<CheckIcon color="green" width={20} height={20} />
+						) : null}
+					</div>
+				))
+			) : (
+				<div>No results found</div>
+			)}
 		</div>
 	)
 }

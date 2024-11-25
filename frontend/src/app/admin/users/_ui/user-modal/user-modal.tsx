@@ -87,7 +87,7 @@ export function UserModal({ children, username, open: _open }: UserModal) {
 				}),
 			})
 
-			await checkResponse(response, 'Failed to update user')
+			await checkResponse(response, { customError: 'Failed to update user' })
 		},
 		onSuccess: () => {
 			refetch()

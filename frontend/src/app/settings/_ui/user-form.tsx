@@ -26,7 +26,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 const userSchema: ZodType<User> = z
 	.object({
 		id: z.string(),
-		displayName: myz.displayName,
+		displayName: myz.displayName.or(z.literal('')),
 		email: z.string().email(),
 		username: myz.username,
 		description: myz.description,
@@ -55,6 +55,7 @@ export function UserForm({ userId }: UserFormProps) {
 				...user,
 				password: '',
 				image: user.avatar.src,
+				a: Math.random(),
 			}
 		},
 	})
@@ -74,13 +75,13 @@ export function UserForm({ userId }: UserFormProps) {
 					display_name: formData.displayName,
 					username: formData.username,
 					email: formData.email,
-					password: formData.password,
+					password: formData.password || undefined,
 					avatar_url: imageUrl || undefined,
 					user_type: data?.role || 'regular',
 				}),
 			})
 
-			await checkResponse(response, 'Failed to update user')
+			await checkResponse(response, { customError: 'Failed to update user' })
 		},
 		onSuccess: () => {
 			refetch()

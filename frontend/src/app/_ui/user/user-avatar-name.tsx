@@ -7,7 +7,7 @@ type User = {
 	id: string
 	username: string
 	avatar: {
-		src: string | undefined
+		src?: string | undefined
 	}
 }
 

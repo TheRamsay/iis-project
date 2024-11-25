@@ -37,7 +37,20 @@ export function FormCreateGroup() {
 				}),
 			})
 
-			await checkResponse(response)
+			try {
+				await checkResponse(response, { passError: true })
+			} catch (error) {
+				let message = 'An unknown error has occured.'
+
+				try {
+					if (error instanceof Error) {
+						const data = JSON.parse(error.message)
+						message = data.name[0].message
+					}
+				} catch {}
+
+				throw new Error(message)
+			}
 
 			return {
 				name: formData.name,

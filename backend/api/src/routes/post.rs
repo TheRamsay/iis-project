@@ -201,6 +201,7 @@ async fn delete_post(
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct UpdatePostRequest {
+    title: String,
     description: String,
     post_type: String,
     visibility: String,
@@ -244,7 +245,7 @@ async fn update_post(
 
     let input = Post {
         id: id.into(),
-        title: unwraped_post.post.title,
+        title: payload.title,
         description: payload.description,
         author_id: unwraped_post.post.author_id.into(),
         post_type: match payload.post_type.as_str() {

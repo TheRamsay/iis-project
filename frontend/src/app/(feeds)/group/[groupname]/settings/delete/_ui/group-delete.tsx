@@ -23,8 +23,6 @@ export function GroupDelete({ group }: GroupDelete) {
 			})
 
 			await checkResponse(response)
-
-			return response.json()
 		},
 		onSuccess: () => {
 			push('/')

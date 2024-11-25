@@ -67,7 +67,6 @@ export function SubmitPostForm() {
 					post_type: 'photo',
 					visibility: formData.visibility,
 					content_url: link,
-					// TODO: author_id ?
 				}),
 			})
 
@@ -98,6 +97,8 @@ export function SubmitPostForm() {
 		},
 		resolver: zodResolver(submitPostFromSchema),
 	})
+
+	console.log(form.formState.errors)
 
 	return (
 		<div className="space-y-4">

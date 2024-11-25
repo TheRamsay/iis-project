@@ -42,7 +42,12 @@ export async function checkResponse(
   if (!response.ok) {
     try {
       const data = await response.json();
-      throw new Error(data.error);
+
+      const error =
+        typeof data.error === "string"
+          ? data.error
+          : JSON.stringify(data.error, null, 2);
+      throw new Error(error);
     } catch (error) {
       if ("passError" in opts) {
         throw error;

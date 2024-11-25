@@ -11,7 +11,7 @@ interface Filters {
 export async function fetchAllUsers(filters?: Filters): Promise<User[]> {
   const response = await backendFetch("/api/users");
 
-  await checkResponse(response, "Failed to fetch users");
+  await checkResponse(response, { customError: "Failed to fetch users" });
 
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   const data: any[] = await response.json();
@@ -28,6 +28,7 @@ export async function fetchAllUsers(filters?: Filters): Promise<User[]> {
       avatar: {
         src: entry.avatar_url,
       },
+      wallId: entry.wall_id,
     };
   });
 }

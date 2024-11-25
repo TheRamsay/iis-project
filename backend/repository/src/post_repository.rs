@@ -39,6 +39,7 @@ impl PostRepository for DbPostRepository {
         let post_model: models::schema::post::Model = post.clone().into();
         let mut active_model: models::schema::post::ActiveModel = post_model.into();
 
+        active_model.title = Set(post.title);
         active_model.description = Set(post.description);
         active_model.visibility = Set(match post.visibility {
             PostVisibilityType::Public => "public".to_owned(),

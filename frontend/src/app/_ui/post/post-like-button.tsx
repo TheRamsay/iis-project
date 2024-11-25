@@ -25,7 +25,9 @@ export function PostLikeButton({ post }: PostLikeButton) {
 		queryFn: async () => {
 			const response = await backendFetch(`/api/posts/${post.id}/like/check`)
 
-			await checkResponse(response, 'Failed to check like status')
+			await checkResponse(response, {
+				customError: 'Failed to check like status',
+			})
 
 			const data = await response.json()
 
