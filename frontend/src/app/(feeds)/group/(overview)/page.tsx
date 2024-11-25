@@ -1,17 +1,17 @@
 import { SquareArrowOutUpRight } from 'lucide-react'
 import Link from 'next/link'
+import { fetchGroupsByUsername } from '../_lib/fetch-groups-by-username'
+import { getSession } from '@/app/_lib/auth/get-session'
+import { redirect } from 'next/navigation'
 
 export default async function Page() {
-	const groups = [
-		{
-			id: 1,
-			name: 'Group 1',
-		},
-		{
-			id: 2,
-			name: 'Group 2',
-		},
-	]
+	const session = await getSession()
+
+	if (!session) {
+		redirect('/login')
+	}
+
+	const groups = await fetchGroupsByUsername('', session?.userId)
 
 	return (
 		<div className="w-full space-y-8">
@@ -19,17 +19,21 @@ export default async function Page() {
 			<div className="space-y-4">
 				<h2 className="text-2xl">My Groups</h2>
 				<div className="space-y-2">
-					{groups.map((group) => (
-						<div
-							key={group.id}
-							className="justify-between w-full flex items-center"
-						>
-							<div>{group.name}</div>
-							<Link href={`/group/${group.name}`}>
-								<SquareArrowOutUpRight size={16} className="text-blue-500" />
-							</Link>
-						</div>
-					))}
+					{groups.length ? (
+						groups.map((group) => (
+							<div
+								key={group.id}
+								className="justify-between w-full flex items-center"
+							>
+								<div>{group.groupname}</div>
+								<Link href={`/group/${group.groupname}`}>
+									<SquareArrowOutUpRight size={16} className="text-blue-500" />
+								</Link>
+							</div>
+						))
+					) : (
+						<div>No groups found.</div>
+					)}
 				</div>
 			</div>
 			<div className="justify-between w-full flex items-center">

@@ -47,12 +47,12 @@ export function FormLogin() {
 	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['login'],
 		mutationFn: async (formData: FormLogin) => {
-			const response = await backendFetch(`${BACKEND_URL}/api/auth/login`, {
+			const response = await backendFetch('/api/auth/login', {
 				method: 'POST',
 				body: JSON.stringify(formData),
 			})
 
-			await checkResponse(response)
+			await checkResponse(response, { passError: true })
 		},
 		onSuccess: () => {
 			refresh()

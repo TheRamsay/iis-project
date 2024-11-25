@@ -96,10 +96,10 @@ async fn get_user_by_id(
     if let Some(user) = user {
         anyhow::Result::Ok(Json(GetUserResponse {
             id: user.id.id,
-            display_name: user.display_name,
             username: user.username,
             email: user.email,
             avatar_url: user.avatar_url,
+            description: user.description,
             user_type: user.user_type.to_string(),
             wall_id: user.wall_id.id,
             is_blocked: user.is_blocked,

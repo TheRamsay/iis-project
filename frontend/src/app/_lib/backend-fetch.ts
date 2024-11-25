@@ -35,13 +35,19 @@ export async function backendFetch(path: string, options: RequestInit = {}) {
   });
 }
 
-export async function checkResponse(response: Response, customError?: string) {
+export async function checkResponse(
+  response: Response,
+  opts: { passError: true } | { customError?: string } = {}
+) {
   if (!response.ok) {
     try {
       const data = await response.json();
       throw new Error(data.error);
     } catch (error) {
-      throw new Error(customError || "An unknown error has occurred.");
+      if ("passError" in opts) {
+        throw error;
+      }
+      throw new Error(opts.customError || "An unknown error has occurred.");
     }
   }
 
