@@ -41,6 +41,8 @@ async function Feed({
 	const group = await fetchGroupByUsername(groupname)
 	const { status } = await fetchGroupStatus({ groupId: group.id })
 
+	console.log(status)
+
 	if (status !== 'joined' && !isPublic && group.admin.id !== session?.userId) {
 		return (
 			<div className="w-full flex justify-center text-xl">
