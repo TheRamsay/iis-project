@@ -63,6 +63,11 @@ export async function fetchPost(
       ...group,
       avatar: { src: undefined },
     })),
-    allowedUsers: data.allowed_users,
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    allowedUsers: data.allowed_users.map((user: any) => ({
+      id: user.id,
+      username: user.username,
+      avatar: { src: user.avatar_url },
+    })),
   };
 }
