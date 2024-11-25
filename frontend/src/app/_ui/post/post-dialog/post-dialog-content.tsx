@@ -33,7 +33,7 @@ export function PostDialogContent({
 					alt="image"
 					width={512}
 					height={512}
-					className="h-full w-full object-contain"
+					className="h-full w-auto object-contain"
 				/>
 			</div>
 			<div className="flex flex-col justify-between w-[35%] min-w-[35%]">

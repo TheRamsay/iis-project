@@ -8,7 +8,7 @@ export default async function Page({
 	const post = await fetchPost(postId)
 
 	return (
-		<div className="w-full space-y-8">
+		<div className="w-full space-y-8 h-full">
 			<h1 className="text-3xl font-medium">Post</h1>
 			<PostDialogContent post={post} dialog={false} />
 		</div>

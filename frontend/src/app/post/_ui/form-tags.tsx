@@ -9,7 +9,15 @@ import { FormLabelError } from '@/app/_ui/form/form-label-error'
 
 export const formTagsSchema = z.object({
 	tags: z
-		.array(z.string())
+		.array(
+			z
+				.string()
+				.regex(/^[a-zA-Z0-9]+$/, {
+					message: 'Only use alphanumeric characters',
+				})
+				.min(3)
+				.max(10),
+		)
 		.refine(
 			(tags) => {
 				const set = new Set(tags)
@@ -18,12 +26,6 @@ export const formTagsSchema = z.object({
 			{
 				message: 'Tags must be unique',
 			},
-		)
-		.refine(
-			(tags) => {
-				return tags.every((tag) => /^[a-zA-Z0-9]+$/.test(tag))
-			},
-			{ message: 'Only use alphanumeric characters' },
 		),
 })
 
