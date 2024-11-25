@@ -50,10 +50,17 @@ where
         &self,
         input: GroupMemberStatusInput,
     ) -> AppResult<GroupMemberStatusOutput> {
-        self.group_repository
+        let (group, _) = self
+            .group_repository
             .get_by_id(&input.group_id)
             .await?
             .ok_or(AppError::NotFound("Group".to_string()))?;
+
+        if group.admin_id == input.user_id {
+            return Ok(GroupMemberStatusOutput {
+                status: GroupMemberStatus::Joined,
+            });
+        }
 
         let requests = self
             .group_join_request_repository
