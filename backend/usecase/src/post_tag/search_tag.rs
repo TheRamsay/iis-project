@@ -43,21 +43,6 @@ where
             .await?
             .unwrap_or_else(Vec::new);
 
-        let mut grouped_tags = std::collections::HashMap::new();
-        for tag in tags {
-            grouped_tags
-                .entry(tag.tag.clone())
-                .or_insert_with(Vec::new)
-                .push(tag);
-        }
-
-        let grouped_tags_vec = grouped_tags
-            .into_iter()
-            .flat_map(|(_, tags)| tags)
-            .collect();
-
-        Ok(SearchPostTagOutput {
-            tags: grouped_tags_vec,
-        })
+        Ok(SearchPostTagOutput { tags: tags })
     }
 }
