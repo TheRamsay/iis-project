@@ -223,7 +223,7 @@ struct UpdateUserRequest {
     username: String,
     email: Option<String>,
     avatar_url: Option<String>,
-    password: String,
+    password: Option<String>,
     user_type: UserType,
 }
 
