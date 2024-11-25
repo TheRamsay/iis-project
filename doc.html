@@ -169,7 +169,7 @@
     </ul>
 
     <h3>Inicializace databáze</h3>
-    Pokud databáze bude vytvořena pomocí migrací, vytvoří se potřebné tabulky, ale bez dat. Pokud ji chceme inicializovat, tak existuje skript na vytvoření všech tabulek a vložení dat, cesta k němu je <b>./backend/scripts/create.sql</b>. V takovém případě se pak migrace nepoužívá.
+    Pokud budou spuštěny migrace, vytvoří se potřebné tabulky, ale bez dat. Pokud je chceme inicializovat, tak existuje skript na vytvoření všech tabulek a vložení dat, cesta k němu je <b>./backend/scripts/create.sql</b>. V takovém případě se pak migrace nepoužívá.
 
     <h3>Konfigurace</h3>
     Pro správný chod aplikace je potřeba inicializovat proměnné prostředí. Pro backend je šablona umístěnná v <b>./backend/.env.template</b>. Konfigurace se pak bude nacházet v <b>./backend/.env</b>
