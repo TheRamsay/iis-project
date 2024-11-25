@@ -83,6 +83,33 @@ pub struct GetUserResponse {
     pub is_blocked: bool,
 }
 
+async fn get_user_by_id(
+    state: State<AppState>,
+    Path(id): Path<Uuid>,
+) -> AppResult<Json<GetUserResponse>> {
+    let user_usercase = GetUserUseCase::new(state.user_repository.clone());
+
+    let user = user_usercase
+        .execute(GetUserInput { id })
+        .await?;
+
+    if let Some(user) = user {
+        anyhow::Result::Ok(Json(GetUserResponse {
+            id: user.id.id,
+            username: user.username,
+            email: user.email,
+            avatar_url: user.avatar_url,
+            description: user.description,
+            user_type: user.user_type.to_string(),
+            wall_id: user.wall_id.id,
+            is_blocked: user.is_blocked,
+        }))
+    } else {
+        Err(AppError::NotFound("User".into()))
+    }
+}
+
+
 async fn get_user_by_username(
     state: State<AppState>,
     Path(username): Path<String>,
@@ -209,6 +236,7 @@ async fn delete_user(
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct UpdateUserRequest {
     display_name: Option<String>,
+    description: Option<String>,
     username: String,
     email: Option<String>,
     avatar_url: Option<String>,
@@ -251,6 +279,7 @@ async fn update_user(
             avatar_url: payload.avatar_url,
             user_type: payload.user_type,
             password: payload.password,
+            description: payload.description,
             user: user.clone(),
         })
         .await?;
@@ -333,6 +362,7 @@ pub fn user_routes() -> axum::Router<crate::AppState> {
         .route("/", post(create_user))
         .route("/me", get(me))
         .route("/:username", get(get_user_by_username))
+        .route("/id/:id", get(get_user_by_id))
         .route("/id/:id", delete(delete_user))
         .route("/id/:id", put(update_user))
         .route("/id/:id/block", get(block_user))

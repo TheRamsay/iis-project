@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/components/button'
 import { DataTable } from '@/components/components/data-table/data-table'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import type { ColumnDef } from '@tanstack/react-table'
 import classNames from 'classnames'
 import { ChevronLeftIcon, ChevronRightIcon, SearchIcon } from 'lucide-react'
@@ -19,11 +19,8 @@ import {
 } from '@/components/components/select'
 import { TextField } from '@/components/components/text-field'
 import { useSearchParams } from 'next/navigation'
-
-type Entry = Pick<
-	typeof schema.user.$inferSelect,
-	'id' | 'username' | 'userType' | 'isBlocked'
->
+import { fetchAllUsers } from '@/app/_lib/user/fetch-all-users'
+import type { User } from '@/app/_lib/user/fetch-user'
 
 const columns = [
 	{
@@ -32,7 +29,7 @@ const columns = [
 		enableSorting: false,
 	},
 	{
-		accessorFn: (row) => row.userType,
+		accessorFn: (row) => row.role,
 		header: 'Role',
 		enableSorting: false,
 	},
@@ -53,7 +50,7 @@ const columns = [
 		cell: ({ row }) => {
 			return (
 				<div className="justify-end flex w-full">
-					<UserModal id={row.original.id}>
+					<UserModal username={row.original.username}>
 						<Button variant="secondary">Manage</Button>
 					</UserModal>
 				</div>
@@ -63,43 +60,10 @@ const columns = [
 			className: 'text-right',
 		},
 	},
-] as ColumnDef<Entry, unknown>[]
-
-const Adata: Entry[] = [
-	{
-		id: '1',
-		username: 'fitstagram',
-		userType: 'administrator',
-		isBlocked: false,
-	},
-	{
-		id: '2',
-		username: 'remzak.pepak',
-		userType: 'regular',
-		isBlocked: false,
-	},
-	{
-		id: '3',
-		username: 'padi142',
-		userType: 'regular',
-		isBlocked: true,
-	},
-	{
-		id: '4',
-		username: 'verka',
-		userType: 'moderator',
-		isBlocked: false,
-	},
-	{
-		id: '5',
-		username: 'oliverova.knizka',
-		userType: 'administrator',
-		isBlocked: false,
-	},
-]
+] as ColumnDef<User, unknown>[]
 
 type Filters = {
-	search?: string
+	username?: string
 	isBlocked?: boolean
 	role?: (typeof schema.user.$inferSelect)['userType']
 }
@@ -112,24 +76,16 @@ export default function Page() {
 
 	const searchParams = useSearchParams()
 
-	const { data, isLoading } = useInfiniteQuery({
-		queryKey: ['admin-users'],
-		queryFn: ({ pageParam }) => {
-			// TODO: endpoint
-			return Adata
-		},
-		initialPageParam: 0,
-		getNextPageParam: (_1, _2, lastPageParam) => {
-			// if(!hasNextPage) {
-			//   return undefined
-			// }
-
-			return lastPageParam + 1
+	const { data, isLoading } = useQuery({
+		queryKey: ['admin-users', filters],
+		queryFn: async () => {
+			const users = await fetchAllUsers(filters)
+			return users
 		},
 	})
 
 	const currentData = useMemo(() => {
-		return data?.pages[pageIndex] || []
+		return data?.slice(pageIndex * PAGE_SIZE, (pageIndex + 1) * PAGE_SIZE) || []
 	}, [data, pageIndex])
 
 	const [canGoPrevious, canGoNext] = useMemo(() => {
@@ -153,7 +109,7 @@ export default function Page() {
 		})
 	}, [canGoNext])
 
-	const idFromUrl = searchParams.get('id')
+	const usernameFromUrl = searchParams.get('username')
 
 	return (
 		<>
@@ -162,9 +118,9 @@ export default function Page() {
 					<div className="flex w-full justify-between items-center">
 						<h1 className="text-3xl font-medium">Users</h1>
 						<FilterSearch
-							value={filters.search || ''}
+							value={filters.username || ''}
 							setValue={(value) => {
-								setFilters({ ...filters, search: value })
+								setFilters({ ...filters, username: value })
 							}}
 						/>
 					</div>
@@ -207,7 +163,7 @@ export default function Page() {
 					</div>
 				</div>
 			</div>
-			{idFromUrl && <UserModal id={idFromUrl} open />}
+			{usernameFromUrl && <UserModal username={usernameFromUrl} open />}
 		</>
 	)
 }
@@ -306,7 +262,7 @@ function FilterRole({
 				value={value || 'All'}
 				onValueChange={(value) => {
 					if (value === 'All') {
-						setValue(undefined)
+						return setValue(undefined)
 					}
 
 					setValue(value as (typeof userType.enumValues)[number])

@@ -8,7 +8,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '@/components/components/dialog'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { UserModalForm } from './user-modal-form'
@@ -16,53 +16,102 @@ import { Button } from '@/components/components/button'
 import { Loader } from '@/components/components/loader'
 import classNames from 'classnames'
 import { FormServerError } from '@/app/_ui/form/form-server-error'
+import { fetchUserByUsername } from '@/app/_lib/user/fetch-user'
+import type { Role } from '@/app/_types/user'
+import { z } from 'zod'
+import { myz } from '@/app/_types/zod'
+import { formImageSchema } from '@/app/_ui/form/form-image'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { backendFetch, checkResponse } from '@/app/_lib/backend-fetch'
+import { uploadImage } from '@/app/_lib/upload-image'
+import { useRouter } from 'next/navigation'
+import { ErrorTooltip } from '@/app/_ui/error-tooltip'
+import { extractError } from '@/app/_lib/extract-error'
 
-// TODO: validation
+const userModalSchema = z
+	.object({
+		id: z.string(),
+		description: myz.description,
+		email: z.string().email(),
+		isBlocked: z.boolean(),
+		role: z.string(),
+		username: myz.username,
+	})
+	.merge(formImageSchema(false))
 
 type UserModal = {
 	children?: React.ReactNode
 	open?: boolean
-} & Pick<typeof schema.user.$inferSelect, 'id'>
+} & Pick<typeof schema.user.$inferSelect, 'username'>
 
-type User = Pick<
+export type UserForm = Pick<
 	typeof schema.user.$inferSelect,
-	'id' | 'displayName' | 'email' | 'isBlocked' | 'userType' | 'username'
+	'id' | 'email' | 'isBlocked' | 'username'
 > & {
-	image: globalThis.File | null
+	description: string
+	image: string | null | undefined
+	role: Role
 }
 
-export type UserForm = Pick<User, 'id'> & Partial<User>
-
-export function UserModal({ children, id, open: _open }: UserModal) {
+export function UserModal({
+	children,
+	username: _username,
+	open: _open,
+}: UserModal) {
 	const [open, setOpen] = useState(_open)
+	const [username, setUsername] = useState(_username)
 
-	const { data, isFetching, refetch } = useQuery<User>({
-		queryKey: ['admin-user', id],
+	const queryClient = useQueryClient()
+
+	const { data, isFetching, refetch } = useQuery<UserForm>({
+		queryKey: ['admin-user', username],
 		queryFn: async () => {
-			// TODO: Endpoint
-			await new Promise((resolve) => setTimeout(resolve, 1000))
+			const user = await fetchUserByUsername(username)
 
 			return {
-				id: Math.random().toString(),
-				displayName: 'John Doe',
-				avatarUrl: 'https://example.com/favicon.ico',
-				email: 'asdas@goog.eoco',
-				username: 'johndoe',
-				isBlocked: false,
-				userType: 'regular',
-				image: null,
+				...user,
+				image: user.avatar.src,
 			}
 		},
-		enabled: open,
+		enabled: !!open,
 	})
 
 	const { mutate, error, isPending } = useMutation({
-		mutationKey: ['admin-user', id],
-		mutationFn: async (data: UserForm) => {
-			// TODO: Endpoint
-			await new Promise((resolve) => setTimeout(resolve, 1000))
+		mutationKey: ['admin-user', username],
+		mutationFn: async (formData: UserForm) => {
+			let imageUrl = formData.image
+			if (imageUrl?.startsWith('blob:')) {
+				const { link } = await uploadImage(imageUrl)
+				imageUrl = link
+			}
+
+			const response = await backendFetch(`/api/users/id/${data?.id}`, {
+				method: 'PUT',
+				body: JSON.stringify({
+					description: formData.description,
+					username: formData.username,
+					email: formData.email,
+					avatar_url: imageUrl || undefined,
+					user_type: data?.role || 'regular',
+				}),
+			})
+
+			try {
+				await checkResponse(response, { passError: true })
+			} catch (error) {
+				if (error instanceof Error) {
+					throw new Error(extractError(error.message))
+				}
+			}
+
+			return { username: formData.username }
 		},
-		onSuccess: () => {
+		onSuccess: (data) => {
+			if (username !== data.username) {
+				queryClient.invalidateQueries({ queryKey: ['admin-users'] })
+			}
+
+			setUsername(data.username)
 			refetch()
 		},
 	})
@@ -72,14 +121,15 @@ export function UserModal({ children, id, open: _open }: UserModal) {
 	const form = useForm<UserForm>({
 		disabled: loading,
 		defaultValues: {
-			displayName: '',
+			description: '',
 			email: '',
 			isBlocked: false,
-			userType: 'regular',
-			username: '',
+			role: 'regular',
+			username: username,
 			image: null,
 			id: '',
 		},
+		resolver: zodResolver(userModalSchema),
 	})
 
 	useEffect(() => {
@@ -102,6 +152,7 @@ export function UserModal({ children, id, open: _open }: UserModal) {
 								<Loader size={20} />
 							</div>
 							<div className="flex w-full justify-end space-x-4">
+								<PostDeleteButton userId={data?.id} />
 								<Button
 									onClick={() => mutate(form.watch())}
 									disabled={loading || !form.formState.isDirty}
@@ -117,5 +168,37 @@ export function UserModal({ children, id, open: _open }: UserModal) {
 				</FormProvider>
 			</DialogContent>
 		</Dialog>
+	)
+}
+
+function PostDeleteButton({ userId }: { userId: string | undefined }) {
+	const router = useRouter()
+
+	const { mutate, error, isPending } = useMutation({
+		mutationKey: ['delete-user', userId],
+		mutationFn: async () => {
+			const response = await backendFetch(`/api/users/id/${userId}`, {
+				method: 'DELETE',
+			})
+
+			if (!response.ok) {
+				throw new Error('Failed to delete user')
+			}
+		},
+		onSuccess: () => {
+			router.refresh()
+		},
+	})
+
+	return (
+		<div className="flex items-center space-x-2">
+			<div className={classNames(!isPending && 'hidden')}>
+				<Loader size={20} />
+			</div>
+			<ErrorTooltip error={error} size="small" />
+			<Button onClick={() => mutate()} variant="destructive">
+				Delete User
+			</Button>
+		</div>
 	)
 }

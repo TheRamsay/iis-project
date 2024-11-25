@@ -1,6 +1,8 @@
 'use client'
 
+import { backendFetch } from '@/app/_lib/backend-fetch'
 import { BACKEND_URL } from '@/app/_lib/constants'
+import { extractError } from '@/app/_lib/extract-error'
 import { formClassnames } from '@/app/_lib/form-classnames'
 import { myz } from '@/app/_types/zod'
 import { FormLabelError } from '@/app/_ui/form/form-label-error'
@@ -40,6 +42,7 @@ export function FormRegister() {
 		defaultValues: {
 			email: '',
 			password: '',
+			username: '',
 		},
 		resolver: zodResolver(registerSchema),
 	})
@@ -47,11 +50,8 @@ export function FormRegister() {
 	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['register'],
 		mutationFn: async (formData: FormRegister) => {
-			const response = await fetch(`${BACKEND_URL}/api/auth/register`, {
+			const response = await backendFetch('/api/auth/register', {
 				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
 				body: JSON.stringify(formData),
 			})
 
@@ -59,7 +59,7 @@ export function FormRegister() {
 				const data = await response.json()
 
 				if (data.error) {
-					throw new Error(data.error)
+					throw new Error(extractError(data.error))
 				}
 
 				throw new Error('An unknown error has occurred.')
@@ -69,9 +69,9 @@ export function FormRegister() {
 			push('/settings')
 		},
 		onError: (error) => {
-			// TODO: Error handling
-			form.setError('username', { message: 'This username already exists.' })
-			form.setError('email', { message: 'This email already exists.' })
+			// // TODO: Error handling
+			// form.setError('username', { message: 'This username already exists.' })
+			// form.setError('email', { message: 'This email already exists.' })
 		},
 	})
 

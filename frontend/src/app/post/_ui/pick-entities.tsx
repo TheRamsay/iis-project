@@ -1,5 +1,8 @@
 'use client'
 
+import { fetchGroupsByUsername } from '@/app/(feeds)/group/_lib/fetch-groups-by-username'
+import { useSession } from '@/app/_lib/auth/auth-provider'
+import { fetchAllUsers } from '@/app/_lib/user/fetch-all-users'
 import { InfoTooltip } from '@/app/_ui/info-tooltip'
 import {
 	SimpleSearch,
@@ -15,9 +18,7 @@ export type Entity = {
 	id: string
 	username: string
 	avatar: {
-		src: string
-		width: number
-		height: number
+		src?: string | undefined
 	}
 }
 
@@ -28,23 +29,33 @@ interface PickEntities {
 }
 
 export function PickEntities({ type, list, onChange }: PickEntities) {
+	const session = useSession()
 	const [query, setQuery] = useState('')
 
 	const { data, isLoading, isError } = useQuery<Entity[]>({
 		queryKey: ['query-followed', type, query],
 		queryFn: async () => {
-			// TODO: endpoint
-			return [
-				{
+			if (type === 'user') {
+				const data = await fetchAllUsers({
+					username: query,
+				})
+
+				return data
+			}
+
+			if (type === 'group') {
+				const data = await fetchGroupsByUsername(query, session?.userId)
+
+				return data.map((group) => ({
+					id: group.id,
+					username: group.groupname,
 					avatar: {
-						src: 'https://avatars.githubusercontent.com/u/7655549?v=4',
-						width: 128,
-						height: 128,
+						src: undefined,
 					},
-					id: '1',
-					username: 'fitstagram',
-				},
-			]
+				}))
+			}
+
+			return []
 		},
 	})
 
@@ -82,15 +93,17 @@ export function PickEntities({ type, list, onChange }: PickEntities) {
 						tooltip={`Search for and select the ${type}s you want to share this post with.`}
 					/>
 				</div>
-				<SimpleSearch
-					query={query}
-					setQuery={setQuery}
-					placeholder={`Search ${type}s`}
-					data={data}
-					isError={isError}
-					isLoading={isLoading}
-					dataRenderer={dataRenderer}
-				/>
+				<div className="max-w-[66%]">
+					<SimpleSearch
+						query={query}
+						setQuery={setQuery}
+						placeholder={`Search ${type}s`}
+						data={data}
+						isError={isError}
+						isLoading={isLoading}
+						dataRenderer={dataRenderer}
+					/>
+				</div>
 			</div>
 			<div>
 				{list.map((entity) => (
@@ -157,9 +170,9 @@ function Results({
 	)
 
 	return (
-		<div className="px-4 py-2 gap-2 text-sm">
-			<div className="text-sm">
-				{data?.map((entity) => (
+		<div className="px-4 py-2 gap-2 text-sm space-y-1">
+			{data?.length ? (
+				data.map((entity) => (
 					<div
 						key={entity.id}
 						onClick={(event) => onClick(event, entity)}
@@ -170,8 +183,10 @@ function Results({
 							<CheckIcon color="green" width={20} height={20} />
 						) : null}
 					</div>
-				))}
-			</div>
+				))
+			) : (
+				<div>No results found</div>
+			)}
 		</div>
 	)
 }

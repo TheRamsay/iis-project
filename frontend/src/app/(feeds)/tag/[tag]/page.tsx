@@ -1,4 +1,4 @@
-import { MiniatureFeed } from '@/app/_ui/feed/miniature-feed'
+import { MiniatureFeed } from '@/app/(feeds)/_ui/feed/miniature-feed'
 import { Separator } from '@/components/components/separator'
 import { Suspense } from 'react'
 import { TagHeader } from './_ui/tag-header'

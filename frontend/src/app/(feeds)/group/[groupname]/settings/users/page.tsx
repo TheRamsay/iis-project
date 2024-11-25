@@ -3,13 +3,19 @@
 import type { schema } from '@/app/_lib/db'
 import { ErrorTooltip } from '@/app/_ui/error-tooltip'
 import { Button, DataTable, Loader, TextField } from '@/components/components'
-import { useInfiniteQuery, useMutation } from '@tanstack/react-query'
+import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query'
 import type { ColumnDef } from '@tanstack/react-table'
 import classNames from 'classnames'
 import { ChevronLeftIcon, ChevronRightIcon, SearchIcon } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
+import { fetchGroupByUsername } from '../../../_lib/fetch-groups-by-username'
+import { backendFetch, checkResponse } from '@/app/_lib/backend-fetch'
+import { fetchGroupMembers } from '../../../_lib/fetch-group-members'
 
-type Entry = Pick<typeof schema.user.$inferSelect, 'id' | 'username'>
+type Entry = Pick<typeof schema.user.$inferSelect, 'id' | 'username'> & {
+	role: 'manager' | 'member'
+	groupId: string
+}
 
 const columns = [
 	{
@@ -20,7 +26,7 @@ const columns = [
 	{
 		header: 'Role',
 		cell: ({ row }) => {
-			const role: 'manager' | 'member' = 'manager'
+			const role = row.original.role
 
 			if (role === 'manager') {
 				return <div>Manager</div>
@@ -32,15 +38,22 @@ const columns = [
 	{
 		id: 'manage',
 		cell: ({ row }) => {
-			const role = 'member'
+			const role = row.original.role
 
 			const [kicked, setKicked] = useState<boolean>(false)
 
 			const { mutate, error, isPending } = useMutation({
 				mutationKey: ['group-kick-user', row.original.id],
 				mutationFn: async () => {
-					await new Promise((resolve) => setTimeout(resolve, 1000))
-					throw new Error('Failed to kick user')
+					const response = await backendFetch(
+						`/api/groups/${row.original.groupId}/remove_user`,
+						{
+							method: 'POST',
+							body: JSON.stringify({ user_id: row.original.id }),
+						},
+					)
+
+					await checkResponse(response)
 				},
 				onSuccess: () => setKicked(true),
 			})
@@ -61,36 +74,13 @@ const columns = [
 				)
 			}
 
-			return <div className="justify-end flex w-full">?</div>
+			return null
 		},
 		meta: {
 			className: 'text-right',
 		},
 	},
 ] as ColumnDef<Entry, unknown>[]
-
-const Adata: Entry[] = [
-	{
-		id: '1',
-		username: 'fitstagram',
-	},
-	{
-		id: '2',
-		username: 'remzak.pepak',
-	},
-	{
-		id: '3',
-		username: 'padi142',
-	},
-	{
-		id: '4',
-		username: 'verka',
-	},
-	{
-		id: '5',
-		username: 'oliverova.knizka',
-	},
-]
 
 const PAGE_SIZE = 10
 
@@ -104,23 +94,39 @@ export default function Page({
 	const [pageIndex, setPageIndex] = useState<number>(0)
 	const [filters, setFilters] = useState<Filters>({})
 
-	const { data, isLoading } = useInfiniteQuery({
-		queryKey: ['group-users', groupname],
-		queryFn: ({ pageParam }) => {
-			return Adata
-		},
-		initialPageParam: 0,
-		getNextPageParam: (_1, _2, lastPageParam) => {
-			// if(!hasNextPage) {
-			//   return undefined
-			// }
+	const { data: group } = useQuery({
+		queryKey: ['group-id', groupname],
+		queryFn: async () => {
+			const group = await fetchGroupByUsername(groupname)
 
-			return lastPageParam + 1
+			return group
 		},
 	})
 
+	const { data, isLoading } = useQuery({
+		queryKey: ['group-users', group],
+		queryFn: async () => {
+			if (!group) {
+				throw new Error('Group undefined')
+			}
+
+			const data = await fetchGroupMembers(group.id)
+
+			return data.map(
+				(entry) =>
+					({
+						id: entry.id,
+						username: entry.username,
+						role: entry.id === group?.admin.id ? 'manager' : 'member',
+						groupId: group.id,
+					}) as const,
+			)
+		},
+		enabled: !!group,
+	})
+
 	const currentData = useMemo(() => {
-		return data?.pages[pageIndex] || []
+		return data?.slice(pageIndex * PAGE_SIZE, (pageIndex + 1) * PAGE_SIZE) || []
 	}, [data, pageIndex])
 
 	const [canGoPrevious, canGoNext] = useMemo(() => {

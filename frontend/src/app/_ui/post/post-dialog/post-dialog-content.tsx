@@ -1,5 +1,4 @@
 import Image from 'next/image'
-import type { PostDialog } from './post-dialog'
 import { UserAvatarName } from '../../user/user-avatar-name'
 import { DialogClose } from '@/components/components/dialog'
 import { XIcon } from 'lucide-react'
@@ -9,17 +8,17 @@ import { PostLikeButton } from '../post-like-button'
 import { PostEditButton } from '../post-edit-button'
 import { PostDeleteButton } from '../post-delete-button'
 import { PostCommentAdd } from '../post-comment/post-comment-add'
-import type { Post } from '@/app/_types/post'
+import type { Post } from '@/app/post/_lib/fetch-post'
 
 type PostDialogContent = {
 	post: Post
-	groupModeratorIdList?: string[]
+	groupModeratorId?: string
 	dialog?: boolean
 }
 
 export function PostDialogContent({
 	post,
-	groupModeratorIdList,
+	groupModeratorId,
 	dialog = true,
 }: PostDialogContent) {
 	return (
@@ -29,8 +28,8 @@ export function PostDialogContent({
 					unoptimized
 					src={post.image.src}
 					alt="image"
-					width={post.image.width}
-					height={post.image.height}
+					width={512}
+					height={512}
 					className="h-full w-full object-contain"
 				/>
 			</div>
@@ -47,18 +46,22 @@ export function PostDialogContent({
 					<div className="p-4 border-b border-accent space-y-1">
 						<div className="space-y-2">
 							<h2 className="text-xl font-medium">{post.title}</h2>
-							<p className="text-sm">{post.description}</p>
+							{post.description && (
+								<p className="text-sm">{post.description}</p>
+							)}
 						</div>
-						<div className="space-x-1 text-blue-500 text-sm">
-							{post.tags.map((tag) => (
-								<Link key={tag} href={`/tag/${tag}`}>
-									#{tag}
-								</Link>
-							))}
-						</div>
+						{post.tags.length ? (
+							<div className="space-x-1 text-blue-500 text-sm">
+								{post.tags.map((tag) => (
+									<Link key={tag} href={`/tag/${tag}`}>
+										#{tag}
+									</Link>
+								))}
+							</div>
+						) : null}
 					</div>
 					<div className="p-4">
-						<PostComments post={{ id: post.id }} size="full" />
+						<PostComments post={post} size="full" />
 					</div>
 				</div>
 				<div>
@@ -67,16 +70,15 @@ export function PostDialogContent({
 							<PostLikeButton post={post} />
 						</div>
 						<div className="space-x-4 flex ">
-							<PostEditButton postId={post.id} postAuthorId={post.user.id} />
+							<PostEditButton post={post} />
 							<PostDeleteButton
-								postId={post.id}
-								groupModeratorIdList={groupModeratorIdList}
-								postAuthorId={post.user.id}
+								post={post}
+								groupModeratorId={groupModeratorId}
 							/>
 						</div>
 					</div>
 					<div className="px-4 py-2">
-						<PostCommentAdd postId={post.id} />
+						<PostCommentAdd post={post} />
 					</div>
 				</div>
 			</div>

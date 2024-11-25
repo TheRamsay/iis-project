@@ -13,24 +13,18 @@ import { XIcon } from 'lucide-react'
 export const formImageSchema = (required: boolean) =>
 	z.object({
 		image: z
-			.custom<globalThis.File>(
-				(data) => {
-					console.log(!!data && required)
-					return !!data && required
-				},
-				{ fatal: true, message: 'Image is required' },
-			)
+			.string()
+			.nullable()
 			.refine(
 				(data) => {
-					if (!data && !required) return true
-					return data.type.startsWith('image/')
+					return !(required && !data)
 				},
-				{ message: 'File must be an image' },
+				{ message: 'Image is required' },
 			),
 	})
 
 interface FormSubset {
-	image?: globalThis.File | null | undefined
+	image?: string | null | undefined
 }
 
 interface FormImage<T extends FormSubset> {
@@ -45,21 +39,18 @@ export function FormImage<T extends FormSubset>({
 	className,
 }: FormImage<T>) {
 	const form = _form as unknown as UseFormReturn<FormSubset>
-	const [initialPreview, setInitialPreview] = useState<string | undefined>()
-	const [preview, setPreview] = useState<string | undefined>()
 
 	const deleteImage = useCallback(() => {
-		// TODO: Test dirtying
 		form.setValue('image', null, {
 			shouldDirty: !form.control._defaultValues.image,
 		})
-		setPreview(undefined)
 	}, [form.setValue, form.control._defaultValues.image])
 
 	const { getRootProps, getInputProps } = useDropzone({
 		accept: {
 			'image/*': [],
 		},
+		maxSize: 10 * 1024 * 1024, // 10MB
 		maxFiles: 1,
 		multiple: false,
 		onDrop: ([file]) => {
@@ -67,39 +58,29 @@ export function FormImage<T extends FormSubset>({
 
 			const newObjectURL = URL.createObjectURL(file)
 
-			if (initialPreview === newObjectURL) {
-				form.setValue('image', file, {
-					shouldDirty: false,
-					shouldValidate: true,
+			form.setValue('image', newObjectURL, {
+				shouldDirty: true,
+				shouldValidate: true,
+			})
+		},
+		onDropRejected: (rejectedFiles) => {
+			const errorMessage = rejectedFiles[0].errors[0].message
+
+			if (errorMessage.includes('larger')) {
+				form.setError('image', {
+					message: 'Image size should be less than 10MB',
 				})
 			} else {
-				form.setValue('image', file, {
-					shouldDirty: true,
-					shouldValidate: true,
-				})
+				form.setError('image', { message: errorMessage })
 			}
-
-			setPreview(() => {
-				if (preview) {
-					URL.revokeObjectURL(preview)
-				}
-				return newObjectURL
-			})
+			deleteImage()
+		},
+		onError: (error) => {
+			form.setError('image', { message: error.message })
 		},
 	})
 
-	useEffect(() => {
-		if (form.control._defaultValues.image) {
-			setInitialPreview(URL.createObjectURL(form.control._defaultValues.image))
-		}
-	}, [form.control._defaultValues.image])
-
-	const file = form.watch('image')
-	useEffect(() => {
-		if (file) {
-			setPreview(URL.createObjectURL(file))
-		}
-	}, [file])
+	const image = form.watch('image')
 
 	return (
 		<FormField
@@ -156,9 +137,9 @@ export function FormImage<T extends FormSubset>({
 									<img
 										className={classNames(
 											'absolute object-contain w-full h-full',
-											!preview && 'hidden',
+											!image && 'hidden',
 										)}
-										src={preview}
+										src={image || ''}
 										alt=""
 									/>
 								</div>

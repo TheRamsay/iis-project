@@ -22,14 +22,18 @@ import { FormTags, formTagsSchema } from '../../../_ui/form-tags'
 import { useEffect } from 'react'
 import { FormLabelError } from '@/app/_ui/form/form-label-error'
 import { FormServerError } from '@/app/_ui/form/form-server-error'
+import { fetchPost } from '@/app/post/_lib/fetch-post'
+import { myz } from '@/app/_types/zod'
+import { backendFetch } from '@/app/_lib/backend-fetch'
+import { useRouter } from 'next/navigation'
 
 const editPostFromSchema: ZodType<EditPostForm> = z
 	.object({
 		id: z.string(),
-		title: z.string().min(3).max(255),
-		description: z.string().max(255),
+		title: myz.title,
+		description: myz.description,
 	})
-	.merge(formLocationSchema)
+	// .merge(formLocationSchema)
 	.merge(formVisibilitySchema)
 	.merge(formTagsSchema)
 
@@ -38,10 +42,10 @@ type Post = Pick<
 	'id' | 'description' | 'title'
 > & {
 	visibility: 'public' | 'private'
-	location: {
-		lat: string
-		lng: string
-	}
+	// location: {
+	// 	lat: string
+	// 	lng: string
+	// }
 	allowedUsers: Entity[]
 	allowedGroups: Entity[]
 	tags: string[]
@@ -50,44 +54,53 @@ type Post = Pick<
 export type EditPostForm = Post
 
 export function EditPostForm({ postId }: { postId: string }) {
-	const { data, isFetching, refetch } = useQuery<Post>({
+	const { push } = useRouter()
+
+	const { data, isFetching } = useQuery<Post>({
 		queryKey: ['post', postId],
 		queryFn: async () => {
-			// TODO: endpoint
-			await new Promise((resolve) => setTimeout(resolve, 1000))
+			const post = await fetchPost(postId)
 
 			return {
 				id: postId,
-				title: 'Post title',
-				description: 'Post description',
-				visibility: 'public',
-				location: { lat: '0', lng: '0' },
-				allowedUsers: [
-					{
-						avatar: {
-							src: 'https://avatars.githubusercontent.com/u/7655549?v=4',
-							width: 128,
-							height: 128,
-						},
-						id: '1',
-						username: 'John Doe',
-					},
-				],
+				title: post.title,
+				description: post.description,
+				visibility: post.visibility,
+				// location: { lat: '', lng: '' },
+				allowedUsers: [], // TODO!
 				allowedGroups: [],
-				tags: [],
+				tags: post.tags,
 			}
 		},
 	})
 
 	const { mutate, error, isPending } = useMutation({
 		mutationKey: ['edit-post'],
-		mutationFn: async (data: EditPostForm) => {
-			// TODO: endpoint
-			await new Promise((resolve) => setTimeout(resolve, 1000))
+		mutationFn: async (formData: EditPostForm) => {
+			const response = await backendFetch(`/api/posts/${postId}`, {
+				method: 'PUT',
+				body: JSON.stringify({
+					title: formData.title,
+					description: formData.description,
+					visibility: formData.visibility,
+					allowed_users:
+						formData.visibility === 'private'
+							? formData.allowedUsers.map((u) => u.id)
+							: undefined,
+					allowed_groups: formData.allowedGroups.map((g) => g.id),
+					tags: formData.tags,
+					post_type: 'photo',
+				}),
+			})
+
+			if (!response.ok) {
+				throw new Error('Failed to edit post')
+			}
+
+			return response.json()
 		},
 		onSuccess: () => {
-			refetch()
-			// goto profile?
+			push(`/post/${postId}`)
 		},
 	})
 
@@ -96,7 +109,7 @@ export function EditPostForm({ postId }: { postId: string }) {
 	const form = useForm<EditPostForm>({
 		defaultValues: {
 			description: '',
-			location: { lat: '', lng: '' },
+			// location: { lat: '', lng: '' },
 			title: '',
 			visibility: 'public',
 			tags: [],
@@ -175,7 +188,7 @@ export function EditPostForm({ postId }: { postId: string }) {
 					)}
 				/>
 
-				<FormLocation form={form} />
+				{/* <FormLocation form={form} /> */}
 				<FormVisibility form={form} />
 
 				<FormTags form={form} />

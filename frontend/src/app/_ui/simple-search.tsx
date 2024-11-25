@@ -34,14 +34,14 @@ export function SimpleSearch<Data extends unknown[]>({
 	useOnClickOutside(ref, () => setOpen(false))
 
 	return (
-		<div className="flex flex-col gap-3 relative justify-center">
+		<div className="flex flex-col gap-3 relative justify-center w-full">
 			<div className="z-10 flex w-full gap-4">
 				<div
 					ref={ref}
 					onFocus={() => setOpen(true)}
 					className={classNames('rounded-lg w-full border border-accent')}
 				>
-					<div className="flex items-center gap-2 pl-3 pr-3 h-10">
+					<div className="flex items-center gap-2 pl-3 pr-3 h-10 w-full">
 						<div className="flex gap-4 items-center w-full">
 							<div className="w-4 h-4">
 								<SearchIcon
@@ -55,7 +55,7 @@ export function SimpleSearch<Data extends unknown[]>({
 								onChange={(e) => setQuery(e.target.value)}
 								placeholder={placeholder}
 								className={classNames(
-									'w-full dark:placeholder:accent-foreground',
+									'w-full dark:placeholder:accent-foreground flex-grow-0',
 									'p-0 bg-transparent border-none focus:outline-none focus:ring-0 w-full truncate font-medium text-left text-base md:text-sm placeholder:font-normal',
 								)}
 							/>

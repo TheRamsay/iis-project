@@ -1,6 +1,6 @@
 import type { User } from "./user";
 
-export type Comments = {
+export type Comment = {
   id: number;
   user: User;
   content: string;

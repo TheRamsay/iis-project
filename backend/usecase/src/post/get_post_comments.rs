@@ -1,7 +1,6 @@
 use models::{
     domain::{
-        post_comment::PostComment,
-        Id,
+        post_comment::PostComment, user::User, Id
     },
     errors::AppResult,
 };
@@ -14,7 +13,7 @@ pub struct GetPostCommentsInput {
 }
 
 pub struct GetPostCommentsOutput {
-    pub comments: Vec<PostComment>,
+    pub comments: Vec<(PostComment, User)>,
 }
 
 pub struct GetPostCommentsUseCase<T>

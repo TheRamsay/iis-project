@@ -16,9 +16,14 @@ export function FormLabelError({
 }: FormLabelError) {
 	return (
 		<>
-			<div className={classNames('flex w-full justify-between', className)}>
+			<div
+				className={classNames(
+					'flex w-full justify-between space-x-4 items-center',
+					className,
+				)}
+			>
 				<label htmlFor={htmlFor}>{label}</label>
-				<span className="text-red-500">{error}</span>
+				<span className="text-red-500 text-end">{error}</span>
 			</div>
 		</>
 	)

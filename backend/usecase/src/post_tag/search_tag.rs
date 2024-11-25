@@ -43,6 +43,6 @@ where
             .await?
             .unwrap_or_else(Vec::new);
 
-        Ok(SearchPostTagOutput { tags })
+        Ok(SearchPostTagOutput { tags: tags })
     }
 }

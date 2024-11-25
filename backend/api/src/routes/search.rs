@@ -41,7 +41,12 @@ struct SearchRequest {
 struct SearchResponse {
     users: Vec<GetUserResponse>,
     groups: Vec<GetGroupResponse>,
-    tags: Vec<SearchPostTag>,
+    tags: Vec<PostTagSearch>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PostTagSearch {
+    pub tag: String,
 }
 
 async fn search(
@@ -56,7 +61,15 @@ async fn search(
         query: params.query.clone(),
     };
 
-    let tags: Vec<_> = search_tag_use_case.execute(input).await?.tags;
+    let raw_tags: Vec<_> = search_tag_use_case.execute(input).await?.tags;
+
+    let mut tags: Vec<PostTagSearch> = raw_tags
+        .into_iter()
+        .map(|tag| PostTagSearch { tag: tag.tag })
+        .collect();
+
+    tags.sort_by(|a, b| a.tag.cmp(&b.tag));
+    tags.dedup_by(|a, b| a.tag == b.tag);
 
     let input = usecase::group::search_group::SearchGroupInput {
         query: params.query.clone(),
@@ -107,10 +120,7 @@ async fn search(
             .collect(),
         tags: tags
             .into_iter()
-            .map(|tag| SearchPostTag {
-                post_id: tag.post_id.into(),
-                tag: tag.tag,
-            })
+            .map(|tag| PostTagSearch { tag: tag.tag })
             .collect(),
     }))
 }

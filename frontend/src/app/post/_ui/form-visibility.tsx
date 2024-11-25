@@ -17,9 +17,7 @@ const entitySchema: ZodType<Entity> = z.object({
 	id: z.string(),
 	username: z.string(),
 	avatar: z.object({
-		src: z.string(),
-		width: z.number(),
-		height: z.number(),
+		src: z.string().optional(),
 	}),
 })
 
@@ -89,12 +87,16 @@ export function FormVisibility<T extends FormSubset>({
 					<PickEntities
 						type="user"
 						list={form.watch('allowedUsers')}
-						onChange={(newList) => form.setValue('allowedUsers', newList)}
+						onChange={(newList) =>
+							form.setValue('allowedUsers', newList, { shouldValidate: true })
+						}
 					/>
 					<PickEntities
 						type="group"
 						list={form.watch('allowedGroups')}
-						onChange={(newList) => form.setValue('allowedGroups', newList)}
+						onChange={(newList) =>
+							form.setValue('allowedGroups', newList, { shouldValidate: true })
+						}
 					/>
 				</Collapsible>
 				<Collapsible
@@ -104,7 +106,9 @@ export function FormVisibility<T extends FormSubset>({
 					<PickEntities
 						type="group"
 						list={form.watch('allowedGroups')}
-						onChange={(newList) => form.setValue('allowedGroups', newList)}
+						onChange={(newList) =>
+							form.setValue('allowedGroups', newList, { shouldValidate: true })
+						}
 					/>
 				</Collapsible>
 			</span>
