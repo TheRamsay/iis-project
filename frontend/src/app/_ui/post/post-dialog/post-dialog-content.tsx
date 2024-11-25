@@ -31,8 +31,7 @@ export function PostDialogContent({
 					unoptimized
 					src={post.image.src}
 					alt="image"
-					width={512}
-					height={512}
+					fill
 					className="h-full w-auto object-contain"
 				/>
 			</div>
