@@ -349,7 +349,7 @@ struct CheckLikeResponse {
     like_count: i32,
 }
 
-async fn check_like_post(
+async fn check_like_get(
     state: State<AppState>,
     Path(id): Path<Uuid>,
     user: AuthUser,
@@ -502,7 +502,7 @@ pub fn post_routes() -> axum::Router<crate::AppState> {
         .route("/:id", put(update_post))
         .route("/:id/comment", post(comment_post))
         .route("/:id/comment/:comment_id", delete(delete_post_comment))
-        .route("/:id/like/check", post(check_like_post))
+        .route("/:id/like/check", get(check_like_get))
         .route("/:id/like", post(like_post))
         .route("/:id/like", delete(unlike_post))
         .route("/upload_image", post(upload_image))

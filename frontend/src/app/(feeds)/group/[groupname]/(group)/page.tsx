@@ -1,6 +1,6 @@
 import { Separator } from '@/components/components/separator'
 import { GroupHeader } from './_ui/group-header/group-header'
-import { MiniatureFeed } from '@/app/_ui/feed/miniature-feed'
+import { MiniatureFeed } from '@/app/(feeds)/_ui/feed/miniature-feed'
 import { Suspense } from 'react'
 import { getSession } from '@/app/_lib/auth/get-session'
 

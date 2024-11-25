@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import classNames from 'classnames'
 import { useSession } from '@/app/_lib/auth/auth-provider'
 import { ErrorTooltip } from '../error-tooltip'
-import { backendFetch } from '@/app/_lib/backend-fetch'
+import { backendFetch, checkResponse } from '@/app/_lib/backend-fetch'
 import type { Post } from '@/app/post/_lib/fetch-post'
 
 type PostLikeButton = { post: Pick<Post, 'id' | 'likeCount'> }
@@ -23,10 +23,15 @@ export function PostLikeButton({ post }: PostLikeButton) {
 	const { data, refetch } = useQuery<LikeData>({
 		queryKey: ['like', session?.userId, post.id],
 		queryFn: async () => {
-			// TODO: endpoint
+			const response = await backendFetch(`/api/posts/${post.id}/like/check`)
+
+			await checkResponse(response, 'Failed to check like status')
+
+			const data = await response.json()
+
 			return {
-				currentLikes: 0,
-				isLiked: false,
+				currentLikes: data.like_count,
+				isLiked: data.liked,
 			}
 		},
 		enabled: !!session,
@@ -63,7 +68,7 @@ export function PostLikeButton({ post }: PostLikeButton) {
 				(old) => {
 					if (old) {
 						return {
-							currentLikes: old.currentLikes + 1,
+							currentLikes: old.currentLikes + (old.isLiked ? -1 : 1),
 							isLiked: !old.isLiked,
 						}
 					}

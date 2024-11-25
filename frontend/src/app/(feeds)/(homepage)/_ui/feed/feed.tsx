@@ -1,5 +1,5 @@
-import type { Post as PostType } from '@/app/_types/post'
 import { Post } from './post/post'
+import type { Post as PostType } from '@/app/post/_lib/fetch-post'
 
 interface Feed {
 	data: PostType[]

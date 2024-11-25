@@ -18,10 +18,10 @@ export function Post(post: PostType) {
 					<div className="relative h-full w-full">
 						<Image
 							unoptimized={true}
-							src={post.image}
+							src={post.image.src}
 							alt="image"
-							width={post.image.width}
-							height={post.image.height}
+							width={512}
+							height={512}
 							className="h-auto w-full object-contain"
 						/>
 					</div>

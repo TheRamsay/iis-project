@@ -14,8 +14,6 @@ export function FeedPagination({ page, hasMore }: FeedPagination) {
 	const searchParams = useSearchParams()
 	const pathname = usePathname()
 
-	console.log(pathname)
-
 	const urlWithoutPage = useMemo(() => {
 		const params = new URLSearchParams(searchParams)
 

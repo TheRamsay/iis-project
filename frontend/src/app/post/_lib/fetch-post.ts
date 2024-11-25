@@ -10,8 +10,6 @@ export type Post = {
   tags: string[];
   image: {
     src: string;
-    width: number;
-    height: number;
   };
   user: User;
   visibility: "public" | "private";
@@ -31,13 +29,11 @@ export async function fetchPost(
 
   const user = await fetchUserById(data.author_id);
 
-  console.log(data);
-
   return {
     id: data.id,
     title: data.title,
     description: data.description,
-    image: { src: data.content_url, width: 32, height: 32 },
+    image: { src: data.content_url },
     tags: [],
     user: {
       id: user.id,

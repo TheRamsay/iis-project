@@ -36,8 +36,6 @@ export async function backendFetch(path: string, options: RequestInit = {}) {
 }
 
 export async function checkResponse(response: Response, customError?: string) {
-  console.log(response);
-
   if (!response.ok) {
     try {
       const data = await response.json();

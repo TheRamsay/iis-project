@@ -3,7 +3,6 @@ import { backendFetch, checkResponse } from "./backend-fetch";
 export async function uploadImage(data: string) {
   const blob = await fetch(data).then((res) => res.blob());
   const base64 = await blobToBase64(blob);
-  console.log(base64);
 
   const response = await backendFetch("/api/posts/upload_image", {
     method: "POST",

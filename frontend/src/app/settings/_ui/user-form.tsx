@@ -43,7 +43,7 @@ type User = Pick<
 	'id' | 'displayName' | 'email' | 'username'
 > & { image: string | null; description: string; password: string }
 
-export type UserForm = Pick<User, 'id'> & Partial<User>
+export type UserForm = User
 
 export function UserForm({ userId }: UserFormProps) {
 	const { data, isFetching, refetch } = useQuery({
@@ -74,14 +74,13 @@ export function UserForm({ userId }: UserFormProps) {
 					display_name: formData.displayName,
 					username: formData.username,
 					email: formData.email,
+					password: formData.password,
 					avatar_url: imageUrl || undefined,
 					user_type: data?.role || 'regular',
 				}),
 			})
 
 			await checkResponse(response, 'Failed to update user')
-
-			return response.json()
 		},
 		onSuccess: () => {
 			refetch()

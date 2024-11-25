@@ -25,6 +25,7 @@ import { FormServerError } from '@/app/_ui/form/form-server-error'
 import { fetchPost } from '@/app/post/_lib/fetch-post'
 import { myz } from '@/app/_types/zod'
 import { backendFetch } from '@/app/_lib/backend-fetch'
+import { useRouter } from 'next/navigation'
 
 const editPostFromSchema: ZodType<EditPostForm> = z
 	.object({
@@ -53,6 +54,8 @@ type Post = Pick<
 export type EditPostForm = Post
 
 export function EditPostForm({ postId }: { postId: string }) {
+	const { push } = useRouter()
+
 	const { data, isFetching, refetch } = useQuery<Post>({
 		queryKey: ['post', postId],
 		queryFn: async () => {
@@ -93,7 +96,7 @@ export function EditPostForm({ postId }: { postId: string }) {
 			return response.json()
 		},
 		onSuccess: () => {
-			refetch()
+			push(`/post/${postId}`)
 			// goto profile?
 		},
 	})

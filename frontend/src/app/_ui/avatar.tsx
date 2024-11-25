@@ -19,8 +19,6 @@ enum Status {
 }
 
 function getTextSize(size: number) {
-	console.log(size)
-
 	if (size <= 24) {
 		return 'text-xs'
 	}
@@ -119,6 +117,7 @@ export const Avatar: React.FC<Props> = ({
 				className,
 				rest.fill ? '!w-full !h-full' : '',
 				textSize,
+				'relative',
 			)}
 		>
 			{src && (isLoading || hasLoadedImage) && (
@@ -130,6 +129,8 @@ export const Avatar: React.FC<Props> = ({
 						width: '100%',
 						objectFit: 'cover',
 					}}
+					width={rest.fill ? undefined : size}
+					height={rest.fill ? undefined : size}
 					className={className}
 					{...rest}
 				/>

@@ -36,7 +36,7 @@ export function PostDialogContent({
 			<div className="flex flex-col justify-between w-[35%] min-w-[35%]">
 				<div className="">
 					<div className="p-4 border-b border-accent flex flex-row justify-between items-center">
-						{/* <UserAvatarName user={post.user} /> */}
+						<UserAvatarName user={post.user} />
 						{dialog && (
 							<DialogClose>
 								<XIcon width={24} height={24} />
@@ -46,15 +46,19 @@ export function PostDialogContent({
 					<div className="p-4 border-b border-accent space-y-1">
 						<div className="space-y-2">
 							<h2 className="text-xl font-medium">{post.title}</h2>
-							<p className="text-sm">{post.description}</p>
+							{post.description && (
+								<p className="text-sm">{post.description}</p>
+							)}
 						</div>
-						<div className="space-x-1 text-blue-500 text-sm">
-							{post.tags.map((tag) => (
-								<Link key={tag} href={`/tag/${tag}`}>
-									#{tag}
-								</Link>
-							))}
-						</div>
+						{post.tags.length ? (
+							<div className="space-x-1 text-blue-500 text-sm">
+								{post.tags.map((tag) => (
+									<Link key={tag} href={`/tag/${tag}`}>
+										#{tag}
+									</Link>
+								))}
+							</div>
+						) : null}
 					</div>
 					<div className="p-4">
 						<PostComments post={post} size="full" />

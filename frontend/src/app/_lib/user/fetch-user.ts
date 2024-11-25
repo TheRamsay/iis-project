@@ -11,6 +11,7 @@ export type User = {
   avatar: {
     src: string | undefined;
   };
+  wallId: string;
 };
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -26,6 +27,7 @@ function transform(data: any) {
     avatar: {
       src: data.avatar_url,
     },
+    wallId: data.wall_id,
   };
 }
 

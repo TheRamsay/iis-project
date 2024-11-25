@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import { ProfileHeader } from './profile-header/profile-header'
-import { MiniatureFeed } from '../../../_ui/feed/miniature-feed'
+import { MiniatureFeed } from '../../_ui/feed/miniature-feed'
 import { Separator } from '@/components/components/separator'
 
 interface ProfilePage {

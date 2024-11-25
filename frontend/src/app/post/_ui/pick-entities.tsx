@@ -91,15 +91,17 @@ export function PickEntities({ type, list, onChange }: PickEntities) {
 						tooltip={`Search for and select the ${type}s you want to share this post with.`}
 					/>
 				</div>
-				<SimpleSearch
-					query={query}
-					setQuery={setQuery}
-					placeholder={`Search ${type}s`}
-					data={data}
-					isError={isError}
-					isLoading={isLoading}
-					dataRenderer={dataRenderer}
-				/>
+				<div className="max-w-[66%]">
+					<SimpleSearch
+						query={query}
+						setQuery={setQuery}
+						placeholder={`Search ${type}s`}
+						data={data}
+						isError={isError}
+						isLoading={isLoading}
+						dataRenderer={dataRenderer}
+					/>
+				</div>
 			</div>
 			<div>
 				{list.map((entity) => (
@@ -168,18 +170,22 @@ function Results({
 	return (
 		<div className="px-4 py-2 gap-2 text-sm">
 			<div className="text-sm">
-				{data?.map((entity) => (
-					<div
-						key={entity.id}
-						onClick={(event) => onClick(event, entity)}
-						className="w-full justify-between flex cursor-pointer"
-					>
-						<UserAvatarName user={entity} size="small" disableLink />
-						{selectedData.find((d) => d.id === entity.id) ? (
-							<CheckIcon color="green" width={20} height={20} />
-						) : null}
-					</div>
-				))}
+				{data?.length ? (
+					data.map((entity) => (
+						<div
+							key={entity.id}
+							onClick={(event) => onClick(event, entity)}
+							className="w-full justify-between flex cursor-pointer"
+						>
+							<UserAvatarName user={entity} size="small" disableLink />
+							{selectedData.find((d) => d.id === entity.id) ? (
+								<CheckIcon color="green" width={20} height={20} />
+							) : null}
+						</div>
+					))
+				) : (
+					<div>No results found</div>
+				)}
 			</div>
 		</div>
 	)

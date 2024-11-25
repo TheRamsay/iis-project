@@ -73,7 +73,6 @@ export function FormImage<T extends FormSubset>({
 			deleteImage()
 		},
 		onError: (error) => {
-			console.log(error)
 			form.setError('image', { message: error.message })
 		},
 	})
