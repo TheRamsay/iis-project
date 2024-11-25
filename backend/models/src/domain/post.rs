@@ -62,9 +62,9 @@ impl From<String> for PostVisibilityType {
 pub struct Post {
     pub id: Id<Post>,
     #[validate(length(
-        min = 3,
-        max = 500,
-        message = "Description must be between 3 and 500 characters"
+        min = 0,
+        max = 255,
+        message = "Description must be between 0 and 255 characters"
     ))]
     pub description: String,
     #[validate(length(
