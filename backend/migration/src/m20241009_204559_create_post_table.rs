@@ -68,6 +68,14 @@ impl MigrationTrait for Migration {
             .await?;
 
         manager
+            .drop_type(
+                Type::drop()
+                    .name(Alias::new("post_visibility_type"))
+                    .to_owned(),
+            )
+            .await?;
+
+        manager
             .drop_type(Type::drop().name(Alias::new("post_type")).to_owned())
             .await
     }
