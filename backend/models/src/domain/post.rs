@@ -1,12 +1,16 @@
 use std::fmt::Display;
 
 use chrono::{DateTime, Utc};
+use once_cell::sync::Lazy;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationErrors};
 
 use crate::schema;
 
 use super::{user::User, wall::Wall, Id};
+
+static RE_TITLE: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[a-zA-Z0-9_]+$").unwrap());
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub enum PostType {
@@ -67,11 +71,17 @@ pub struct Post {
         message = "Description must be between 0 and 255 characters"
     ))]
     pub description: String,
-    #[validate(length(
-        min = 3,
-        max = 15,
-        message = "Title must be between 3 and 15 characters"
-    ))]
+    #[validate(
+        length(
+            min = 3,
+            max = 15,
+            message = "Title must be between 3 and 15 characters"
+        ),
+        regex(
+            path = *RE_TITLE,
+            message = "Invalid title, only alphanumeric characters are allowed"
+        )
+    )]
     pub title: String,
     pub author_id: Id<User>,
     pub post_type: PostType,

@@ -1,8 +1,12 @@
+use once_cell::sync::Lazy;
+use regex::Regex;
 use validator::{Validate, ValidationErrors};
 
 use crate::schema;
 
 use super::{user::User, wall::Wall, Id};
+
+static RE_GROUP_NAME: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[a-zA-Z0-9_]+$").unwrap());
 
 #[derive(Clone, Debug, PartialEq, Validate)]
 pub struct Group {
@@ -11,7 +15,7 @@ pub struct Group {
         min = 3,
         max = 15,
         message = "Name must be between 3 and 15 characters"
-    ))]
+    ), regex(path = *RE_GROUP_NAME, message = "Name must be alphanumeric"))]
     pub name: String,
     pub admin_id: Id<User>,
     pub wall_id: Id<Wall>,
