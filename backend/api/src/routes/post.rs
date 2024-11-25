@@ -184,7 +184,7 @@ struct GetPostCommentResponse {
     id: Uuid,
     content: String,
     username: String,
-    avatar_url: String,
+    avatar_url: Option<String>,
     user_id: Uuid,
     parent_id: Option<Uuid>,
 }
@@ -193,7 +193,7 @@ struct GetPostCommentResponse {
 struct AllowedUserResponse {
     id: Uuid,
     username: String,
-    avatar_url: String,
+    avatar_url: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -261,7 +261,7 @@ async fn get_post(
                     .map(|comment| GetPostCommentResponse {
                         id: comment.0.id.clone().into(),
                         username: comment.1.username.clone(),
-                        avatar_url: comment.1.avatar_url.clone().unwrap_or_default(),
+                        avatar_url: comment.1.avatar_url.clone(),
                         content: comment.0.content.clone(),
                         user_id: comment.0.clone().user_id.into(),
                         parent_id: comment.0.clone().parent_id.map(|id| id.into()),
@@ -276,7 +276,7 @@ async fn get_post(
                     .map(|visibility| AllowedUserResponse {
                         id: visibility.0.user_id.clone().into(),
                         username: visibility.1.username.clone(),
-                        avatar_url: visibility.1.avatar_url.clone().unwrap_or_default(),
+                        avatar_url: visibility.1.avatar_url.clone(),
                     })
                     .collect(),
             ),
