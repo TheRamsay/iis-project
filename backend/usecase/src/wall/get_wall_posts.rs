@@ -1,5 +1,7 @@
 use models::{
-    domain::{post::Post, post_comment::PostComment, post_like::PostLike, user::User},
+    domain::{
+        post::Post, post_comment::PostComment, post_like::PostLike, user::User, wall::Wall, Id,
+    },
     errors::AppResult,
 };
 use repository::wall_repository::WallRepository;
@@ -9,7 +11,8 @@ use super::types::SortBy;
 
 #[derive(Debug)]
 pub struct GetWallPostsInput {
-    pub id: Uuid,
+    pub id: Id<Wall>,
+    pub user_id: Option<Id<User>>,
     pub pagination: (i64, i64),
     pub sort_by: SortBy,
 }
@@ -37,7 +40,12 @@ where
     pub async fn execute(&self, input: GetWallPostsInput) -> AppResult<GetWallPostsOutput> {
         let mut posts = self
             .wall_repository
-            .get_wall_posts(input.id.into(), input.pagination.0, input.pagination.1)
+            .get_wall_posts(
+                input.id.into(),
+                input.user_id.into(),
+                input.pagination.0,
+                input.pagination.1,
+            )
             .await?;
 
         match input.sort_by {

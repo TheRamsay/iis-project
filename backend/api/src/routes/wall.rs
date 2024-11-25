@@ -82,6 +82,7 @@ pub struct SortQuery {
 
 pub async fn get_wall(
     state: State<AppState>,
+    OptionalAuthUser(_user): OptionalAuthUser,
     Path(id): Path<Uuid>,
     Query(pagination): Query<PaginationParams>,
     Query(sort_by): Query<SortQuery>,
@@ -91,6 +92,7 @@ pub async fn get_wall(
 
     let input = GetWallPostsInput {
         id: id.into(),
+        user_id: _user.map(|u| u.id.into()),
         pagination: (pagination.offset, pagination.limit),
         sort_by: sort_by.sort_by.unwrap_or_default(),
     };

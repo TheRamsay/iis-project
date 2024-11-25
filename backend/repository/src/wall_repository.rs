@@ -33,6 +33,7 @@ pub trait WallRepository {
     async fn get_wall_posts(
         &self,
         wall_id: Id<Wall>,
+        user_id: Option<Id<User>>,
         offset: i64,
         limit: i64,
     ) -> Result<Vec<WallPostTuple>, DbErr>;
@@ -74,17 +75,113 @@ impl WallRepository for DbWallRepository {
     async fn get_wall_posts(
         &self,
         wall_id: Id<Wall>,
+        user_id: Option<Id<User>>,
         offset: i64,
         limit: i64,
     ) -> Result<Vec<WallPostTuple>, DbErr> {
-        let wall_posts = models::schema::wall_post::Entity::find()
+        let is_user_wall = models::schema::user::Entity::find()
             .filter(
-                models::schema::wall_post::Column::WallId
+                models::schema::user::Column::WallId
                     .into_simple_expr()
                     .eq(wall_id.id),
             )
-            .all(self.db.as_ref())
-            .await?;
+            .one(self.db.as_ref())
+            .await?
+            .is_some();
+
+        let wall_posts = if !is_user_wall {
+            if (user_id.is_none()) {
+                return Ok(vec![]);
+            }
+
+            models::schema::wall_post::Entity::find()
+                .from_raw_sql(Statement::from_sql_and_values(
+                    DbBackend::Postgres,
+                    r#"select * from wall_post wp  
+join post p on p.id  = wp.post_id 
+where wp.wall_id = $1 
+and $1 in (
+	select wall_id from "group" g 
+	where g.id in (
+			select group_id from group_member gm 
+			where gm.user_id = $2)
+	)
+ORDER BY created_at DESC  -- Order posts by the latest first
+LIMIT $3 OFFSET $4"#,
+                    [
+                        wall_id.id.into(),
+                        user_id.unwrap().id.into(),
+                        limit.into(),
+                        offset.into(),
+                    ],
+                ))
+                .all(self.db.as_ref())
+                .await?
+        } else {
+            if let Some(user_id) = user_id {
+                models::schema::wall_post::Entity::find()
+                    .from_raw_sql(Statement::from_sql_and_values(
+                        DbBackend::Postgres,
+                        r#"WITH visible_posts AS (
+    SELECT * 
+    FROM wall_post wp
+    join post p on p.id = wp.post_id  
+    where wp.wall_id = $1
+    and (
+        (p.visibility = 'public'
+        OR (p.visibility = 'private' AND EXISTS (
+            SELECT 1 
+            FROM post_user_visibility puv 
+            WHERE puv.post_id = p.id AND puv.user_id = $2
+        ))
+        OR (p.visibility = 'private' AND p.author_id = $2)))
+),
+paged_posts AS (
+    SELECT * 
+    FROM visible_posts
+    ORDER BY created_at DESC  -- Order posts by the latest first
+    LIMIT $3 OFFSET $4
+)
+
+SELECT * 
+FROM paged_posts;"#,
+                        [
+                            wall_id.id.into(),
+                            user_id.id.into(),
+                            limit.into(),
+                            offset.into(),
+                        ],
+                    ))
+                    .all(self.db.as_ref())
+                    .await?
+            } else {
+                models::schema::wall_post::Entity::find()
+                    .from_raw_sql(Statement::from_sql_and_values(
+                        DbBackend::Postgres,
+                        r#"WITH visible_posts AS (
+    SELECT * 
+    FROM wall_post wp
+    join post p on p.id = wp.post_id  
+    where wp.wall_id = $1
+    and (
+        (p.visibility = 'public'))
+
+),
+paged_posts AS (
+    SELECT * 
+    FROM visible_posts
+    ORDER BY created_at DESC  -- Order posts by the latest first
+    LIMIT $2 OFFSET $3
+)
+
+SELECT * 
+FROM paged_posts;"#,
+                        [wall_id.id.into(), limit.into(), offset.into()],
+                    ))
+                    .all(self.db.as_ref())
+                    .await?
+            }
+        };
 
         let future_posts = wall_posts.iter().map(|wall_post| {
             let db_ref = self.db.clone();
