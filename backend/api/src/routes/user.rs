@@ -1,6 +1,6 @@
 use anyhow::anyhow;
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     routing::{delete, get, post, put},
 };
 use axum_extra::extract::{
@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use usecase::user::{
     block_user::{BlockUserInput, BlockUserUseCase},
-    get_all_users::GetAllUsersUseCase,
+    get_all_users::{GetAllUsersInput, GetAllUsersUseCase},
     get_user::{GetUserInput, GetUserUseCase},
     get_user_by_username::{GetUserByUsernameInput, GetUserByUsernameUseCase},
     register_user::{RegisterUserInput, RegisterUserUseCase},
@@ -300,10 +300,26 @@ async fn update_user(
     std::result::Result::Ok((jar, ()))
 }
 
-async fn get_all_users(state: State<AppState>) -> AppResult<Json<Vec<GetUserResponse>>> {
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetAllUsersRequest {
+    role: Option<UserType>,
+    is_blocked: Option<bool>,
+    username: Option<String>,
+}
+
+async fn get_all_users(
+    state: State<AppState>,
+    Query(filters): Query<GetAllUsersRequest>,
+) -> AppResult<Json<Vec<GetUserResponse>>> {
     let user_usercase = GetAllUsersUseCase::new(state.user_repository.clone());
 
-    let users = user_usercase.execute().await?;
+    let users = user_usercase
+        .execute(GetAllUsersInput {
+            filter_role: filters.role,
+            filter_is_blocked: filters.is_blocked,
+            filter_username: filters.username,
+        })
+        .await?;
 
     let users = users
         .into_iter()
