@@ -8,14 +8,20 @@ use models::{
         post::{PostType, PostVisibilityType},
         user::UserType,
     },
-    errors::AppResult,
+    errors::{AppError, AppResult},
 };
 use serde::{Deserialize, Serialize};
-use usecase::wall::{
-    get_feed_posts::{GetFeedPostsInput, GetFeedPostsUseCase},
-    get_tag_posts::{GetTagPostsInput, GetTagPostsUseCase},
-    get_wall_posts::{GetWallPostsInput, GetWallPostsUseCase},
-    types::SortBy,
+use usecase::{
+    group::{
+        get_group::{self, GetGroupInput},
+        search_group::{SearchGroupInput, SearchGroupOutput, SearchGroupUseCase},
+    },
+    wall::{
+        get_feed_posts::{GetFeedPostsInput, GetFeedPostsUseCase},
+        get_tag_posts::{GetTagPostsInput, GetTagPostsUseCase},
+        get_wall_posts::{GetWallPostsInput, GetWallPostsUseCase},
+        types::SortBy,
+    },
 };
 use uuid::Uuid;
 
@@ -90,11 +96,41 @@ pub async fn get_wall(
     let get_wall_posts_usecase = GetWallPostsUseCase::new(state.wall_repository.clone());
     let pagination = pagination::Pagination::from(pagination);
 
+    let get_group_usecase = SearchGroupUseCase::new(state.group_repository.clone());
+    let groups = get_group_usecase
+        .execute(SearchGroupInput {
+            query: "".to_string(),
+            filter_where_member: None,
+        })
+        .await?;
+
+    let group_res = groups
+        .groups
+        .into_iter()
+        .find(|(group, _)| group.wall_id.id == id);
+
+    let mut is_moderator = false;
+
+    if let Some(ref user) = _user {
+        if user.role.has_higher_privilege_than(&UserType::Regular) {
+            is_moderator = true;
+        }
+    }
+
+    if let Some((group, _)) = group_res {
+        if let Some(ref user) = _user {
+            if group.admin_id.id == user.id {
+                is_moderator = true;
+            }
+        }
+    }
+
     let input = GetWallPostsInput {
         id: id.into(),
         user_id: _user.map(|u| u.id.into()),
         pagination: (pagination.offset, pagination.limit),
         sort_by: sort_by.sort_by.unwrap_or_default(),
+        is_mod: is_moderator,
     };
 
     let output = get_wall_posts_usecase.execute(input).await?;
