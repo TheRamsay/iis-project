@@ -1,9 +1,13 @@
-use models::{domain::{group::Group, user::User}, errors::AppResult};
+use models::{
+    domain::{group::Group, user::User, Id},
+    errors::AppResult,
+};
 use repository::group_repository::GroupRepository;
 
 #[derive(Debug)]
 pub struct SearchGroupInput {
     pub query: String,
+    pub filter_where_member: Option<Id<User>>,
 }
 
 pub struct SearchGroupOutput {
@@ -26,7 +30,10 @@ where
     }
 
     pub async fn execute(&self, input: SearchGroupInput) -> AppResult<SearchGroupOutput> {
-        let groups = self.group_repository.search(input.query).await?;
+        let groups = self
+            .group_repository
+            .search(input.query, input.filter_where_member)
+            .await?;
 
         Ok(SearchGroupOutput { groups })
     }

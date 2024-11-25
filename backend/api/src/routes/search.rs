@@ -60,6 +60,7 @@ async fn search(
 
     let input = usecase::group::search_group::SearchGroupInput {
         query: params.query.clone(),
+        filter_where_member: None,
     };
 
     let groups = search_group_use_case.execute(input).await?;
