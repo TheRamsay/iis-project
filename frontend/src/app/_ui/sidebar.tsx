@@ -35,7 +35,7 @@ export function Sidebar({ items }: Sidebar) {
 						'text-opacity-0',
 					)}
 				>
-					<Link href={item.path} className="">
+					<Link href={item.path} className="" prefetch={false}>
 						{item.name}
 					</Link>
 				</div>
