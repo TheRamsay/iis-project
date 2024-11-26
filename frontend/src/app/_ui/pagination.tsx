@@ -23,14 +23,18 @@ export function Pagination({
 				<div
 					onClick={onPrevious}
 					className={classNames(
-						canGoPrevious ? 'cursor-pointer' : 'opacity-50',
+						canGoPrevious ? 'cursor-pointer' : 'opacity-50 pointer-events-none',
 					)}
 				>
 					<ChevronLeftIcon className="h-8 w-8" />
 				</div>
 				<div
 					onClick={onNext}
-					className={classNames(canGoNext ? 'cursor-pointer' : 'opacity-50')}
+					className={classNames(
+						canGoNext
+							? 'cursor-pointer'
+							: 'opacity-50 opacity-50 pointer-events-none',
+					)}
 				>
 					<ChevronRightIcon className="h-8 w-8" />
 				</div>
