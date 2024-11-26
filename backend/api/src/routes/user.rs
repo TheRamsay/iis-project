@@ -26,7 +26,7 @@ use usecase::user::{
 use uuid::Uuid;
 
 use crate::{
-    auth::jwt::blacklist_token,
+    auth::{cookie::create_cookie, jwt::blacklist_token},
     extractors::{auth_extractor::AuthUser, json_extractor::Json},
     AppState,
 };
@@ -327,15 +327,7 @@ async fn update_user(
 
         let new_jwt_str = new_jwt.to_jwt(&state.jwt_secret);
 
-        let cookie = Cookie::build(("jwt", new_jwt_str))
-            .same_site(axum_extra::extract::cookie::SameSite::None)
-            .path("/")
-            .http_only(true)
-            .expires(Expiration::DateTime(
-                OffsetDateTime::from_unix_timestamp(new_jwt.exp as i64)
-                    .map_err(|_| anyhow!("Failed to create expiration time"))?,
-            ))
-            .secure(true);
+        let cookie = create_cookie(new_jwt_str, new_jwt.exp as i64)?;
 
         jar = jar.add(cookie);
     }

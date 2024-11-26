@@ -14,6 +14,7 @@ use usecase::user::{
 };
 
 use crate::{
+    auth::cookie::create_cookie,
     extractors::{auth_extractor::AuthUser, json_extractor::Json},
     AppState,
 };
@@ -49,15 +50,7 @@ pub async fn login(
     let auth_user = AuthUser::new(user.id.into(), user.username.clone(), user.user_type);
     let token = auth_user.to_jwt(&state.jwt_secret);
 
-    let cookie = Cookie::build(("jwt", token.clone()))
-        .same_site(axum_extra::extract::cookie::SameSite::None)
-        .http_only(true)
-        .path("/")
-        .expires(Expiration::DateTime(
-            OffsetDateTime::from_unix_timestamp(auth_user.exp as i64)
-                .map_err(|_| anyhow!("Failed to create expiration time"))?,
-        ))
-        .secure(true);
+    let cookie = create_cookie(token, auth_user.exp as i64)?;
 
     let jar = CookieJar::new().add(cookie.clone());
 
@@ -108,15 +101,7 @@ async fn register(
     );
     let token = auth_user.to_jwt(&state.jwt_secret);
 
-    let cookie = Cookie::build(("jwt", token.clone()))
-        .same_site(axum_extra::extract::cookie::SameSite::None)
-        .http_only(true)
-        .path("/")
-        .expires(Expiration::DateTime(
-            OffsetDateTime::from_unix_timestamp(auth_user.exp as i64)
-                .map_err(|_| anyhow!("Failed to create expiration time"))?,
-        ))
-        .secure(true);
+    let cookie = create_cookie(token, auth_user.exp as i64)?;
 
     let jar = CookieJar::new().add(cookie.clone());
 
