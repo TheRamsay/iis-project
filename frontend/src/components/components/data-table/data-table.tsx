@@ -60,7 +60,7 @@ interface DataTableProps<TData, TValue> {
 	rowRenderer?: (row: Row<TData>, value: ReactNode) => ReactNode
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends object, TValue>({
 	testId,
 	columns,
 	data,
@@ -162,7 +162,9 @@ export function DataTable<TData, TValue>({
 						table.getRowModel().rows.map((row, r) => {
 							const _row = (
 								<TableRow
-									key={r * (state?.pagination?.pageIndex || 1)}
+									key={
+										'id' in row.original ? JSON.stringify(row.original.id) : r
+									}
 									data-state={row.getIsSelected() && 'selected'}
 									testdata-id={
 										typeof testId === 'function'
