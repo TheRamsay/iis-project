@@ -16,6 +16,7 @@ export async function getSession(): Promise<Session | null> {
 
   if (!response.ok) {
     if (response.status === 401) {
+      console.warn("Unauthorized session, redirecting to /logout");
       redirect("/logout");
     }
 
